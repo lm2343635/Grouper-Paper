@@ -1,0 +1,65 @@
+% TEMPLATE for Usenix papers, specifically to meet requirements of
+%  USENIX '05
+% originally a template for producing IEEE-format articles using LaTeX.
+%   written by Matthew Ward, CS Department, Worcester Polytechnic Institute.
+% adapted by David Beazley for his excellent SWIG paper in Proceedings,
+%   Tcl 96
+% turned into a smartass generic template by De Clarke, with thanks to
+%   both the above pioneers
+% use at your own risk.  Complaints to /dev/null.
+% make it two column with no page numbering, default is 10 point
+
+% Munged by Fred Douglis <douglis@research.att.com> 10/97 to separate
+% the .sty file from the LaTeX source template, so that people can
+% more easily include the .sty file into an existing document.  Also
+% changed to more closely follow the style guidelines as represented
+% by the Word sample file. 
+
+\documentclass[twocolumn,10pt]{article}
+\usepackage[a4paper, top=1.0in, bottom=1.0in, left=0.8in, right=0.8in]{geometry}
+% \usepackage{usenix_mod}
+\usepackage{endnotes}
+\usepackage{graphicx}
+\usepackage{listings}
+\graphicspath{{figure/}}
+
+\usepackage{listings}
+
+
+\usepackage{biblatex}
+\bibliography{ref}
+
+
+\begin{document}
+
+%don't want date printed
+\date{}
+
+%make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\bf Implementing a Group Financial Management System Based on Multiple Servers}
+
+\author{
+Meng Li\\
+201620728\\
+Department of Computer Science
+\and
+Yasushi Shinjo\\
+Supervisor\\
+Department of Computer Science
+}
+
+\maketitle
+
+\section{Introduction}
+
+The conventional applications are based on a client-server mode, which requires a central server for storing shared data. That means the users of the web applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server. Finally, users may lose their data when service providers shut down their services.
+
+Thus, we are going to implement a group financial management application which is not relied on central servers, that means user data cannot be cracked easily and service can be recovered after shutting down the old service. Most current popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal, that synchronization can only be finished in condition that two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast with the increasing of group scale because each device can create a connection to all of the other devices. 
+
+To address this problem without using P2P, we are considering to use multiple servers to build a server group, so that data will divided to several parts and uploaded to different servers. Each server can only save a part of data temporarily，which means this part will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard the server group as a bridge between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered theoretically even the server group breaks down. By this way, we think such a method can satisfy the requirements for an application which is not relied on central servers.
+
+\section{Related Work}
+
+
+\end{document}
+
