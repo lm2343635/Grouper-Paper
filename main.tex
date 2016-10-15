@@ -51,7 +51,6 @@ Department of Computer Science
 \maketitle
 
 \section{Introduction}
-
 The conventional applications are based on a client-server mode, which requires a central server for storing shared data. That means the users of the web applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server. Finally, users may lose their data when service providers shut down their services.
 
 Thus, we are going to implement a group financial management application which is not relied on central servers, that means user data cannot be cracked easily and service can be recovered after shutting down the old service. Most current popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal, that synchronization can only be finished in condition that two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast with the increasing of group scale because each device can create a connection to all of the other devices. 
@@ -60,6 +59,42 @@ To address this problem without using P2P, we are considering to use multiple se
 
 \section{Related Work}
 
+\section{Methodology and Architechture}
+
+We consider that implementing such a distributed application GFMS on mobile devices is easier than PC, due to the reason that mobile devices can access to Internet by cellular network everywhere and every time. For this reason, we implement our financial management application on iOS mobile devices. 
+
+\subsection{Synchronization by Multiple Servers}
+We implement GFMS based on data synchronization by multiple servers rather than a central server. The main difference between our proposal and the traditional way using central server is that GFMS is not relying on server. There are three core principles in our proposal. 
+
+The first is data transfer by server, not save on server. Most current popular B/S modal application storage user data on several central servers, user data will not be deleted unless user delete his account. GFMS use server as a bridge for transferring data. Considering a group including three members Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to our server group, and will not exist after Bob and Carol synchronized it from server group. In other words, server group  storage a record until it is be synchronized by all group members.
+
+The second is server save data uploaded from mobile devices temporarily. We define a period of time in which data can be saved in a server. In Alice's situations, we set this period to 1 hour, that means the record Alice uploaded to server group can only be saved for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to server group until all of other members has synchronized successfully. It is obvious that this period of time should be long while more members attend the group. However, the longer saving period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and so on. 
+
+The third is server does not know the content of data. Only by saving data temporarily cannot ensure data security, because server knows the content of data in this temporary period. For this problem, people usually encrypt thier
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

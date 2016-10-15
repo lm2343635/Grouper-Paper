@@ -1,9 +1,9 @@
 [0] Config.pm:343> INFO - This is Biber 2.5
-[1] Config.pm:346> INFO - Logfile is '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.blg'
-[40] biber-darwin:290> INFO - === Sat Oct 15, 2016, 15:50:25
-[58] Biber.pm:351> INFO - Reading '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf'
-[139] Biber.pm:776> INFO - Found 0 citekeys in bib section 0
-[144] Utils.pm:149> WARN - The file '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf' does not contain any citations!
-[149] bbl.pm:526> INFO - Writing '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl' with encoding 'ascii'
-[150] bbl.pm:619> INFO - Output to /Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl
-[150] Biber.pm:108> INFO - WARNINGS: 1
+[0] Config.pm:346> INFO - Logfile is '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.blg'
+[40] biber-darwin:290> INFO - === Sat Oct 15, 2016, 18:47:06
+[57] Biber.pm:351> INFO - Reading '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf'
+[136] Biber.pm:776> INFO - Found 0 citekeys in bib section 0
+[141] Utils.pm:149> WARN - The file '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf' does not contain any citations!
+[147] bbl.pm:526> INFO - Writing '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl' with encoding 'ascii'
+[147] bbl.pm:619> INFO - Output to /Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl
+[147] Biber.pm:108> INFO - WARNINGS: 1
