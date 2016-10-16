@@ -17,18 +17,15 @@
 
 \documentclass[twocolumn,10pt]{article}
 \usepackage[a4paper, top=1.0in, bottom=1.0in, left=0.8in, right=0.8in]{geometry}
-% \usepackage{usenix_mod}
 \usepackage{endnotes}
 \usepackage{graphicx}
 \usepackage{listings}
-\graphicspath{{figure/}}
-
 \usepackage{listings}
-
-
+\usepackage{xcolor}
+\graphicspath{{figure/}}
+\usepackage{listings}
 \usepackage{biblatex}
 \bibliography{ref}
-
 
 \begin{document}
 
@@ -59,18 +56,67 @@ To address this problem without using P2P, we are considering to use multiple se
 
 \section{Related Work}
 
-\section{Methodology and Architechture}
+related work
+
+\section{Methodology}
 
 We consider that implementing such a distributed application GFMS on mobile devices is easier than PC, due to the reason that mobile devices can access to Internet by cellular network everywhere and every time. For this reason, we implement our financial management application on iOS mobile devices. 
 
-\subsection{Synchronization by Multiple Servers}
+\subsection{Data Synchronization by Multiple Servers}
+
 We implement GFMS based on data synchronization by multiple servers rather than a central server. The main difference between our proposal and the traditional way using central server is that GFMS is not relying on server. There are three core principles in our proposal. 
 
 The first is data transfer by server, not save on server. Most current popular B/S modal application storage user data on several central servers, user data will not be deleted unless user delete his account. GFMS use server as a bridge for transferring data. Considering a group including three members Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to our server group, and will not exist after Bob and Carol synchronized it from server group. In other words, server group  storage a record until it is be synchronized by all group members.
 
-The second is server save data uploaded from mobile devices temporarily. We define a period of time in which data can be saved in a server. In Alice's situations, we set this period to 1 hour, that means the record Alice uploaded to server group can only be saved for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to server group until all of other members has synchronized successfully. It is obvious that this period of time should be long while more members attend the group. However, the longer saving period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and so on. 
+The second is server save data uploaded from mobile devices temporarily. We define a period of time in which data can be saved in a server. In this paper, we set this period to 1 hour for our example situations, that means the record Alice uploaded to server group can only be saved for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to server group until all of other members has synchronized successfully. It is obvious that this period of time should be long while more members attend the group. However, the longer saving period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and so on. 
 
-The third is server does not know the content of data. Only by saving data temporarily cannot ensure data security, because server knows the content of data in this temporary period. For this problem, people usually encrypt thier
+The third is server does not know the content of data. Only by saving data temporarily cannot ensure data security, because server knows the content of data in this temporary period. For this problem, developers usually encrypt data before uploading to servers, which need a private key to decrypt data in other devices. In order to distribute the private key, Sweets, which is a decentralized social networking service application using data synchronization on mobile devices, use QR Code to share the private key. Sweets can generate a QR Code contained the private key, while other devices can scan this QR Code to recover the private key. In this paper, we are going to use secret sharing, which can create a number of shares and distributing them to a set of participants\cite{smith2013layered}, to share data between user devices and server group.
+
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.4]{sync_flow}
+\caption{Flow of Synchronization}
+\end{figure}
+Based on the three core principles introduced above, our synchronization flow can be described as figure 1. In figure 1, Alice create a record including money, classification, shop and account. GFMS create a number of shares by secret sharing and upload those shares to server group. When Bob is online, GFMS in Bob's device will pull data from server group and recover the new record uploaded by Alice. In our situation, GFMS can recover the record after pulling more than two shares randomly. In this process, each server is separated from other server, and cannot access to other server, which means user data cannot be recovered unless you have permission access to more than two server in Alice and Bob's situation. In our proposal, only group members have permission to access server group. Access control will be introduced in the paragraph below.
+
+
+\subsection{Shamir's Secret Sharing}
+Secret sharing which can create a numbers of shares, plays an indispensable role in protecting user data from getting lost, destroyed, or into wrong hands. In this paper, we are going to use Shamir's secret sharing, a form of secret sharing proposed by Shamir and Blakley independently. In secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, k is the threshold to combine shares, and n is the number of all shares. A popular technique to implement threshold schemes uses polynomial interpolation ("Lagrange interpolation"). This method was invented by Shamir in 1979. Thus, we call it Shamir's Secret Sharing.
+
+There are many implementations of Shamir's secret sharing by different programming languages. For developing an iOS app by Objective-C, we need an implementation without limitation of length, which supports Objective-C language and UTF-8 character set. C-SSS\cite{c-sss} is an implementation in original C code of Shamir's Secret Sharing by Fletcher T. Penney. C-SSS provide two main functions for generate shares and reconstructing them. Function \emph{generate} can generate $n$ shares by the string text with the threshold $k$. Function \emph{extract} can recreate the text string after accessing to more than $k$ shares.
+
+\begin{lstlisting}[language={[ANSI]C}, numberstyle=\tiny,keywordstyle=\color{blue!70},commentstyle=\color{red!50!green!50!blue!50},frame=shadowbox, rulesepcolor=\color{red!20!green!20!blue!20}]
+/**
+ Given a text, `n`, and `k`, create 
+ a list of shares.
+ **/
+char* generate_share_strings
+	(char* text, int n, int t);
+
+/**
+ Given a list of shares, recreate 
+ the original secret.
+ **/
+char* extract_secret_from_share_strings
+	(const char * string);
+\end{lstlisting}
+
+\subsection{Synchronize Completely}
+There is no doubt that GFMS should provide a reliable synchronization service. For Alice, once she created a new record in her device, all of other members in a group should synchronize this record, even if this record may be deleted by server group after 1 hour. We call this problem \emph{Synchronize Completely}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.4]{sync_completely}
+\caption{Synchronize Completely}
+\end{figure}
+
+Figure 2 described the situation data cannot be synchronized completely. Alice sent a new record to server group in 10:00 AM and Bob synchronized it successfully before 11:00 AM. Carol forgot to synchronize this record before 11:00 AM. She cannot synchronize after 11:00 AM because server group has delete the record in 11:00 AM. To solve this problem, Alice is required to resend her new record until Carol synchronize it successfully. However, by what way can Alice get the information that all of other members in her group have synchronized. In other words, it is an unreasonable requests for Alice to resend her record indefinitely.
+
+\section{Architechture}
+
+{\tiny
+\printbibliography
+}
 
 \end{document}
 

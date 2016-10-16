@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.7.6)  15 OCT 2016 18:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.7.6)  16 OCT 2016 21:58
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -95,7 +95,22 @@ File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
 File: listings.cfg 2015/06/04 1.6 listings configuration
 ))
 Package: listings 2015/06/04 1.6 (Carsten Heinz)
- (/usr/local/texlive/2016/texmf-dist/tex/latex/biblatex/biblatex.sty
+ (/usr/local/texlive/2016/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+ (/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/biblatex/biblatex.sty
 Package: biblatex 2016/05/14 v3.4 programmable bibliographies (PK/JW/AB)
  (/usr/local/texlive/2016/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2013/04/04 v0.2 Provides if(tex) conditional for PDFTeX, XeTeX, and LuaTeX
@@ -127,13 +142,13 @@ Package: logreq 2010/08/04 v1.0 xml request logger
 \lrq@indent=\count101
  (/usr/local/texlive/2016/texmf-dist/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
-)) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty
+))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
 ) (/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip10
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
-) (/usr/local/texlive/2016/texmf-dist/tex/generic/xstring/xstring.sty
-(/usr/local/texlive/2016/texmf-dist/tex/generic/xstring/xstring.tex
+) (/usr/local/texlive/2016/texmf-dist/tex/generic/xstring/xstring.sty (/usr/local/texlive/2016/texmf-dist/tex/generic/xstring/xstring.tex
 \@xs@message=\write4
 \integerpart=\count102
 \decimalpart=\count103
@@ -327,18 +342,18 @@ File: english.lbx 2016/05/14 v3.4 biblatex localization (PK/JW/AB)
  (/Users/limeng/Documents/CSSeminar/.texpadtmp/main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -410,48 +425,132 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl)
-Package biblatex Info: Reference section=0 on input line 33.
-Package biblatex Info: Reference segment=0 on input line 33.
+Package biblatex Info: Reference section=0 on input line 30.
+Package biblatex Info: Reference segment=0 on input line 30.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 51.
+(Font)              <12> on input line 48.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 51.
+(Font)              <8> on input line 48.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 51.
+(Font)              <6> on input line 48.
 Missing character: There is no ï in font cmr10!
 Missing character: There is no ¼ in font cmr10!
 Missing character: There is no Œ in font cmr10!
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
+ [1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
-Underfull \hbox (badness 10000) in paragraph at lines 66--66
-[]\OT1/cmr/bx/n/12 Synchronization by Mul-ti-ple
+
+] <figure/sync_flow.pdf, id=9, 654.445pt x 531.9875pt>
+File: figure/sync_flow.pdf Graphic file (type pdf)
+ <use figure/sync_flow.pdf>
+Package pdftex.def Info: figure/sync_flow.pdf used on input line 77.
+(pdftex.def)             Requested size: 261.77336pt x 212.79123pt.
+
+Overfull \hbox (25.83563pt too wide) in paragraph at lines 77--78
+ [][] 
  []
 
-[1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 84.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 84.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2015/06/04 1.6 listings language file
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
+)
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 89.
+ (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 89.
+ <figure/sync_completely.pdf, id=10, 645.41125pt x 316.18124pt>
+File: figure/sync_completely.pdf Graphic file (type pdf)
+ <use figure/sync_completely.pdf>
+Package pdftex.def Info: figure/sync_completely.pdf used on input line 109.
+(pdftex.def)             Requested size: 258.15993pt x 126.47025pt.
+
+Overfull \hbox (22.2222pt too wide) in paragraph at lines 109--110
+ [][] 
+ []
+
+[2 <./figure/sync_flow.pdf>]
+./main.tex:119: Undefined control sequence.
+<argument> ...et sharing scheme based on Shamir\x 
+                                                  {fffd}\x {fffd}\x {fffd}s ...
+l.119 }
+       
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+./main.tex:119: Undefined control sequence.
+<argument> ...g scheme based on Shamir\x {fffd}\x 
+                                                  {fffd}\x {fffd}s secret sh...
+l.119 }
+       
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+./main.tex:119: Undefined control sequence.
+<argument> ...based on Shamir\x {fffd}\x {fffd}\x 
+                                                  {fffd}s secret sharing
+l.119 }
+       
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
 
 
-] [2
+Underfull \hbox (badness 2189) in paragraph at lines 119--119
+[]\OT1/cmr/m/n/10 Liao-Jun Pang and Yu-Min Wang. ``A new
+ []
 
-] (/Users/limeng/Documents/CSSeminar/.texpadtmp/main.aux)
+
+Underfull \hbox (badness 1796) in paragraph at lines 119--119
+\OT1/cmr/m/n/10 (t, n) multi-secret shar-ing scheme based on
+ []
+
+
+Underfull \hbox (badness 1038) in paragraph at lines 119--119
+\OT1/cmr/m/n/10 Shamirfffdfffdfffds se-cret shar-ing''. In: \OT1/cmr/m/it/10 Ap-plied
+ []
+
+
+Underfull \hbox (badness 2894) in paragraph at lines 119--119
+\OT1/cmr/m/it/10 Math-e-mat-ics and Com-pu-ta-tion \OT1/cmr/m/n/10 167.2 (2005),
+ []
+
+[3
+
+ <./figure/sync_completely.pdf>] (/Users/limeng/Documents/CSSeminar/.texpadtmp/main.aux)
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 9014 strings out of 493014
- 151755 string characters out of 6133352
- 575134 words of memory out of 5000000
- 12476 multiletter control sequences out of 15000+600000
- 7894 words of font info for 28 fonts, out of 8000000 for 9000
+ 9795 strings out of 493014
+ 162432 string characters out of 6133352
+ 593473 words of memory out of 5000000
+ 13235 multiletter control sequences out of 15000+600000
+ 8709 words of font info for 31 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,7n,32p,811b,672s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on /Users/limeng/Documents/CSSeminar/.texpadtmp/main.pdf (2 pages, 50765 bytes).
+ 36i,8n,51p,980b,1282s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on /Users/limeng/Documents/CSSeminar/.texpadtmp/main.pdf (3 pages, 147698 bytes).
 PDF statistics:
- 23 PDF objects out of 1000 (max. 8388607)
- 15 compressed objects within 1 object stream
+ 95 PDF objects out of 1000 (max. 8388607)
+ 69 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,9 +1,17 @@
 [0] Config.pm:343> INFO - This is Biber 2.5
 [0] Config.pm:346> INFO - Logfile is '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.blg'
-[40] biber-darwin:290> INFO - === Sat Oct 15, 2016, 18:47:06
-[57] Biber.pm:351> INFO - Reading '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf'
-[136] Biber.pm:776> INFO - Found 0 citekeys in bib section 0
-[141] Utils.pm:149> WARN - The file '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf' does not contain any citations!
-[147] bbl.pm:526> INFO - Writing '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl' with encoding 'ascii'
-[147] bbl.pm:619> INFO - Output to /Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl
-[147] Biber.pm:108> INFO - WARNINGS: 1
+[39] biber-darwin:290> INFO - === Sun Oct 16, 2016, 21:58:00
+[56] Biber.pm:351> INFO - Reading '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bcf'
+[138] Biber.pm:776> INFO - Found 3 citekeys in bib section 0
+[150] Biber.pm:3493> INFO - Processing section 0
+[162] Biber.pm:3657> INFO - Looking for bibtex format file '/Users/limeng/Documents/CSSeminar/ref.bib' for section 0
+[164] bibtex.pm:1187> INFO - Decoding LaTeX character macros into UTF-8
+[164] bibtex.pm:1048> INFO - Found BibTeX data source '/Users/limeng/Documents/CSSeminar/ref.bib'
+[182] UCollate.pm:66> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[182] UCollate.pm:66> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[182] Biber.pm:3306> INFO - Sorting list 'nty/global/' of type 'entry' with scheme 'nty' and locale 'en-US'
+[182] Biber.pm:3310> INFO - No sort tailoring available for locale 'en-US'
+[186] bbl.pm:526> INFO - Writing '/Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl' with encoding 'ascii'
+[188] Utils.pm:149> WARN - The entry 'pang2005new' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[188] bbl.pm:619> INFO - Output to /Users/limeng/Documents/CSSeminar/.texpadtmp/main.bbl
+[188] Biber.pm:108> INFO - WARNINGS: 1
