@@ -20,7 +20,6 @@
 \usepackage{endnotes}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{listings}
 \usepackage{xcolor}
 \graphicspath{{figure/}}
 \usepackage{listings}
@@ -33,7 +32,7 @@
 \date{}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\bf GFMS: A Group Financial Management System Based on Multiple Servers}
+\title{\bf GFMS: A Group Financial Management System Using Secret Sharing between Server Group}
 
 \author{
 Meng Li\\
@@ -112,14 +111,20 @@ There is no doubt that GFMS should provide a reliable synchronization service. F
 
 Figure 2 described the situation data cannot be synchronized completely. Alice sent a new record to server group in 10:00 AM and Bob synchronized it successfully before 11:00 AM. Carol forgot to synchronize this record before 11:00 AM. She cannot synchronize after 11:00 AM because server group has delete the record in 11:00 AM. To solve this problem, Alice is required to resend her new record until Carol synchronize it successfully. However, by what way can Alice get the information that all of other members in her group have synchronized. In other words, it is an unreasonable requests for Alice to resend her record indefinitely. It is necessary for us to find a efficient way for notifying Alice that all members have synchronized successfully.
 
-To find such a solution, two restrictions about security and connection should be considered. On the one hand, servers cannot communicate with each other. Actually, one server of the group does not know the others exist in the group. On the other hand, clients cannot communicate with each other. Clients do know IP address of other devices, so that they cannot send message with P2P connections.
-
-We are going to design a counter in clients as the solution to \emph{Synchronize Completely} problem. Intuitively, this counter which can calculate the number of times other clients synchronized, works on the sender to decide resending record or not. The condition that sender device need not resend record can be described as equation (1).
+We are going to design a counter in clients as the solution to \emph{Synchronize Completely} problem. Intuitively, this counter which can calculate the number of times other clients synchronized, works on the sender to decide resending record or not. The condition that sender device need not resend record can be described as equation 1.
 \begin{equation}
 \sum_{i=1}^{n}s_{i}=(m-1)\cdot k
 \end{equation}
 
-In equation (1), we suppose that there are $n$ servers in our server group , they are server 1, server 2,..., server $n$. We can also look at $n$ from a different perspective, it is first parameter, the number of all shares, in the scheme $f(n, k)$ of Shamir's secret sharing. Each server saves a share, so $n$ servers saves $n$ shares. Each server should know how many times the share has been downloaded by clients. Thus, we use $s_i$ to represent the number of times in server $i$. The sum of $s_i$ is calculated in sender client. In the left of equation (1), $m$ represents the number of group members, and $k$ is the threshold in scheme $f(n, k)$. Obviously, a client can reconstruct data after getting $k$ shares. If $m-1$ clients have reconstructed data, $(m-1)\cdot k$ shares is downloaded. That means clients except sender has synchronized successfully, so sender need not resend.
+In equation 1, we suppose that there are $n$ servers in our server group , they are server 1, server 2,..., server $n$. We can also look at $n$ from a different perspective, it is first parameter, the number of all shares, in the scheme $f(n, k)$ of Shamir's secret sharing. Each server saves a share, so $n$ servers saves $n$ shares. Each server should know how many times the share has been downloaded by clients. Thus, we use $s_i$ to represent the number of times in server $i$. The sum of $s_i$ is calculated in sender client. In the left of equation 1, $m$ represents the number of group members, and $k$ is the threshold in scheme $f(n, k)$. Obviously, a client can reconstruct data after getting $k$ shares. If $m-1$ clients have reconstructed data, $(m-1)\cdot k$ shares is downloaded. That means clients except sender has synchronized successfully, so sender need not resend.
+
+To implement such a counter, two restrictions about security and connection should be considered. On the one hand, servers cannot communicate with each other. Actually, one server of the group does not know the others exist in the group. On the other hand, clients cannot communicate with each other. Clients do know IP address of other devices, so that they cannot send message with P2P connections. We decide to design a sync table described as figure 3, which is running on both servers and client to statistic sync times.
+
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.4]{sync_table}
+\caption{Sync Table}
+\end{figure}
 
 \section{Architechture}
 
