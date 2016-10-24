@@ -34,15 +34,10 @@
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\bf GFM: A Group Finance Manager Using Secret Sharing and Data Synchronization on Mobile devices}
 
-\author{
-Meng Li\\
-201620728\\
-Department of Computer Science
-\and
-Yasushi Shinjo\\
-Supervisor\\
-Department of Computer Science
-}
+\author{Department of Computer Science 
+	\\Meng Li 201620728  
+	\\Supervisor Yasushi Shinjo
+	\\November 17th, 2016}
 
 \maketitle
 
@@ -55,13 +50,13 @@ To address this problem without using P2P, we are considering to use multiple se
 
 \section{Related Work}
 
-related work
+DepSky\cite{bessani2013depsky} is a system that storage encrypted data on servers and run application logic on the client-side\cite{wang2016sieve}. DepSky provide a storage service that improves the availability and confidentiality provided by commercial storage cloud services. In GFM, the system cannot run without either or both client and server. For the reason that server group in GFM undertake responsibility of temporarily data storage and message delivery, GFM also need its own web service rather than using commercial storage cloud services.
 
 \section{Methodology}
 
 We consider that implementing such a distributed application GFM on mobile devices is easier than PC, due to the reason that mobile devices can access to Internet by cellular network everywhere and every time. For this reason, we implement our financial management application on iOS mobile devices. 
 
-\subsection{Data Synchronization by Multiple Servers}
+\subsection{Data Sync by Server Group}
 
 We implement GFM based on data synchronization by multiple servers rather than a central server. The main difference between our proposal and the traditional way using central server is that GFM is not relying on server. There are three core principles in our proposal. 
 
