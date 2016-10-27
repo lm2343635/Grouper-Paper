@@ -46,24 +46,20 @@ The conventional applications are based on a client-server mode, which requires 
 
 Thus, we are going to implement a group finance manager application: Grouper, which is not relied on central servers, that means user data cannot be cracked easily and its service can be recovered after shutting down the old service. Recently, Most popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal. Synchronization can only be finished in condition that two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast with the increasing of group scale because each device can create a connection to all of the other devices. 
 
-To address this problem without using P2P, we are considering to use multiple servers to build an untrusted server group. Data will divided to several pieces and uploaded to diverse servers. Each server can only save a piece of data temporarily，which means this piece will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard the server group as a bridge between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered theoretically even the server group breaks down. By this way, we think such a method can satisfy the requirements for an application which is running on untrusted server group, and not relied on central servers.
+To address this problem without using P2P, we are considering to use multiple untrusted servers for synchronization. Data will divided to several pieces and uploaded to diverse servers. Each server can only save a piece of data temporarily，which means this piece will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard the server group as a bridge between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered theoretically even the server group breaks down. By this way, we think such a method can satisfy the requirements for an application which is running on untrusted server group, and not relied on central servers.
 
-\section{Related Work}
-
-DepSky\cite{bessani2013depsky} is a system that storage encrypted data on servers and run application logic on the client-side\cite{wang2016sieve}. DepSky provide a storage service that improves the availability and confidentiality provided by commercial storage cloud services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage cloud, which is accessed by its users by invoking operations in several individual severs. DepSky saves encrypted data in commercial storage cloud services and do application logic in individual servers. In Grouper,  server group undertake responsibility of temporarily data storage and message delivery with server-side computation. Thus, Grouper cannot only use commercial storage cloud services.
-
-Mylar\cite{popa2014building} stores sensitive data encrypted on the server, and decrypts that data only in users’ browsers. Like Grouper, application in Mylar can control how user data is shared\cite{wang2016sieve}; unlike Grouper, Mylar build its system on a browser with browser extension while Grouper use mobile devices as client.
-
-Of course, there are many applications or frameworks synchronize with untrusted network and servers. Compared to them, Grouper use secret sharing and temporary data storage with untrusted server group to protect user data from malicious attacking.
 \section{Methodology}
 
-We consider that implementing such a distributed application Grouper on mobile devices is easier than PC, due to the reason that mobile devices can access to Internet by cellular network everywhere and every time. For this reason, we implement Grouper on iOS devices. 
+We consider that implementing such a group finance manager application: Grouper on mobile devices, which is not relied on central servers. 
 
-\subsection{Data Sync with Untrusted Server Group}
+\subsection{Group Finance Manager}
+The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central server. 
 
-We implement Grouper based on data synchronization by multiple servers rather than one central server. The main difference between our proposal and the traditional way using central server is that Grouper is not relying on server. There are three principles in our proposal. 
+\subsection{Synchronize with Multiple Untrusted Servers}
 
-The first is data transfer by server, not save on server. Most current popular B/S modal application storage user data on several central servers, user data will not be deleted unless user delete his account. Grouper use server as a bridge for transferring data. Considering a group including three members Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to server group, and will not exist after Bob and Carol synchronized it from server group. In other words, server group storage a record until it is be synchronized by all group members.
+We implement Grouper based on data synchronization by multiple untrusted servers rather than one central server. The main difference between our proposal and the traditional way using central server is that Grouper is not relying on server. There are three principles in our proposal. 
+
+The first is data transfer by server, not save on server. Most current popular B/S modal applications storage user data on several central servers, user data will not be deleted unless user delete his account. Grouper use server as a bridge for transferring data. Considering a group including three members Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to server group, and will not exist after Bob and Carol synchronized it from server group. In other words, server group storage a record until it is be synchronized by all group members.
 
 The second is server save data uploaded from mobile devices temporarily. We define a period of time in which data can be saved in a server. In this paper, we set this period to 1 hour for our example situations, that means the record Alice uploaded to server group can only be saved for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to server group until all of other members has synchronized successfully. It is obvious that this period of time should be long while more members attend the group. However, the longer saving period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and so on. 
 
@@ -75,7 +71,6 @@ The third is server does not know the content of data. Only by saving data tempo
 \caption{Flow of Synchronization}
 \end{figure}
 Based on the three core principles introduced above, our synchronization flow can be described as figure 1. At first, Alice create a record including money, classification, shop and account. Grouper create a number of shares by secret sharing and upload those shares to server group. When Bob is online, Grouper in Bob's device will download shares from server group and recover the new record uploaded by Alice. In our situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other server, and cannot access to other server, which means user data cannot be recovered unless you have permission access to more than two server. In our proposal, only group members have permission to access server group.
-
 
 \subsection{Shamir's Secret Sharing}
 Secret sharing which can create a numbers of shares, plays an indispensable role in protecting user data from getting lost, destroyed, or into wrong hands. In this paper, we are going to use Shamir's secret sharing, a form of secret sharing proposed by Shamir and Blakley independently. In secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, n is the number of all shares, and k is the threshold to combine shares. A popular technique to implement threshold schemes uses polynomial interpolation ("Lagrange interpolation"). This method was invented by Shamir in 1979. Thus, we call it Shamir's Secret Sharing.
@@ -123,23 +118,32 @@ c-SSS by Fletcher T. Penney can generate shares from a JSON string saved on sync
 \end{figure}
 
 \subsection{Necessity of Having a Web Service}
-Many applications with synchronization is based on cloud services like Amazon S3, Google Cloud or iCloud. Here, Grouper does not synchronized via such cloud services for following reasons.
+Many applications with synchronization is based on commercial cloud services like Amazon S3, Google Cloud or iCloud. Here, Grouper does not synchronized via such cloud services for following necessary functions.
+
 \begin{itemize}
 \setlength{\itemsep}{1pt}
 \setlength{\parskip}{0pt}
 \setlength{\parsep}{0pt}
-    \item Object-oriented: It is better for web service of Grouper to access data by object, while cloud service provide a way by document. 
-    \item Controllability: It is more convenient to control when a new row in database should be added, deleted or modified by web service of ourself. 
-    \item Computing in Server: Web service need collaborate with client to statistic sync times, which requires to calculate sync times in server.
+    \item Web service only provide service for group members who have access key. In other word, web service plays a role of access control.
+    \item Web service should manage and control the saving time of a share. A row in database including should be added, deleted or modified. 
 \end{itemize}
+
+
+\section{Related Work}
+
+DepSky\cite{bessani2013depsky} is a system that storage encrypted data on servers and run application logic on the client-side\cite{wang2016sieve}. DepSky provide a storage service that improves the availability and confidentiality provided by commercial storage cloud services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage cloud, which is accessed by its users by invoking operations in several individual severs. DepSky saves encrypted data in commercial storage cloud services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation. Thus, Grouper cannot only use commercial storage cloud services.
+
+Mylar\cite{popa2014building} stores sensitive data encrypted on the server, and decrypts that data only in users’ browsers. Developer should uses Mylar’s API to encrypt a regular (non-encrypted) web application, and users decrypt data by browser extension. Like Grouper, application in Mylar can control how user data is shared\cite{wang2016sieve}; unlike Grouper, Mylar build its system on a browser with browser extension while Grouper use mobile devices as client.
+
+Of course, there are many applications or frameworks synchronize with untrusted network and servers. Compared to them, Grouper use secret sharing and temporary data storage with untrusted servers to protect user data from malicious attacking.
 
 \section{Future Work}
 
-An application running in client has been developed now. In future, we are going to develop a web service running on untrusted server group to manage data temporary storage and provide REST API for mobile devices. This web service developed by Java EE should be install by group owner, in order that nobody except the group owner know all the IP address of servers. Thus, security of Grouper can be guaranteed.
+An application running in client has been developed now. In future, we are going to develop a web service running on multiple untrusted servers to manage data temporary storage and provide REST API for mobile devices. This web service developed by Java EE should be install by group owner, in order that nobody except the group owner know all the IP address of servers. Thus, security of Grouper can be guaranteed.
 
 \section{Conclusion}
 
-This paper introduced Grouper, a group finance manager, using secret sharing and data synchronization on mobile devices. Grouper is synchronized by untrusted server group, each server of which does not know existence of others. Each server only saves one of the shares generated by secret sharing temporarily, to ensure that user data cannot be cracked easily.
+This paper introduced Grouper, a group finance manager, using secret sharing and data synchronization on mobile devices. Grouper is synchronized by multiple untrusted servers, each server of which does not know existence of others. Each server only saves one of the shares generated by secret sharing temporarily, to ensure that user data cannot be cracked easily.
 
 {\tiny
 \printbibliography
