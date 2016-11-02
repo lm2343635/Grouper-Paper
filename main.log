@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.7.6)  27 OCT 2016 15:36
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.7.6)  2 NOV 2016 14:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**/Users/limeng/Documents/CSSeminar/main.tex
-(/Users/limeng/Documents/CSSeminar/main.tex
+**main.tex
+(./main.tex
 LaTeX2e <2016/03/31>
 Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/article.cls
@@ -469,22 +469,22 @@ Package biblatex Info: Automatic encoding selection.
 \openout5 = `main.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'main.bbl' not found.
+Package biblatex Info: ... file 'main.bbl' found.
 
-No file main.bbl.
+(./main.bbl)
 Package biblatex Info: Reference section=0 on input line 29.
 Package biblatex Info: Reference segment=0 on input line 29.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 42.
+(Font)              <12> on input line 43.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 42.
+(Font)              <8> on input line 43.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 42.
+(Font)              <6> on input line 43.
 Missing character: There is no ï in font cmr10!
 Missing character: There is no ¼ in font cmr10!
 Missing character: There is no Œ in font cmr10!
 
-Underfull \hbox (badness 3302) in paragraph at lines 58--58
+Underfull \hbox (badness 3302) in paragraph at lines 59--59
 []\OT1/cmr/bx/n/12 Synchronize with Mul-ti-ple Un-
  []
 
@@ -493,62 +493,66 @@ Underfull \hbox (badness 3302) in paragraph at lines 58--58
 
 ]
 
-LaTeX Warning: Citation 'smith2013layered' on page 2 undefined on input line 66
+LaTeX Warning: Citation 'smith2013layered' on page 2 undefined on input line 67
 .
 
 <figure/sync_flow.pdf, id=9, 623.32875pt x 531.9875pt>
 File: figure/sync_flow.pdf Graphic file (type pdf)
 
 <use figure/sync_flow.pdf>
-Package pdftex.def Info: figure/sync_flow.pdf used on input line 70.
+Package pdftex.def Info: figure/sync_flow.pdf used on input line 71.
 (pdftex.def)             Requested size: 249.32707pt x 212.79123pt.
 
-Overfull \hbox (13.38934pt too wide) in paragraph at lines 70--71
+Overfull \hbox (13.38934pt too wide) in paragraph at lines 71--72
  [][] 
  []
 
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 76.
+(Font)              <7> on input line 77.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 76.
+(Font)              <5> on input line 77.
 
-LaTeX Warning: Citation 'smith2013layered' on page 2 undefined on input line 76
+LaTeX Warning: Citation 'smith2013layered' on page 2 undefined on input line 77
 .
 
 
-LaTeX Warning: Citation 'pang2005new' on page 2 undefined on input line 76.
+LaTeX Warning: Citation 'pang2005new' on page 2 undefined on input line 77.
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-LaTeX Warning: Citation 'c-sss' on page 2 undefined on input line 78.
+LaTeX Warning: Citation 'c-sss' on page 2 undefined on input line 79.
 
 <figure/sync_completely.pdf, id=10, 623.32875pt x 320.19624pt>
 File: figure/sync_completely.pdf Graphic file (type pdf)
 
 <use figure/sync_completely.pdf>
-Package pdftex.def Info: figure/sync_completely.pdf used on input line 85.
+Package pdftex.def Info: figure/sync_completely.pdf used on input line 86.
 (pdftex.def)             Requested size: 249.32707pt x 128.07622pt.
 
-Overfull \hbox (13.38934pt too wide) in paragraph at lines 85--86
+Overfull \hbox (13.38934pt too wide) in paragraph at lines 86--87
  [][] 
  []
 
 [2 <./figure/sync_flow.pdf> <./figure/sync_completely.pdf>]
+Overfull \hbox (5.45154pt too wide) in paragraph at lines 103--115
+ [][] 
+ []
+
 <figure/sync_table.pdf, id=68, 504.88625pt x 364.36125pt>
 File: figure/sync_table.pdf Graphic file (type pdf)
 
 <use figure/sync_table.pdf>
-Package pdftex.def Info: figure/sync_table.pdf used on input line 102.
+Package pdftex.def Info: figure/sync_table.pdf used on input line 123.
 (pdftex.def)             Requested size: 201.95091pt x 145.74191pt.
 
 
-LaTeX Warning: Citation 'coredata' on page 3 undefined on input line 110.
+LaTeX Warning: Citation 'coredata' on page 3 undefined on input line 131.
 
 
-LaTeX Warning: Citation 'sync' on page 3 undefined on input line 110.
+LaTeX Warning: Citation 'sync' on page 3 undefined on input line 131.
 
 Missing character: There is no Ã in font cmr10!
 Missing character: There is no ± in font cmr10!
@@ -557,27 +561,31 @@ Missing character: There is no ± in font cmr10!
 File: figure/architecture.pdf Graphic file (type pdf)
 
 <use figure/architecture.pdf>
-Package pdftex.def Info: figure/architecture.pdf used on input line 116.
+Package pdftex.def Info: figure/architecture.pdf used on input line 137.
 (pdftex.def)             Requested size: 232.86588pt x 207.17032pt.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 127.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 148.
 
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 127.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 148.
 
 
 LaTeX Warning: Citation 'bessani2013depsky' on page 4 undefined on input line 1
-35.
+56.
 
 
-LaTeX Warning: Citation 'wang2016sieve' on page 4 undefined on input line 135.
+LaTeX Warning: Citation 'wang2016sieve' on page 4 undefined on input line 156.
 
 
-LaTeX Warning: Citation 'popa2014building' on page 4 undefined on input line 13
-7.
+Underfull \vbox (badness 2980) has occurred while \output is active []
+
+
+
+LaTeX Warning: Citation 'popa2014building' on page 4 undefined on input line 15
+8.
 
 Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
@@ -586,10 +594,10 @@ Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no ™ in font cmr10!
 
-LaTeX Warning: Citation 'wang2016sieve' on page 4 undefined on input line 137.
+LaTeX Warning: Citation 'wang2016sieve' on page 4 undefined on input line 158.
 
 
-LaTeX Warning: Empty bibliography on input line 150.
+LaTeX Warning: Empty bibliography on input line 171.
 
 [4 <./figure/architecture.pdf>] (./main.aux)
 
@@ -605,13 +613,13 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 9641 strings out of 493014
- 159779 string characters out of 6133352
- 588574 words of memory out of 5000000
+ 9642 strings out of 493014
+ 159697 string characters out of 6133352
+ 589574 words of memory out of 5000000
  13088 multiletter control sequences out of 15000+600000
  8548 words of font info for 30 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,8n,35p,1739b,755s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,8n,35p,990b,755s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
@@ -622,7 +630,7 @@ local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/lo
 cal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local
 /texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/
 texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on main.pdf (4 pages, 206667 bytes).
+Output written on main.pdf (4 pages, 207382 bytes).
 PDF statistics:
  190 PDF objects out of 1000 (max. 8388607)
  132 compressed objects within 2 object streams
