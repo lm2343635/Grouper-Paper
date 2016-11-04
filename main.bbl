@@ -1,0 +1,48 @@
+\begin{thebibliography}{1}
+
+\bibitem{smith2013layered}
+Guillaume Smith, Roksana Boreli, and Mohamed~Ali Kaafar.
+\newblock A layered secret sharing scheme for automated profile sharing in osn
+  groups.
+\newblock In {\em International Conference on Mobile and Ubiquitous Systems:
+  Computing, Networking, and Services}, pages 487--499. Springer, 2013.
+
+\bibitem{pang2005new}
+Liao-Jun Pang and Yu-Min Wang.
+\newblock A new (t, n) multi-secret sharing scheme based on shamir’s secret
+  sharing.
+\newblock {\em Applied Mathematics and Computation}, 167(2):840--848, 2005.
+
+\bibitem{c-sss}
+Fletcher~T. Penney.
+\newblock c-sss, an implementation of shamir's secret sharing.
+
+\bibitem{coredata}
+Apple Inc.
+\newblock Core data programming guide.
+
+\bibitem{sync}
+Elvis~Nu\ nez.
+\newblock Sync.
+
+\bibitem{bessani2013depsky}
+Alysson Bessani, Miguel Correia, Bruno Quaresma, Fernando Andr{\'e}, and Paulo
+  Sousa.
+\newblock Depsky: dependable and secure storage in a cloud-of-clouds.
+\newblock {\em ACM Transactions on Storage (TOS)}, 9(4):12, 2013.
+
+\bibitem{wang2016sieve}
+Frank Wang, James Mickens, Nickolai Zeldovich, and Vinod Vaikuntanathan.
+\newblock Sieve: cryptographically enforced access control for user data in
+  untrusted clouds.
+\newblock In {\em 13th USENIX Symposium on Networked Systems Design and
+  Implementation (NSDI 16)}, pages 611--626, 2016.
+
+\bibitem{popa2014building}
+Raluca~Ada Popa, Emily Stark, Steven Valdez, Jonas Helfer, Nickolai Zeldovich,
+  and Hari Balakrishnan.
+\newblock Building web applications on top of encrypted data using mylar.
+\newblock In {\em 11th USENIX Symposium on Networked Systems Design and
+  Implementation (NSDI 14)}, pages 157--172, 2014.
+
+\end{thebibliography}
