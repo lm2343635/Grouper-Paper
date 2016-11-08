@@ -17,7 +17,7 @@
 \date{}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\bf Grouper: A Group Finance Manager Using Secret Sharing and Data Synchronization on Mobile devices}
+\title{\bf Grouper: A Group Finance Manager on Mobile devices Using Untrusted Servers}
 
 \author{Department of Computer Science
 	\\ Meng Li 201620728  
@@ -28,35 +28,35 @@
 \maketitle
 
 \section{Introduction}
-The conventional applications are based on a client-server mode, which requires a central server for storing shared data. That means the users of the web applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server with cleartext. Finally, users may lose their data when service providers shut down their services.
+Conventional mobile applications are based on a client-server mode, which requires a central server for storing shared data. This means the users of the mobile applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server with cleartext. Finally, users may lose their data when service providers shut down their services.
 
-Thus, we are going to implement a group finance manager application: Grouper, which is not relied on central servers, that means user data cannot be cracked easily and its service can be recovered after shutting down the old service. Recently, Most popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal. Synchronization can only be finished in condition that two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast with the increasing of group scale because each device can create a connection to all of the other devices. 
+Thus, we are going to implement a group finance manager application, Grouper, which is not relied on central servers. This means user data cannot be cracked easily and its service can be recovered after shutting down the old service. Recently, most popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal. Data transfer can only be finished during two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast as the number of users in a increases because each device can create  connections to all of the other devices. 
 
-To address this problem without using P2P, we are considering to use multiple untrusted servers for synchronization. Data will divided to several pieces and uploaded to diverse servers. Each server can only save a piece of data temporarily，which means this piece will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard untrusted servers as a bridge between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered theoretically even the servers breaks down. By this way, we think such a method can satisfy the requirements for an application which is running on untrusted servers, and not relied on central servers.
+To address this problem without using P2P, we use multiple untrusted servers for synchronization. Data will divided to several pieces and uploaded to diverse servers. Each server can only save a piece of data temporarily, which means this piece will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard untrusted servers as bridges between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered even untrusted servers shut down. By this way, we think such a method can satisfy the requirements for an application which is running on untrusted servers, and not relied on central servers.
 
 \section{Methodology}
 
-We consider that implementing such a group finance manager application: Grouper on mobile devices, which is not relied on central servers. 
+We implement such a group finance manager application, Grouper, on mobile devices, which is not relied on central servers. 
 
 \subsection{Group Finance Manager}
-The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central server. 
+The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central servers. 
 
 \subsection{Synchronize with Multiple Untrusted Servers}
 
-We implement Grouper based on data synchronization by multiple untrusted servers rather than one central server. The main difference between our proposal and the traditional way using central server is that Grouper is not relying on server. There are three principles in our proposal. 
+We implement Grouper based on data synchronization by multiple untrusted servers rather than a single server. There are three principles in our proposal. 
 
-The first is data transfer by server, not save on server. Most current popular B/S modal applications storage user data on several central servers, user data will not be deleted unless user delete his account. Grouper use server as a bridge for transferring data. Considering a group including three members Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to untrusted servers, and will not exist after Bob and Carol synchronized it from servers. In other words, untrusted servers storage a record until it is be synchronized by all group members.
+Firstly, data transfer by a server, but data does not save on this server permanently. Most current popular client-server applications store user data on several central servers, user data will not be deleted unless user deletes his account. Grouper use untrusted servers as a bridge for transferring data. Consider that a group include three members: Alice, Bob and Carol. Alice created a new record in her device, this record will be upload to untrusted servers, and the record on servers will eliminated after Bob and Carol synchronized it from servers. In other words, untrusted servers stores a record until it is be synchronized by all group members.
 
-The second is server save data uploaded from mobile devices temporarily. We define a period of time in which data can be saved in a server. In this paper, we set this period to 1 hour for our example situations, that means the record Alice uploaded to untrusted servers can only be saved for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to serves until all of other members has synchronized successfully. It is obvious that this period of time should be long while more members attend the group. However, the longer saving period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and so on. 
+Secondly, server keep data temporarily. We define a period of time in which data can be saved in a server. In this paper, we set this period to 1 hour for our example situations. This means the record Alice uploaded to untrusted servers can only exist for 1 hour. After 1 hour since uploaded, this record will be deleted. Alice is required to resend this record to serves until all of other members has synchronized successfully. However, the longer keeping period means the higher risk of data reveal. The most suitable period is influenced by the number of group members, security requirement, user expectations and others. 
 
-The third is server does not know the content of data. Only by saving data temporarily cannot ensure data security, because server knows the cleartext of data in this temporary period. For this problem, developers encrypt data before uploading to servers, which need a private key to decrypt data in other devices. In order to distribute the private key, users should share by themselves. In this paper, we are going to use secret sharing, which can create a number of shares and distributing them to a set of participants\cite{smith2013layered}, to share data between user devices and untrusted servers.
+Thirdly, servers do not know the content of data. Saving data temporarily cannot ensure data security, because servers know the cleartext of data in this temporary period. For this problem, developers often encrypt data before uploading to servers, which need a private key to decrypt data in other devices. In order to distribute the private key, users should share it by themselves. In this paper, we use secret sharing, which can create a number of shares and distributing them to a set of participants\cite{smith2013layered}, to share data between user devices and untrusted servers.
 
 \begin{figure}[t]
 \centering
 \includegraphics[scale=0.4]{sync_flow}
 \caption{Flow of Synchronization}
 \end{figure}
-Based on the three core principles introduced above, our synchronization flow can be described as figure 1. At first, Alice create a record including money, classification, shop and account. Grouper create a number of shares by secret sharing and upload those shares to untrusted servers. When Bob is online, Grouper in Bob's device will download shares from servers and recover the new record uploaded by Alice. In our situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other server, and cannot access to other server, which means user data cannot be recovered unless you have permission access to more than two server. In our proposal, only group members have permission to access untrusted servers.
+Based on the three core principles introduced above, our synchronization flow can be described as Figure 1. At first, Alice add a record, the Grouper creates a number of shares by secret sharing and uploads those shares to untrusted servers. When Bob is online, Grouper in Bob's device will download shares from servers and recover the new record uploaded by Alice. In this situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other servers, and cannot access to other servers. This means user data can not be recovered unless you have permission access to more than two servers. In our proposal, only group members have permission to access these  untrusted servers.
 
 \subsection{Shamir's Secret Sharing}
 Secret sharing which can create a numbers of shares, plays an indispensable role in protecting user data from getting lost, destroyed, or into wrong hands. In this paper, we are going to use Shamir's secret sharing, a form of secret sharing proposed by Shamir and Blakley independently. In secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, n is the number of all shares, and k is the threshold to combine shares. A popular technique to implement threshold schemes uses polynomial interpolation ("Lagrange interpolation"). This method was invented by Shamir in 1979. Thus, we call it Shamir's Secret Sharing.
@@ -85,7 +85,7 @@ To implement such a counter, restriction about security and connection should be
 
 \begin{table}[tbp]
 	\centering  
-	\begin{tabular}{lccc}  
+	\begin{tabular}{lll}  
 		\hline
 		Column &Data Type & Introduction\\ 
 		\hline  

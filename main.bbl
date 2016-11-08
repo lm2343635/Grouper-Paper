@@ -2,8 +2,8 @@
 
 \bibitem{smith2013layered}
 Guillaume Smith, Roksana Boreli, and Mohamed~Ali Kaafar.
-\newblock A layered secret sharing scheme for automated profile sharing in osn
-  groups.
+\newblock A layered secret sharing scheme for automated profile sharing in
+  {OSN} groups.
 \newblock In {\em International Conference on Mobile and Ubiquitous Systems:
   Computing, Networking, and Services}, pages 487--499. Springer, 2013.
 
@@ -15,11 +15,13 @@ Liao-Jun Pang and Yu-Min Wang.
 
 \bibitem{c-sss}
 Fletcher~T. Penney.
-\newblock c-sss, an implementation of shamir's secret sharing.
+\newblock c-{SSS}, an implementation of shamir's secret sharing.
 
 \bibitem{coredata}
 Apple Inc.
 \newblock Core data programming guide.
+\newblock
+  \url{https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/index.html}.
 
 \bibitem{sync}
 Elvis~Nu\ nez.
