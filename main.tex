@@ -13,19 +13,19 @@
 
 \begin{document}
 
-\date{November 17th, 2016}
+\date{}
 
 \title{\bf Grouper: A Group Finance Manager on Mobile devices Using Untrusted Servers}
 
 \author{
-	Meng Li, Student ID: 201620728  
+	Meng Li, 201620728  
 	\\ Supervisor: Yasushi Shinjo
 }
 
 \maketitle
 
 \section{Introduction}
-Conventional mobile applications are based on a client-server mode, which requires a central server for storing shared data. This means the users of the mobile applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server with cleartext. Finally, users may lose their data when service providers shut down their services.
+Conventional mobile applications are based on a client-server mode, which requires central servers for storing shared data. This means the users of the mobile applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server with cleartext. Finally, users may lose their data when service providers shut down their services.
 
 Thus, we are going to implement a group finance manager application, Grouper, which is not relied on central servers. This means user data cannot be cracked easily and its service can be recovered after shutting down the old service. Recently, most popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal. Data transfer can only be finished during two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast as the number of users in a increases because each device can create  connections to all of the other devices. 
 
@@ -36,9 +36,9 @@ To address this problem without using P2P, we use multiple untrusted servers for
 We implement such a group finance manager application, Grouper, on mobile devices, which is not relied on central servers. 
 
 \subsection{Group Finance Manager}
-The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central servers. 
+The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central servers. To create a group in Grouper, the owner of this group needs to register and set an access key in untrusted servers. The owner can exchange his user information from Facebook and share the access key with group members by a face-to-face way.
 
-\subsection{Synchronize with Multiple Untrusted Servers}
+\subsection{Multiple Untrusted Servers}
 
 We implement Grouper based on data synchronization by multiple untrusted servers rather than a single server. There are three principles in our proposal. 
 
@@ -50,24 +50,24 @@ Thirdly, servers do not know the content of data. Saving data temporarily cannot
 
 \begin{figure}[t]
 \centering
-\includegraphics[scale=0.4]{sync_flow}
+\includegraphics[scale=0.35]{sync_flow}
 \caption{Flow of Synchronization}
 \end{figure}
 Based on the three core principles introduced above, our synchronization flow can be described as Figure 1. At first, Alice add a record and Grouper creates a number of shares by secret sharing. Then, Grouper uploads those shares to multiple untrusted servers. When Bob is online, Grouper in Bob's device will download shares from servers and recover the new record uploaded by Alice. In this situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other servers, and cannot access to other servers. This means user data can not be recovered unless you have permission access to more than two servers. In our proposal, only group members have permission to access these untrusted servers.
 
 \subsection{Shamir's Secret Sharing}
-Secret sharing which can create a numbers of shares, plays an indispensable role in protecting user data from getting lost, destroyed, or into wrong hands. In a secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where n is the number of all shares, and k is the threshold to combine shares. A popular technique to implement threshold schemes was invented by Shamir in 1979, which is called Shamir's Secret Sharing.
+Secret sharing which can create a numbers of shares, plays an indispensable role in protecting user data from getting lost, destroyed, or into wrong hands. In a secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where n is the number of all shares, and k is the threshold to combine shares.  Shamir's Secret Sharing is invented by Shamir in 1979 is a popular technique to implement threshold schemes.
 
-There are many implementations of Shamir's secret sharing by different programming languages. For developing an iOS app by Objective-C, we need an implementation without limitation of length, which supports Objective-C language and UTF-8 character set. c-SSS\cite{c-sss} is an implementation in original C code of Shamir's Secret Sharing by Fletcher T. Penney. c-SSS provide two main functions for generate shares and reconstructing them. Function \emph{generate} can generate $n$ shares by the string text with the threshold $k$. Function \emph{extract} can recreate the text string after accessing to more than $k$ shares.
+In this paper, we use c-SSS\cite{c-sss}, an implementation in original C code of Shamir's Secret Sharing by Fletcher T. Penney, which supports UTF-8 character set without limitation of length. It provide two main functions including \emph{generate}, which can generate $n$ shares by the string text with the threshold $k$, and \emph{extract}, which can recreate the text string after accessing to more than $k$ shares.
 
 \subsection{Reliable Synchronization}
 Grouper should provide a reliable synchronization service. For example, once Alice, who is a user in a group, creates a new record in her device, all of other members in a group should synchronize this record, even if this record may be deleted by untrusted servers after 1 hour. We call this problem \emph{Reliable Synchronization}.
 
-Figure 2 describes the situation data cannot be synchronized completely. Alice sent a new record to untrusted servers in 10:00 AM and Bob synchronized it successfully before 11:00 AM. Carol forgot to synchronize this record before 11:00 AM. She cannot synchronize after 11:00 AM because servers has delete the record in 11:00 AM. To solve this problem, Alice resend her new record until Carol synchronize it successfully. However, by what way can Alice get the information that all of other members in her group have synchronized. In other words, it is an unreasonable requests for Alice to resend her record indefinitely. It is necessary for us to find an efficient way for notifying Alice that all members have synchronized successfully.
+Figure 2 describes the situation data cannot be synchronized completely. Alice sent a new record to untrusted servers in 10:00 AM and Bob synchronized it successfully before 11:00 AM. Carol forgot to synchronize, so that she cannot synchronize after 11:00 AM because shares of this record has been deleted by servers. To solve this problem, Alice resend her new record until Carol synchronize it successfully. However, by what way can Alice get the information that all of other members in her group have synchronized. In other words, it is an unreasonable requests for Alice to resend her record indefinitely. It is necessary for us to find an efficient way for notifying Alice that all members have synchronized successfully.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.4]{unreliabe_sync}
+	\includegraphics[scale=0.35]{unreliabe_sync}
 	\caption{Unreliable Synchronization}
 \end{figure}
 
@@ -94,35 +94,37 @@ To implement such a counter, restriction about security and connection should be
 		sendtime & Date & Data send time\\
 		\hline
 	\end{tabular}
-	\caption{Columns of sender table}
+	\caption{Columns of Sender Table}
 \end{table}
 
 Columns of a sender table are listed in Table 1. Here, sid, content, and count of sync times are main columns. The column  sid is an unique identifier created by the SQLite database in a client, it is same as those in servers. The column content saves the JSON string converted by new record object. The column count saves the sync times of this object. In a server, a transfer table also has these 3 main columns with different meaning. The column sid is equals to that in a client in order to point out the row corresponding to that in the client. The column content saves one of the shares generated by secret sharing scheme. The column count saves the number of content sync times in server. Other auxiliary columns in transfer table will not be introduced here.
 
 In Figure 3, suppose that the secret sharing scheme is $f(2, 3)$, and only Bob have synchronized Alice's new record within prescribed time-limit. The column corresponding to Alice's new record, whose id is 1, is equals to those columns whose ids are 1 in Server 1 and Server 2. This means that Bob downloaded two shares from Server 1 and Server 2. The client of Alice will know that by HTTP response from Server 1 and Server 2 when it resend data. It will send for one more time, because it's count is 2, which is less than 4, the threshold Alice needs not to resend.
 
+However, if we consider a further problem that Carol, who is offline, can attack this group by being lazy. Alice, the record sender, has to resend shares to untrusted servers indefinitely. We will address this problem in our future work. 
+
 \begin{figure}[t]
 \centering
 \includegraphics[scale=0.4]{sync_table}
-\caption{Sync Table}
+\caption{Sender Table and Transfer Table}
 \end{figure}
 
 \section{Architecture}
 Grouper consists of an iOS application for clients and a Web service in servers.
 
-\subsection{Architecture in Client}
+\subsection{Client}
 In Methodology, we have introduced how to sharing a string with other deices via multiple untrusted servers. In this section, we first about persistent store and data synchronization. With untrusted servers, Grouper have to store all data on mobile devices with an object-oriented way. Grouper use Core Data\cite{coredata}, a native iOS framework to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence, to store and operate data as object. Sync\cite{sync} by Elvis Nuñez, a modern Swift JSON synchronization framework to Core Data, can help we implement data synchronization easily in Grouper by parsing a JSON response and getting it into Core Data. With Sync based on Core Date, we can concentrate on sharing with untrusted servers rather than data storage and synchronization.
 
-c-SSS by Fletcher T. Penney can generate shares from a JSON string saved on a sender table. Grouper is developed with Objective-C language, which is compatible with original C code. Grouper generates shares and send them by a REST API to servers until this record needs not to resend.
+c-SSS can generate shares from a JSON string and save it into the sender table. Then, Grouper generates shares and send them by a REST API to servers until this record needs not to resend.
 
 \begin{figure}[t]
 \centering
-\includegraphics[scale=0.4]{architecture}
-\caption{Architecture}
+\includegraphics[scale=0.35]{architecture}
+\caption{Architecture of Client}
 \end{figure}
 
 \subsection{Web Service}
-Many applications with synchronization is based on commercial cloud services like Amazon S3, Google Cloud or iCloud. It is necessary that Grouper has its own Web service running on an individual server rather than using commercial cloud services directely for following reasons:
+Many applications with synchronization is based on commercial cloud services like Amazon S3 or Google Cloud. It is necessary that Grouper has its own Web service running on an individual server rather than using commercial cloud services directely for following reasons:
 
 \begin{itemize}
 \setlength{\itemsep}{1pt}
@@ -131,14 +133,14 @@ Many applications with synchronization is based on commercial cloud services lik
     \item Data Storage: untrusted servers save share generated by secret sharing.
     \item Provisionality: the web service ensure that a share can be delete after a prescriptive time.
     \item Security: only group members who has an access key can download shares from servers. In other word, a web service plays a role of access control.
-    \item Counter: web service palys a role of a counter to calculate sync times in servers.
+    \item Counter: web service palys a role of a counter to calculate the number of sync times in servers.
 \end{itemize}
 
 \section{Related Work}
 
 DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic on the client-side\cite{wang2016sieve}. DepSky provide a storage service that improves the availability and confidentiality provided by commercial storage cloud services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage cloud, which is accessed by its users by invoking operations in several individual severs. DepSky keeps encrypted data in commercial storage cloud services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
 
-Mylar\cite{popa2014building} stores encrypted and sensitive data on the server, and decrypts that data only in users’ browsers. Developers of Mylar use its API to encrypt a regular (non-encrypted) web application, and users decrypt data by a browser extension. Like Grouper, application in Mylar can control how user data is shared\cite{wang2016sieve}; unlike Grouper, Mylar builds its system on a browser with browser extension while Grouper uses mobile device as a client.
+Mylar\cite{popa2014building} stores encrypted and sensitive data on the server, and decrypts that data only in users’ browsers. Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application, and users decrypt data by a browser extension. Like Grouper, application in Mylar can control how user data is shared\cite{wang2016sieve}; unlike Grouper, Mylar builds its system on a browser with browser extension while Grouper uses mobile device as a client.
 
 There are many applications or frameworks synchronize with untrusted network and servers. Compared to them, Grouper uses secret sharing and temporary data storage with untrusted servers to protect user data from malicious attacking. It is convenient and fast compared to those applications or frameworks using data encryption.
 
