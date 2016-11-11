@@ -15,7 +15,7 @@
 
 \date{}
 
-\title{\bf Grouper: A Group Finance Manager on Mobile devices Using Untrusted Servers}
+\title{\bf Grouper: A Group Finance Manager on Mobile Devices Using Untrusted Servers}
 
 \author{
 	Meng Li, 201620728  
@@ -25,20 +25,20 @@
 \maketitle
 
 \section{Introduction}
-Conventional mobile applications are based on a client-server mode, which requires central servers for storing shared data. This means the users of the mobile applications must fully trust central servers and their application providers. Once a server is attacked by hackers, user information may be revealed because data is stored on only one server with cleartext. Finally, users may lose their data when service providers shut down their services.
+Conventional mobile applications are based on a client-server mode, which requires central servers for storing shared data. The users of such mobile applications must fully trust central servers and their application providers. Once a server is compromised by hackers, user information may be revealed because data is often stored on the server in cleartext. Finally, users may lose their data when service providers shut down their services. A group finance manager is an application that records the income and expenditure of a small group.
 
-Thus, we are going to implement a group finance manager application, Grouper, which is not relied on central servers. This means user data cannot be cracked easily and its service can be recovered after shutting down the old service. Recently, most popular way is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a no-server proposal. Data transfer can only be finished during two devices is online in a same time. Another problem is that the number of P2P connections will be increased fast as the number of users in a increases because each device can create  connections to all of the other devices. 
+We are implementing a group finance manager application, Grouper, which is not relied on trusted central servers. This means user data cannot be cracked easily and its data can be recovered after services shutting down. A popular proposal is using P2P(Peer to Peer) to transfer user data between devices. However, there is a obvious problem in such a P2P proposal. Data transfer can only be finished during two devices are online at the same time. Another problem is that the number of P2P connections becomes large  fast as the number of users' increment. 
 
-To address this problem without using P2P, we use multiple untrusted servers for synchronization. Data will divided to several pieces and uploaded to diverse servers. Each server can only save a piece of data temporarily, which means this piece will be deleted after a period time we specified. Those two rules explained above can ensure that user data cannot be cracked easily. In fact, we can regard untrusted servers as bridges between devices of group members. In addition, all devices of group members have saved a complete data set, data can be recovered even untrusted servers shut down. By this way, we think such a method can satisfy the requirements for an application which is running on untrusted servers, and not relied on central servers.
+To address this problem, we use multiple untrusted servers for data transfer. Data will divided to several pieces and uploaded to diverse servers. Each server can only keep a piece of data temporarily. A piece will be deleted after a period time. Those two method can ensure that user data cannot be cracked easily. In addition, all devices of group members keep a complete data set, data can be recovered even untrusted servers shut down.
 
-\section{Methodology}
+\section{Design}
 
-We implement such a group finance manager application, Grouper, on mobile devices, which is not relied on central servers. 
+We design a group finance manager application, Grouper, on mobile devices, which is not relied on trusted central servers. 
 
 \subsection{Group Finance Manager}
-The goal of a group finance manager is to develop an application that can record the income and expenditure of a small group. In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, group members can share their record with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper using multiple untrusted servers to synchronize, can avoid defects of applications relied on central servers. To create a group in Grouper, the owner of this group needs to register and set an access key in untrusted servers. The owner can exchange his user information from Facebook and share the access key with group members by a face-to-face way.
+ In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, they can also share their records with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper uses multiple untrusted servers to synchronize and avoids relying on trusted central servers. To create a group in Grouper, the owner of this group needs to register and set an access key in untrusted servers. The owner  passes the access key to group members by a face-to-face way.
 
-\subsection{Multiple Untrusted Servers}
+\subsection{Data Synchronization Using Multiple Untrusted Servers}
 
 We implement Grouper based on data synchronization by multiple untrusted servers rather than a single server. There are three principles in our proposal. 
 
@@ -109,7 +109,7 @@ However, if we consider a further problem that Carol, who is offline, can attack
 \caption{Sender Table and Transfer Table}
 \end{figure}
 
-\section{Architecture}
+\section{Implementation}
 Grouper consists of an iOS application for clients and a Web service in servers.
 
 \subsection{Client}
