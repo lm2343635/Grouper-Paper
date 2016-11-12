@@ -37,9 +37,9 @@ To address this problem, we use multiple untrusted servers for data transfer. Da
 We design a group finance manager application, Grouper, on mobile devices, which is not relied on trusted central servers. 
 
 \subsection{Group Finance Manager}
- In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, they can also share their records with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper uses multiple untrusted servers to synchronize and avoids relying on trusted central servers. To create a group in Grouper, the owner of this group needs to register and set an access key in untrusted servers. The owner  passes the access key to group members by a face-to-face way.
+ In Grouper, group members can create a record including money, classification, account, shop, remark and time. With data synchronization, they can also share their records with other group members, so that group income and expenditure information can be analyzed and shown to all members. Grouper uses multiple untrusted servers to synchronize and avoids relying on trusted central servers. To create a group in Grouper, the owner of this group needs to register and set an access key in untrusted servers. The owner passes the access key to group members by a face-to-face way.
 
-\subsection{Shamir's Secret Sharing} entity permission access to more than two servers. In our proposal, only group members have
+\subsection{Shamir's Secret Sharing}
 Secret sharing creates a numbers of shares and plays an indispensable role in protecting user data from getting lost or destroyed. In a secret sharing scheme, a dealer securely shares a secret with a group of participants, by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more participants can reconstruct the secret, but $k-1$ or fewer participants can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where n is the number of all shares, and k is the threshold to combine shares.  Shamir's Secret Sharing is a popular technique to implement threshold schemes.
 
 \subsection{Data Synchronization Using Multiple Untrusted Servers}
@@ -131,8 +131,8 @@ Many applications with synchronization is based on commercial cloud services lik
 \setlength{\parskip}{0pt}
 \setlength{\parsep}{0pt}
 	\item Web service should have a counter to calculate the number of sync times.
-    \item The web service should ensure that a share can be delete after a prescriptive time.
-    \item Only group members who has an access key can download shares from servers. In other word, a web service plays a role of access control.
+    \item Web service should ensure that a share can be delete after a prescriptive time.
+    \item Only group members who has an access key can download shares from servers. In other word, a Web service plays a role of access control.
 \end{itemize}
 
 \section{Related Work}
