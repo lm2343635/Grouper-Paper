@@ -56,11 +56,11 @@ Thirdly, servers do not know the cleartext of data. Keeping data temporarily can
 
 \begin{figure}[t]
 \centering
-\includegraphics[scale=0.35]{sync_flow}
-\caption{Flow of Synchronization}
+\includegraphics[scale=0.38]{sync_flow}
+\caption{Flow of synchronization.}
 \end{figure}
 
-Figure 1 describes our synchronization flow based on these three principles. At first, Alice adds a record and Grouper creates three shares by a secret sharing scheme. Next, Grouper uploads those shares to multiple untrusted servers. When Bob is online, Grouper in Bob's device downloads two shares from servers and recovers the new record created by Alice. In this situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other servers, and cannot access to other servers. This means these servers cannot recover user data because they do not have permission to access other untrusted servers. In our proposal, only group members have permission to access these untrusted servers.
+Figure 1 describes our synchronization flow based on these three principles. At first, Alice adds a record and Grouper creates three shares by a secret sharing scheme where $n$ is three and $k$ is two. Next, Grouper uploads those shares to multiple untrusted servers. When Bob is online, Grouper in Bob's device downloads two shares from servers and recovers the new record created by Alice. In this situation, Grouper can recover the record after getting more than two shares. In this process, each server is separated from other servers, and cannot access to other servers. This means these servers cannot recover user data because they do not have permission to access other untrusted servers. In our proposal, only group members have permission to access these untrusted servers.
 
 \subsection{Reliable Synchronization}
 Grouper should provide a reliable synchronization service. For example, once Alice, who is a user in a group, creates a new record in her device, all of other members in a group should synchronize this record, even if this record may be deleted by untrusted servers after a period of time. We call this problem \emph{Reliable Synchronization}.
@@ -69,8 +69,8 @@ Figure 2 describes an unreliable situation that data cannot be synchronized. Ali
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.35]{unreliabe_sync}
-	\caption{Unreliable Synchronization}
+	\includegraphics[scale=0.38]{unreliabe_sync}
+	\caption{Unreliable synchronization.}
 \end{figure}
 
 We must consider a further problem that Carol, who is offline, can attack this group by being lazy. Alice, the record creator, has to upload shares to untrusted servers indefinitely. We are addressing this problem now by holding a list group members in untrusted servers.
@@ -79,38 +79,38 @@ We must consider a further problem that Carol, who is offline, can attack this g
 
 A group in Grouper is created by its owner. For example, Alice is a group owner and she registers her group in multiple untrusted server by submitting her own user information, group ID and group name. Here, group ID and group name are assigned by Alice and they should be same in all untrusted servers of this group. In each untrusted server, its Web service creates this new group successfully and returns a master key including the highest privilege for Alice.
 
-Figure 3 shows the procedure to add a new member to a group. At first, when Bob wants to join Alice's group, he meets Alice by a face-to-face way. After establishing a connection between Alice's and Bob's devices, Bob's device sends his user information to Alice's device at first. Alice's device create a new user called Bob in three untrusted server of her group. Servers will return access keys for Bob to Alice. At last, Alice send access keys and user information to Bob, so that he can access to those untrusted server.
+Figure 3 shows the procedure to add a new member to a group. At first, when Bob wants to join Alice's group, he meets Alice by a face-to-face way. After establishing a connection between Alice's and Bob's devices, Bob's device sends his user information to Alice's device at first. Alice creates a new user called Bob in the three untrusted servers of her group. Servers return three access keys for Bob to Alice. At last, Alice sends access keys and user information to Bob, so that he can access those untrusted servers.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.35]{add_member}
-	\caption{Add New Member}
+	\includegraphics[scale=0.38]{add_member}
+	\caption{Adding a new member.}
 \end{figure}
 
 \section{Implementation}
-Grouper consists of client that run an iOS application and multiple untrusted servers run a Web service. In Section 2, we have introduced how to sharing a string with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
+Grouper consists of clients that run an iOS application and multiple untrusted servers that run a Web service. In Section 2, we have introduced how to share strings with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
 
-\subsection{Client}
- Grouper uses Core Data\cite{coredata}, a native iOS framework to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence. Sync\cite{sync} by Elvis Nu\~{n}ez is a modern JSON synchronization framework to Core Data, and helps data synchronization parsing a JSON string. With Sync based on Core Data, we can concentrate on sharing with untrusted servers rather than data storage and synchronization.
+\subsection{iOS Application}
+ Grouper uses Core Data\cite{coredata}, a native iOS framework to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence. Sync\cite{sync} is a modern JSON synchronization framework for Core Data, and performs data synchronization by parsing JSON strings. With Sync based on Core Data, we can concentrate on sharing with untrusted servers rather than data storage and synchronization.
 
-In this paper, we use c-SSS\cite{c-sss}, an implementation of Shamir's Secret Sharing in C language by Fletcher T. Penney. This implementation supports UTF-8 character set without limitation of length. It provides two main functions: \emph{generate}, which generates $n$ shares by the string text with the threshold $k$, and \emph{extract}, which recreates the text string from more than $k$ shares. 
+In this paper, we use c-SSS\cite{c-sss}, an implementation of Shamir's Secret Sharing in the C language. This implementation supports UTF-8 character set without limitation of length. It provides two main functions: \emph{generate}, which generates $n$ shares by a string text with the threshold $k$, and \emph{extract}, which recreates the text string from more than $k$ shares. 
 
 c-SSS generates shares from a JSON string. There shares are stored as an entity in Core Data. Grouper generates shares and upload them by a REST API to servers.
 
-Figure 4 described the architecture of client. With untrusted untrusted servers, Grouper have to storage all data on mobile devices with an object-oriented way. Grouper use Core Data to storage and operate data as object. \emph{NSManagedObject+HYPPropertyMapper}, a part of Sync framework, creates JSON string from object, and Sync synchronizes by parsing JSON String. c-SSS generates shares by JSON string and recover them to JSON string. REST API provided by web service in untrusted servers, controls data transferring between clients and servers. User information and server information are transferred between clients using Multipeer Connectivity framework by a face-to-face way.
+Figure 4 describes the architecture of the iOS application running on clients. Grouper stores all data on mobile devices in an object-oriented way. Grouper uses Core Data to store and operate data as objects. \emph{NSManagedObject+HYPPropertyMapper} is a part of the Sync framework and creates JSON string from objects. REST API provided by web service in untrusted servers transfers data between clients and servers. User information and server information are transferred between clients using the Multipeer Connectivity framework.
 
-Figure 5 is a screen shoot of the view \emph{Add Record}, users add a new record including money, classification, account, shop, time and remark in this view.
+Figure 5 is a screen shoot of the view \emph{Add Record}. In this view, users add a new record including amount of money, classification, account, a shop, time and remark in this view.
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.35]{architecture}
-	\caption{Architecture of Client}
+	\caption{Architecture of the iOS application.}
 \end{figure}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.19]{screenshoot}
-	\caption{Add Record Screen Shoot}
+	\caption{A screen shoot of adding a record.}
 \end{figure}
 
 \subsection{Web Service}
@@ -120,32 +120,32 @@ Many applications with synchronization use commercial cloud services like Amazon
 \setlength{\itemsep}{1pt}
 \setlength{\parskip}{0pt}
 \setlength{\parsep}{0pt}
-	\item The Web service should supports reliable synchronization.
-    \item The Web service should ensure that shares are deleted after a prescriptive time.
-    \item Only group members who has an access key can download shares from servers. In other word, a Web service plays a role of access control.
+	\item The Web service supports reliable synchronization.
+    \item The Web service ensures that shares are deleted after a prescriptive time.
+    \item The Web service allows only group members who have access keys to download shares.
 \end{itemize}
 
-Our Web service runs on Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. We use Spring Web model-view-controller (MVC) framework to create our RESTful API. Like client, we use Hibernate, an open source Java persistence framework project, to save and operate object in Web service. Hibernate enables developers to more easily write applications whose data outlives the application process.
+Our Web service runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. We use the Spring Web model-view-controller (MVC) framework to create our RESTful API. Like in the iOS client, we use Hibernate, an open source Java persistence framework, to save and operate object in Web service. Hibernate enables developers to more easily write applications whose data outlives the application process.
 
-There are three entities including \emph{Group}, \emph{User} and \emph{Transfer} in Web service. Figure 6 describe the attributes of each entity and relationship between them. The relationship between \emph{Transfer} and \emph{User} and the relationship bwtween \emph{User} and \emph{Group} are \emph{Many-to-One}. The \emph{Group} entity saves the unique identifier, group name and its owner. The \emph{User} entity saves basic information of a user, access key for this user,and group of this user. The \emph{Transfer} entity saves the share generated with secret sharing scheme, saving time and its uploader. For each user, there is a unique access key for him in an untrusted server. This ensures that only he can remove or modify what he uploaded to this server. For a group, one of a user is its owner who has all the privileges of this group.
+There are three entities including \emph{Group}, \emph{User} and \emph{Transfer} in our Web service. Figure 6 describes the attributes of these entities and relationship between them. The relationship between \emph{Transfer} and \emph{User} and the relationship bwtween \emph{User} and \emph{Group} are \emph{many-to-one}. The \emph{Group} entity has the unique identifier, group name and its owner. The \emph{User} entity has basic information of a user, access key for this user, and group of this user. The \emph{Transfer} entity has the share generated with a secret sharing scheme, the time when the user uploads it and its creator. For each user, there is a unique access key for him in an untrusted server. This ensures that only he can remove or modify what he uploaded to this server. For a group, one of a user is its owner who has a highest privilege of this group.
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.5]{entites}
-	\caption{Entities in Web Service}
+	\caption{Entities in the Web service.}
 \end{figure}
 
 \section{Related Work}
 
-DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic on the client-side. DepSky provides a storage service that improves the availability and confidentiality by using commercial storage cloud services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage cloud, and its users invoke operations in several individual severs. DepSky keeps encrypted data in commercial storage cloud services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
+DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic on the client-side. DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. DepSky keeps encrypted data in commercial storage services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
 
-Mylar\cite{popa2014building} stores encrypted and sensitive data on a server, and decrypts this data only in users’ browsers. Developers of Mylar use its API to encrypt a regular(non-encrypted) Web application, and users decrypt data by a browser extension. Like Grouper, applications in Mylar can control how user data is shared. Mylar builds its system on a browser with browser extension while Grouper uses mobile device.
+Mylar\cite{popa2014building} stores encrypted and sensitive data on a server, and decrypts this data only in users’ browsers. Developers of Mylar use its API to encrypt a regular(non-encrypted) Web application, and users decrypt data by a browser extension. Like in Grouper, applications in Mylar can control how user data is shared. Mylar builds its system on a browser with extension while Grouper uses mobile devices.
 
-There are many applications or frameworks that use untrusted network and servers. Compared to them, Grouper uses secret sharing and temporary data storage with untrusted servers to protect user data from malicious attacking. Using secret sharing is more convenient and faster than using data encryption because clients need not to generate and share decryption key.
+There are many applications and frameworks that use untrusted network and servers. Compared to them, Grouper uses secret sharing and temporary data storage with untrusted servers to protect user data from malicious attacking. Using secret sharing is more convenient and faster than using data encryption because clients need not to distribute decryption keys and perform encryption computation.
 
 \section{Conclusion}
 
-This paper introduces Grouper, a group finance manager that synchronizes data among mobile devices with multiple untrusted servers. Grouper uses Secret Sharing and temporary data storage services. Grouper consists of client that run an iOS application and multiple untrusted servers run a Web service. Each server of Grouper does not know the others and keeps one piece of the shares generated by secret sharing temporarily, to ensure that user data cannot be cracked easily. We are developing an application running in a iOS device and a Web service running on servers. We connect these clients and multiple untrusted servers by REST API.
+This paper introduces Grouper, a group finance manager that synchronizes data among mobile devices with multiple untrusted servers. Grouper uses secret sharing and temporary data storage services. Grouper consists of clients that run an iOS application and multiple untrusted servers that run a Web service. Each server of Grouper does not know the others and keeps one piece of the shares generated by secret sharing temporarily to perform user data cannot be cracked easily. We connect clients and multiple untrusted servers by REST API. We are developing a robust protocol of reliable synchronization using multiple untrusted servers.
 
 \bibliographystyle{unsrt}
 {
