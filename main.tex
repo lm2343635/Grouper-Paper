@@ -36,7 +36,7 @@ Unlike P2P systems, we use multiple untrusted servers for data transfer. Data is
 
 \section{Design}
 
-We design this framework on iOS platform at first. We are aiming at developing applications which is not relying on central server using our Grouper framework. 
+We design this framework on iOS platform at first. We are aiming at developing applications which is not relying on trusted central server using our Grouper framework. 
 
 \subsection{Overview}
 Applications by Grouper can synchronize data between members of a group. In our situation, each group member holds a device. Thus, Grouper should provides main functions.
@@ -95,7 +95,7 @@ After creating a group, Alice can invite her friends to her group. As a friend o
 \subsection{Reliable Synchronization}
 Grouper should provide a reliable synchronization service. For example, Alice is a user in a group and creates a new record in her device. All of other members in a group should synchronize this record, even if this record may be deleted by untrusted servers after a period of time. We call this problem \emph{reliable synchronization}.
 
-Figure 2 describes an unreliable situation that data cannot be synchronized. Alice sends a new record to untrusted servers at 10:00 AM and Bob downloads it successfully at 10:30 AM. Carol becomes online at 11.30 AM and fails to download shares of this record because they have been deleted by servers. To solve this problem, Alice should upload her new record again until Carol downloads it successfully. However, it is hard for Alice to get the information that all of other members in her group have downloaded. We must find an efficient way for notifying Alice that all members have synchronized successfully.
+Figure 2 describes an unreliable situation that data cannot be synchronized. Alice sends a new record to untrusted servers and Bob downloads it successfully within the interval time. Carol becomes online after the interval time and fails to download shares of this record because they have been deleted by servers. To solve this problem, Alice should upload her new record again until Carol downloads it successfully.
 
 \begin{figure}[t]
 	\centering
@@ -103,7 +103,7 @@ Figure 2 describes an unreliable situation that data cannot be synchronized. Ali
 	\caption{Unreliable synchronization.}
 \end{figure}
 
-We must consider a further problem that Carol, who is offline, can attack this group by being lazy. Alice, the record creator, has to upload shares to untrusted servers indefinitely. We are addressing this problem by holding a list group members in untrusted servers.
+To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. For example, the sender of a group send a message No.25 and all of the receivers receive the message No.25 successfully. When the receivers receive new message No.25, they will compare No.25 with the newest sequence number in their persistent store. One of the receivers finds that his newest sequence number is No.23, that means he missed the message No.24. Thus, when they send feedback to the receiver, he will report that he missed the message No.24. At last, the sender will send the missed message to him.
 
 \section{Implementation}
 Grouper consists of clients that run an iOS application and multiple untrusted servers that run a Web service. In Section 2, we have introduced how to share strings with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
