@@ -106,52 +106,51 @@ Figure 2 describes an unreliable situation that data cannot be synchronized. Ali
 To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. For example, the sender of a group send a message No.25 and all of the receivers receive the message No.25 successfully. When the receivers receive new message No.25, they will compare No.25 with the newest sequence number in their persistent store. One of the receivers finds that his newest sequence number is No.23, that means he missed the message No.24. Thus, when they send feedback to the receiver, he will report that he missed the message No.24. At last, the sender will send the missed message to him.
 
 \section{Implementation}
-Grouper consists of clients that run an iOS application and multiple untrusted servers that run a Web service. In Section 2, we have introduced how to share strings with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
 
-\subsection{iOS Application}
- Grouper uses Core Data\cite{coredata}, a native iOS framework to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence. Sync\cite{sync} is a modern JSON synchronization framework for Core Data, and performs data synchronization by generating and parsing JSON strings. With Sync based on Core Data, we can concentrate on sharing with untrusted servers rather than data storage and synchronization.
+\subsection{Architechture}
+Grouper consists of a client framework for developing iOS application and a Web service running on multiple untrusted servers. In Section 2, we have introduced how to share strings with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
 
-In this paper, we use c-SSS\cite{c-sss}, an implementation of Shamir's secret sharing in the C language. This implementation supports the UTF-8 character set without limitation of length. It provides two main functions: \emph{generate}, which generates $n$ shares by a string text with the threshold $k$, and \emph{extract}, which recreates the text string from more than $k$ shares. 
+\subsubsection{Web Service}
+Grouper needs its own Web service rather than using commercial general cloud services like Amazon S3, Google Cloud for following reasons:
 
-c-SSS generates shares from a JSON string. There shares are stored as an entity in Core Data. Grouper generates shares and upload them by a REST API to servers.
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item The Web service supports reliable synchronization.
+	\item The Web service ensures that shares are deleted after a prescriptive time.
+	\item The Web service allows only group members who have access keys to download shares.
+\end{itemize}
 
-Figure 4 describes the architecture of the iOS application running on clients. Grouper stores all data on mobile devices in an object-oriented way. Grouper uses Core Data to store and operate data as objects. \emph{NSManagedObject+HYPPropertyMapper} is a part of the Sync framework and creates JSON string from objects. The REST API provided by the Web service in untrusted servers uploads and downloads shares between clients and servers. User information and server information are transferred between clients using the Multipeer Connectivity framework.
+Our Web service runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API, and Hibernate, an open source Java ORM framework, to save and operate object in the Web service. 
 
-Figure 5 is a screen shoot of the view \emph{Add Record}. In this view, users add a new record including amount of money, classification, account, a shop, time and remark in this view.
+Our Web service include three entities. They are \emph{Group}, \emph{User} and \emph{Transfer}. The \emph{Group} entity saves the unique identifier, group name and its owner. The \emph{User} entity save the node identifier of a user, access key for this user, and group of this user. The \emph{Transfer} entity saves a share generated with a secret sharing scheme, the time when the user uploads it and its creator. For each user, there is a unique access key for him in an untrusted server. Thus, only this user can modify or remove what he uploaded to this server. For a group, one of a user is its owner who has the highest privilege of this group.
 
-\begin{figure}[t]
+In a word, our web service provides RESTful API to transfer data with clients, and it keeps shares from devices temporarily.
+
+\subsubsection{Client}
+
+Grouper provides a client framework by Objective-C language to developing applications on iOS, macOS, watchOS and tvOS. 
+ 
+Figure 4 describes the architecture of client framework. It is based on such frameworks.   
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item Grouper used Multipeer Connectivity\cite{mc},  a official peer-to-peer communication framework provided by Apple, to transfer data between devices by a face-to-face way.
+	\item Grouper uses Core Data\cite{coredata}, a official ORM framework provided by Apple, to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence.
+	\item Grouper uses Sync\cite{sync}, a modern JSON synchronization framework for Core Data, to create JSON strings and synchronize object from JSON strings.
+	\item Grouper uses c-SSS\cite{c-sss}, an implementation of Shamir's secret sharing in the C language, to create shares and recover shares.
+	\item Grouper uses AFNetworking\cite{afnetworking}, a delightful networking library by Objective-C language, to revoke the RESTful API provided by our Web services. 
+\end{itemize}
+
+ \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.35]{architecture}
 	\caption{Architecture of the iOS application.}
 \end{figure}
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.18]{screenshoot}
-	\caption{A screen shoot of adding a record.}
-\end{figure}
-
-\subsection{Web Service}
-Grouper needs its own Web service rather than using commercial general cloud services like Amazon S3, Google Cloud for following reasons:
-
-\begin{itemize}
-\setlength{\itemsep}{1pt}
-\setlength{\parskip}{0pt}
-\setlength{\parsep}{0pt}
-	\item The Web service supports reliable synchronization.
-    \item The Web service ensures that shares are deleted after a prescriptive time.
-    \item The Web service allows only group members who have access keys to download shares.
-\end{itemize}
-
-Our Web service runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. We use the Spring Web model-view-controller (MVC) framework to create our REST API. Like in the iOS application, we use Hibernate, an open source Java persistence framework, to save and operate object in the Web service. Hibernate enables developers to easily write applications whose data outlives the processes of the applications.
-
-There are three entities including \emph{Group}, \emph{User} and \emph{Transfer} in our Web service. Figure 6 describes the attributes of these entities and relationship between them. The relationship between \emph{Transfer} and \emph{User} and the relationship between \emph{User} and \emph{Group} are \emph{many-to-one}. The \emph{Group} entity has the unique identifier, group name and its owner. The \emph{User} entity has basic information of a user, access key for this user, and group of this user. The \emph{Transfer} entity has a share generated with a secret sharing scheme, the time when the user uploads it and its creator. For each user, there is a unique access key for him in an untrusted server. Thus, only this user can modify or remove what he uploaded to this server. For a group, one of a user is its owner who has the highest privilege of this group.
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.5]{entites}
-	\caption{Entities in the Web service.}
-\end{figure}
 
 \section{Related Work}
 
