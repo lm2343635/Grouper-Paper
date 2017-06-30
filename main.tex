@@ -14,9 +14,9 @@
 
 \begin{document}
 
-\date{November 17th, 2016}
+\date{July 11th, 2017}
 
-\title{\bf Grouper: A Framework for Developing C/S Application Using Secret Sharing and Untrusted Servers}
+\title{\bf Grouper: A Framework for Developing Mobile Application Using Secret Sharing and Untrusted Servers}
 
 \author{
 	Meng Li, 201620728  
@@ -84,7 +84,7 @@ At last, Alice should initialize this group on all untrusted server by submittin
 
 \subsubsection{Inviting Member}
 
-After creating a group, Alice can invite her friends to her group. As a friend of Alice, Bob should also prepare his user information at first. Figure 3 shows the procedure to add a new member to a group. Alice can only invite Bob by a face-to-face way rather than connection via Internet using central server. Before inviting, Grouper use Multipeer Connectivity, a framework on iOS to exchange data by peer-to-peer Wi-Fi and Bluetooth, to establish connection between Alice's and Bob's devices. Firstly, Bob's device sends his user information and node identifier to Alice's device. Alice saves Bobs's user information and node identifier to her device. Secondly, Alice register Bob on multiple untrusted server by submitting Bob's node identifier. Thirdly, untrusted servers returns Bob' access key to Alice. Lastly, Alice send Bob's access key, server related information and all users' information she has to Bob.
+After creating a group, Alice can invite her friends to her group. As a friend of Alice, Bob should also prepare his user information at first. Figure 3 shows the procedure to add a new member to a group. Alice can only invite Bob by a face-to-face way rather than connection via Internet using central server. Before inviting, Grouper establish connection between Alice's and Bob's devices. Firstly, Bob's device sends his user information and node identifier to Alice's device. Alice saves Bobs's user information and node identifier to her device. Secondly, Alice register Bob on multiple untrusted server by submitting Bob's node identifier. Thirdly, untrusted servers returns Bob' access key to Alice. Lastly, Alice send Bob's access key, server related information and all users' information she has to Bob.
 
 \begin{figure}[t]
 	\centering
@@ -106,6 +106,42 @@ Figure 2 describes an unreliable situation that data cannot be synchronized. Ali
 To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. For example, the sender of a group send a message No.25 and all of the receivers receive the message No.25 successfully. When the receivers receive new message No.25, they will compare No.25 with the newest sequence number in their persistent store. One of the receivers finds that his newest sequence number is No.23, that means he missed the message No.24. Thus, when they send feedback to the receiver, he will report that he missed the message No.24. At last, the sender will send the missed message to him.
 
 \section{Implementation}
+
+\subsection{Sync Entity}
+
+Applications by Grouper should use Core Data as it's persistent store solution, because our data synchronization is based on the \emph{Sync} framework which is relying on Core Data. Developers should design the entities for Core Data to store their application related data.
+
+Grouper provides an entity called \emph{Sync Entity} as the parent entity of your application entities. In a sync entity, there are some basic attributes.
+
+\begin{table}[]
+	\centering
+	\caption{Attributes of Sync Entity}
+	\begin{tabular}{lll}
+		\hline
+		\textbf{Attribute} & \textbf{Type} & \textbf{Explanation}         \\ \hline
+		createAt           & Date          & Create date of this entity   \\ \hline
+		creator            & String        & Creator of this entity       \\ \hline
+		remoteID           & String        & Remote ID for Sync framework \\ \hline
+		update             & String        & Updater of this entity       \\ \hline
+		updateAt           & String        & Update date of this entity   \\ \hline
+	\end{tabular}
+\end{table}
+
+These attributes are necessary for data synchronization. Only by inheriting the sync entity can an application entity synchronize between devices of a group.
+
+\subsection{Sync Message}
+
+To transfer data between devices, we reference the protocol of email and design our own \emph{Sync Message}.
+
+In fact, a sync message is a JSON string that contains the sync entity related information and the way to handle it in receiver’s device. There are 4 types of sync message, they are update message, delete message, confirm message and resend message. Both update message and delete message need resend because they contain sync entity related information. We call them normal message. Both confirm message and resend message contain control information about reliable multicast and need not resend. We call them control message.
+
+When a user creates a new entity or modifies some attributes of an existed entity, the application should send an update message that contains the JSON string of this entity to all group members.
+
+When a user deletes an existed entity, the application should send a delete message that contains the object ID of this entity to all group members.
+
+For reliable multicasting, when the application is launched, it should check the send time if the last confirm message. If it sent before the interval time, the application should send a new confirm message that contains the sequences of all messages which are sent by this devices before, to all group members.
+
+When the device of a group member receives a confirm message, it should check the sequences. If some of them are nonexistent in its' persistent store, the application should send a resend message that contains the nonexistent part of the sequences.
 
 \subsection{Architechture}
 Grouper consists of a client framework for developing iOS application and a Web service running on multiple untrusted servers. In Section 2, we have introduced how to share strings with other deices via multiple untrusted servers. In this section, we describe persistent store and data synchronization. Grouper stores all data on mobile devices with an object-oriented way.
@@ -138,11 +174,11 @@ Figure 4 describes the architecture of client framework. It is based on such fra
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item Grouper used Multipeer Connectivity\cite{mc},  a official peer-to-peer communication framework provided by Apple, to transfer data between devices by a face-to-face way.
-	\item Grouper uses Core Data\cite{coredata}, a official ORM framework provided by Apple, to manage the model layer objects. Core Data provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence.
-	\item Grouper uses Sync\cite{sync}, a modern JSON synchronization framework for Core Data, to create JSON strings and synchronize object from JSON strings.
-	\item Grouper uses c-SSS\cite{c-sss}, an implementation of Shamir's secret sharing in the C language, to create shares and recover shares.
-	\item Grouper uses AFNetworking\cite{afnetworking}, a delightful networking library by Objective-C language, to revoke the RESTful API provided by our Web services. 
+	\item Grouper used \emph{Multipeer Connectivity}\cite{mc},  a official peer-to-peer communication framework provided by Apple, to transfer data between devices by a face-to-face way.
+	\item Grouper uses \emph{Core Data}\cite{coredata}, a official ORM framework provided by Apple, to manage the model layer objects.\emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence.
+	\item Grouper uses \emph{Sync}\cite{sync}, a modern JSON synchronization framework for \emph{Core Data}, to create JSON strings and synchronize object from JSON strings.
+	\item Grouper uses \emph{c-SSS}\cite{c-sss}, an implementation of Shamir's secret sharing in the C language, to create shares and recover shares.
+	\item Grouper uses \emph{AFNetworking}\cite{afnetworking}, a delightful networking library by Objective-C language, to revoke the RESTful API provided by our Web services. 
 \end{itemize}
 
  \begin{figure}[t]
@@ -150,7 +186,6 @@ Figure 4 describes the architecture of client framework. It is based on such fra
 	\includegraphics[scale=0.35]{architecture}
 	\caption{Architecture of the iOS application.}
 \end{figure}
-
 
 \section{Related Work}
 
