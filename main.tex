@@ -187,6 +187,31 @@ Figure 4 describes the architecture of client framework. It is based on such fra
 	\caption{Architecture of the iOS application.}
 \end{figure}
 
+\section{Evaluation}
+
+This section answers two main questions:  first, how much developer effort is required to use Grouper, and second, what are the performance overheads of Grouper?
+
+\subsection{Developer Effort}
+
+There are two factors that will influence the developer effort: the usability of client API and the lines of code(LoC) the developer has to add.
+
+\begin{description}
+	\item[Client API] Grouper provides very simple client API for developers.
+	\item[LoC] We developed 2 applications with Grouper to measure the amount of developer effort needed to use it.
+\end{description}
+
+\subsection{Performance}
+
+The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. To evaluate whether Grouper meets this goal, we answer the following questions:
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item How much processing time does Grouper add to app in data sending?
+	\item How much processing time does Grouper add to app in data receiving?
+\end{itemize}
+
 \section{Related Work}
 
 DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. DepSky keeps encrypted data in commercial storage services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
