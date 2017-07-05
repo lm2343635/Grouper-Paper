@@ -7,10 +7,39 @@
 \usepackage{algpseudocode}  
 \usepackage{amsmath}
 \usepackage{url}
+\usepackage{xcolor}
+\usepackage{listings}
 
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}  
 \renewcommand{\algorithmicensure}{\textbf{Output:}}  
 \graphicspath{{figure/}}
+
+\lstdefinelanguage{swift}
+{
+	morekeywords={
+		func,if,then,else,for,in,while,do,switch,case,default,where,break,continue,fallthrough,return,
+		typealias,struct,class,enum,protocol,var,func,let,get,set,willSet,didSet,inout,init,deinit,extension,
+		subscript,prefix,operator,infix,postfix,precedence,associativity,left,right,none,convenience,dynamic,
+		final,lazy,mutating,nonmutating,optional,override,required,static,unowned,safe,weak,internal,
+		private,public,is,as,self,unsafe,dynamicType,true,false,nil,Type,Protocol,
+	},
+	morecomment=[l]{//}, % l is for line comment
+	morecomment=[s]{/*}{*/}, % s is for start and end delimiter
+	morestring=[b]" % defines that strings are enclosed in double quotes
+}
+\definecolor{keyword}{HTML}{BA2CA3}
+\definecolor{string}{HTML}{D12F1B}
+\definecolor{comment}{HTML}{008400}
+\lstset{
+	language=swift,
+	basicstyle=\ttfamily,
+	showstringspaces=false, % lets spaces in strings appear as real spaces
+	columns=fixed,
+	keepspaces=true,
+	keywordstyle=\color{keyword},
+	stringstyle=\color{string},
+	commentstyle=\color{comment},
+}
 
 \begin{document}
 
@@ -28,11 +57,7 @@
 \section{Introduction}
 Conventional client-server mode applications requires central servers for storing shared data. The users of such mobile applications must fully trust the central server and their application providers. If a central server is compromised by hackers, user information may be revealed because data is often stored on the server in cleartext. Users may lose their data when service providers shut down their services. 
 
-To solve this problem, Mylar\cite{popa2014building}, a Web application framework use browser extension to encrypt and decrypt user data only in client. In this paper, we are are implementing a mobile application framework, Grouper, that is not relied on trusted central servers.
-
-A popular approach to address the central server problem is using P2P(Peer to Peer) to transfer user data between devices. However, there is an obvious problem in such a P2P approach. Data transfer can only be finished during two devices are online at the same time. Another problem is that the number of P2P connections becomes large  fast as the number of users increases. 
-
-Unlike P2P systems, we use multiple untrusted servers for data transfer. Data is divided into several pieces by secret sharing scheme and uploaded to diverse servers. Each server can only keep a piece of data temporarily, we call it share. A share will be deleted after a period of time. These ensure that user data cannot be cracked easily. In addition, all devices of group members keep a complete data set, and data can be recovered even untrusted servers shut down.
+To solve this problem, some applications use P2P(Peer to Peer) to transfer user data between devices. Some applications encrypt and decrypted user data in clients and save encrypted data in servers. Unlike them, we use multiple untrusted servers for data transfer. Data is divided into several pieces by Secret Sharing scheme and uploaded to diverse servers. Each server can only keep a piece of data temporarily, we call it share. A share will be deleted after a period of time. These ensure that user data cannot be cracked easily. In addition, all devices of group members keep a complete data set, and data can be recovered even untrusted servers shut down.
 
 \section{Design}
 
@@ -146,7 +171,7 @@ Figure 4 describes the architecture of client framework. It is based on such fra
 	\item Grouper uses \emph{AFNetworking}\cite{afnetworking}, a delightful networking library by Objective-C language, to revoke the RESTful API provided by our Web services. 
 \end{itemize}
 
- \begin{figure}[t]
+ \begin{figure}[!htb]
 	\centering
 	\includegraphics[scale=0.35]{architecture}
 	\caption{Architecture of the iOS application.}
@@ -162,30 +187,63 @@ There are two factors that will influence the developer effort: the usability of
 
 \begin{description}
 	\item[Client API] Grouper provides very simple client API for developers.
-	\item[LoC] We developed 2 applications with Grouper to measure the amount of developer effort needed to use it.
 \end{description}
+
+\begin{lstlisting}
+// Initialize Grouper
+grouper.setup(withAppId: "test",
+dataStack: DataStack(modelName: "Example")) 
+// Create Object & Update Object
+grouper.sender.update(test)
+// Delete Object
+grouper.sender.delete(test)
+// Receive Object
+grouper.receiver.receive { 
+// Callback after receiving objects.
+}
+//Send Confirm Message
+grouper.sender.confirm()
+\end{lstlisting}
+
+\begin{description}
+	\item[LoC] We developed 2 applications including \emph{Account Book} and \emph{Test} with Grouper. As described in table 1, compared with application LoC, Grouper related LoC that developer has to add is only a small part. 
+\end{description}
+
+\begin{table}[!htb]
+	\centering
+	\caption{Demo app's lines of code}
+	\label{my-label}
+	\begin{tabular}{c|c|c}
+		\hline
+		Attribute           & Test  & Account Book \\ \hline
+		Platform            & iOS   & iOS          \\ \hline
+		Lanaguage           & Swift & Objective-C  \\ \hline
+		Application LoC     & 632   & 8950         \\ \hline
+		Grouper related LoC & 11    & 19           \\ \hline
+		Number of Entities  & 1     & 5            \\ \hline
+	\end{tabular}
+\end{table}
 
 \subsection{Performance}
 
 The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. To evaluate whether Grouper meets this goal, we answer the following questions:
 
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item How much processing time does Grouper add to app in data sending?
-	\item How much processing time does Grouper add to app in data receiving?
-\end{itemize}
+\begin{description}
+	\item[Data Sending:] How much processing time does Grouper add to app when a user creates objects?
+	Figure 3 shows the processing time for sending and receiving 1 message. Compared to network, data sync and secret sharing consume very little time in both data sending and receiving.
+	\item[Data Sending:] How much processing time does Grouper add to app when a user wants to synchronize data from untrusted servers?
+	Figure 4 shows the processing time for sending multiple messages. With the increasing of messages number, data sync and Secret sharing part increase linearly. The network part increases very slowly and sometimes decrease.
+\end{description}
 
-\begin{figure}[t]
+\begin{figure}[!htb]
 	\centering
-	\includegraphics[scale=0.23]{processing1}
+	\includegraphics[scale=0.12]{processing1}
 	\caption{Processing time of sending and receiving 1 message}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!htb]
 	\centering
-	\includegraphics[scale=0.23]{processing2}
+	\includegraphics[scale=0.12]{processing2}
 	\caption{Processing time of sending multiple messages}
 \end{figure}
 
