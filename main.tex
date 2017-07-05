@@ -78,8 +78,8 @@ Applications by Grouper can synchronize data between members of a group. In our 
 
 In Grouper, a device use Secret Sharing scheme to divide a message into several shares and upload them to multiple untrusted servers. Other devices download shares and recover shares to original message by Secret Sharing scheme.
 
-\subsubsection{Shamir's Secret Sharing}
-Secret sharing plays an indispensable role in protecting user data from getting lost or destroyed. In a secret sharing scheme, a dealer securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares.  We use Shamir's secret sharing that  is a popular technique to implement threshold schemes.
+\subsubsection{Secret Sharing}
+Secret sharing plays an indispensable role in protecting user data from getting lost or destroyed. In a secret sharing scheme, a dealer securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
 
 \subsubsection{Multiple Untrusted Servers}
 
@@ -228,13 +228,6 @@ grouper.sender.confirm()
 
 The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. To evaluate whether Grouper meets this goal, we answer the following questions:
 
-\begin{description}
-	\item[Data Sending:] How much processing time does Grouper add to app when a user creates objects?
-	Figure 3 shows the processing time for sending and receiving 1 message. Compared to network, data sync and secret sharing consume very little time in both data sending and receiving.
-	\item[Data Sending:] How much processing time does Grouper add to app when a user wants to synchronize data from untrusted servers?
-	Figure 4 shows the processing time for sending multiple messages. With the increasing of messages number, data sync and Secret sharing part increase linearly. The network part increases very slowly and sometimes decrease.
-\end{description}
-
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[scale=0.12]{processing1}
@@ -247,17 +240,32 @@ The performance goal is to avoid significantly affecting the user experience wit
 	\caption{Processing time of sending multiple messages}
 \end{figure}
 
+\begin{description}
+	\item[Data Sending:] How much processing time does Grouper add to app when a user creates objects?
+	Figure 3 shows the processing time for sending and receiving 1 message. Compared to network, data sync and secret sharing consume very little time in both data sending and receiving.
+	\item[Data Sending:] How much processing time does Grouper add to app when a user wants to synchronize data from untrusted servers?
+	Figure 4 shows the processing time for sending multiple messages. With the increasing of messages number, data sync and Secret sharing part increase linearly. The network part increases very slowly and sometimes decrease.
+\end{description}
+
 \section{Related Work}
 
-DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. \emph{Cloud-of-Clouds} is the core concept in DepSky. It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. DepSky keeps encrypted data in commercial storage services and do application logic in individual servers. In Grouper,  untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
+Mylar\cite{popa2014building} stores encrypted and sensitive data on a server, and decrypts this data only in users’ browsers. Developers of Mylar use its API to encrypt a regular(non-encrypted) Web application, and users decrypt data by a browser extension. Like in Grouper, applications in Mylar can control how user data is shared and store data on multiple untrusted servers. Mylar builds its system on a browser with extension while Grouper uses mobile devices.
 
-Mylar\cite{popa2014building} stores encrypted and sensitive data on a server, and decrypts this data only in users’ browsers. Developers of Mylar use its API to encrypt a regular(non-encrypted) Web application, and users decrypt data by a browser extension. Like in Grouper, applications in Mylar can control how user data is shared. Mylar builds its system on a browser with extension while Grouper uses mobile devices.
+Sweets\cite{sweets} is a decentralized social networking service mobile application using data synchronization with P2P connections between devices. Sweets use AES(Advanced Encryption Standard) scheme to encrypt user data and ABE(Attribute Based Encryption) scheme to encrypt the key of AES. However, there is an obvious problem in such a P2P approach. Data transfer can only be finished during two devices are online at the same time. Thus, Grouper uses multiple untrusted servers to synchronize user data rather than P2P in Sweets.
 
-There are many applications and frameworks that use untrusted networks and servers. Compared to them, Grouper uses secret sharing and temporary data storage with untrusted servers to protect user data. Using secret sharing is more convenient and faster than using data encryption because clients need not to distribute decryption keys and perform heavy encryption computation.
+\section{Future Work and Conclusion}
 
-\section{Conclusion}
+In the future, we will concentrate on such works:
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item Finish the demo application \emph{Notes} on macOS,
+	\item Solve the synchronization order and JSON string redundancy caused by One-To-Many entity relationship.
+	\item Improve the performance by retaining only 1 normal message for 1 object in untrusted servers .
+\end{itemize}
 
-This paper introduces Grouper, a group finance manager that synchronizes data among mobile devices with multiple untrusted servers. Grouper uses secret sharing and temporary data storage services. Grouper consists of clients that run an iOS application and multiple untrusted servers that run a Web service. Each server of Grouper does not know the others and keeps one piece of the shares generated by secret sharing temporarily to protect user data. We connect clients and multiple untrusted servers by a REST API. We are developing a robust protocol of reliable synchronization using multiple untrusted servers.
+This paper introduces Grouper, a framework Secret sharing and multiple untrusted server, to develop applications which is not relying on trusted central server. Grouper provides two main functions: reliable data synchronization and group management. We implement Web service by Java EE and client framework by Objective-C language. We use Grouper to develop demo applications including \emph{Account Book}, \emph{Notes} and \emph{Test}. At last, we evaluate Grouper from developer effort and performance.
 
 \bibliographystyle{unsrt}
 {
