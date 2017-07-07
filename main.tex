@@ -55,38 +55,68 @@
 \maketitle
 
 \section{Introduction}
-Conventional mobile applications are built based on a client-server mode and
-requires central servers for storing shared data. The users of such mobile applications must fully trust the central server and their application providers. If central servers are compromised by hackers, user information may be revealed because data is often stored on the server in cleartext. Users may lose their data when service providers shut down their services. 
 
-To address these problems, Grouper use multiple untrusted servers for data transfer. Data is divided into several pieces by the Secret Sharing scheme and uploaded to diverse servers. Each server can only keep a piece of data temporarily, we call it share. A share will be deleted after a period of time. These ensure that user data cannot be cracked easily. In addition, all devices of group members keep a complete data set, and data can be recovered even untrusted servers shut down.
+Conventional mobile applications are built based on a client-server mode and require the central servers for storing shared data. 
+The users of such mobile applications must fully trust the central servers. 
+If central servers are compromised by hackers, user information may be revealed because data is often stored on the server in cleartext. 
+Users may lose their data when service providers shut down their servers. 
 
-\section{Design}
-We design this framework on the iOS platform at first. We are aiming at developing applications which are not relying on trusted central servers. Applications based on Grouper can synchronize data among group members' devices. Each group member holds one device. In this sections, we introduce some important concepts in Grouper.
+To address these problems, our framework Grouper uses multiple untrusted servers for data transfer. 
+Data is divided into several pieces by a Secret Sharing scheme and uploaded to those untrusted servers. 
+Each server can only keep a piece of data called a share. A share will be deleted after a period of time. 
+These ensure that user data cannot be cracked easily. 
+In addition, all devices of group members keep a complete data set of this group, and data can be recovered even untrusted servers shut down.
 
-\subsection{Secret Sharing}
-In Grouper, a device uses a Secret Sharing scheme to divide a message into several shares and upload them to multiple untrusted servers. Other devices download shares and recover the original message by the Secret Sharing scheme. In a Secret Sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+\section{Design of Grouper}
 
-\subsection{Multiple Untrusted Servers}
+\subsection{Overview}
 
-Unlike central trusted servers, we design Grouper based on data synchronization through multiple untrusted servers. There are some principles in our proposal. 
+We are aiming at developing applications which are not relying on trusted central servers. 
+The Grouper framework provides the following functions to applications.
 
-Firstly, a server transfers data as similar to a router, and does not keep it permanently. Most current popular client-server applications store their user data on several central servers, and the user's data will not be deleted unless the user deletes his account. Grouper uses untrusted servers as a bridge for transferring data.
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item Data Synchronization: If an user updates an object in his device, the mirror of this object in other devices are updated.
+	\item Group management: The group owner can create a group and invite other members to his group.
+\end{itemize}
 
-Secondly, a server keeps data temporarily. We define a period of time in which data can be kept in a server, we call it interval time. The record a sender uploaded to untrusted servers can exist within the interval time. After the interval time, this record will be deleted.
+We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message}.
+Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirror of the object in these devices. 
+We implement \emph{Grouper Message} using untrusted servers (Section 2.2) and a Secret Sharing (Section 2.3) scheme . 
+Untrusted servers delete messages after a period of time. 
+\emph{Grouper Message} implements reliable messaging over this feature (Section 2.3).
 
-Thirdly, servers do not know the cleartext of data. Keeping data temporarily cannot ensure data security, because servers know the cleartext of data in this temporary period. For this problem, developers often encrypt data before uploading to servers, and this needs a decryption key to decrypt data in other devices. In Grouper, we use a Secret Sharing scheme as described in section 2.1 rather than data encryption. Servers do not know the cleartext of a share generated by the Secret Sharing scheme.
+\subsection{Threat Model}
+
+User data of mobile application using trusted central servers can be access by service provider easily and compromised by hackers. 
+Therefore, we design Grouper based on data synchronization through multiple untrusted servers. Our untrusted servers have following features.
+
+Firstly, servers performs device authentication. 
+Servers generate access keys for group users. 
+When a user want to synchronize data from untrusted servers, Grouper sends a HTTP request with access keys in request header.
+
+Secondly, server keeps data temporarily.
+We define a period of time in which data can be kept in a server, we call it interval time. 
+The data a sender uploaded to untrusted servers can exist within the interval time. After the interval time, it will be deleted.
+
+Thirdly, servers do not know the cleartext of data. Keeping data temporarily cannot ensure data security, because servers know the cleartext of data in this temporary period. In Grouper, we use a Secret Sharing scheme to divide a message into several shares and upload them to multiple untrusted servers. In a Secret Sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function. At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+
+To avoid threat in members inviting, group owners authenticate group members by a face-to-face way because inter-mobile device communication is secure. That requires all group members must trust the group owner and they are not malicious.
 
 \subsection{Data Synchronization}
 
+\subsubsection{Data Transportation}
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.38]{sync_flow}
 	\caption{Data Transportation Flow}
 \end{figure}
 
-Figure 1 describes our data transportation flow based on the principles described in section 2.2. At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme where $n$ is three and $k$ is two. Next, Grouper uploads those shares to three untrusted servers. When the receiver is online, he downloads two shares from two servers and recovers the new record. In this process, each server is separated from other servers, and cannot access to other servers. This means these servers cannot recover user data because they do not have permission to access other untrusted servers. In our proposal, only group members have permission to access these untrusted servers.
+Figure 1 describes our data transportation flow using multiple untrusted servers. At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme where $n$ is three and $k$ is two. Next, Grouper uploads those shares to three untrusted servers. When the receiver is online, he downloads two shares from two servers and recovers the new record. In this process, each server is separated from other servers, and cannot access to other servers. This means these servers cannot recover user data because they do not have permission to access other untrusted servers. 
 
-\subsection{Reliable Synchronization}
+\subsubsection{Reliable Synchronization}
 Grouper should provide a reliable synchronization service. A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record may be deleted by untrusted servers after a interval time. We call this problem reliable synchronization. A receiver can only download shares from untrusted server with the interval time. If he synchronize data after the interval time, he will miss the new record from the sender.
 
 \begin{figure}[t]
@@ -97,7 +127,7 @@ Grouper should provide a reliable synchronization service. A user in a group cre
 
 To solve this problem, we use the idea of reliable multicasting in distribute systems. In Figure 2, the sender has sent messages from No.1 to No.4. Next, he sends sequence numbers of all messages he sent to the receiver. When the receiver receives the sequence numbers, he will check his local persistent store. In this situation, the receiver will find that he missed the message No.3 and No.4. Thus, he will send a request that contains the sequence numbers of messages he missed to the sender. At last, the sender will resend the message No.3 and No.4 to the receiver again.
 
-\subsection{Grouper Message}
+\subsubsection{Grouper Message}
 
 To transfer data between devices, we design our own \emph{Grouper Message}. A Grouper message is a JSON string that contains the entities of the application and the way to handle it in receivers’ devices. There are 4 types of Grouper messages: update message, delete message, confirm message and resend message. Both update message and delete message need resend because they contain entities of the application. We call them normal messages. Both confirm message and resend message contain control information about reliable multicast and need not resend. We call them control messages.
 
@@ -140,7 +170,7 @@ Our Web service includes three entities. They are \emph{Group}, \emph{User} and 
 
 \subsection{Client}
 
-Grouper provides a client framework to developing applications on iOS, macOS, watchOS and tvOS in the Objective-C language. Figure 3 describes the architecture of client framework. It is based on the following frameworks.   
+Grouper's client framework is developed in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS . Figure 3 describes the architecture of client framework. It is based on the following frameworks.   
 
 \begin{figure}[t]
 	\centering
@@ -155,8 +185,8 @@ Grouper provides a client framework to developing applications on iOS, macOS, wa
 	\item \emph{Multipeer Connectivity}\cite{mc},  an official peer-to-peer communication framework provided by Apple. Grouper uses it to transfer data between devices by a face-to-face way.
 	\item \emph{Core Data}\cite{coredata}, an official ORM framework provided by Apple. \emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycle and object graph management, including persistence. Grouper uses it to manage the model layer objects. 
 	\item \emph{Sync}\cite{sync}, a modern JSON synchronization framework for \emph{Core Data}. Grouper uses it to create JSON strings and parse JSON response and get it into \emph{Core Data}.
-	\item \emph{c-SSS}\cite{c-sss}, an implementation of Shamir's secret sharing in the C language.
-	\item \emph{AFNetworking}\cite{afnetworking}, a delightful networking library by Objective-C language. Grouper uses it to revoke the RESTful API provided by our Web services. 
+	\item \emph{c-SSS}\cite{c-sss}, an implementation of the Secret Sharing scheme.
+	\item \emph{AFNetworking}\cite{afnetworking}, a delightful networking library in Objective-C. Grouper uses it to revoke the RESTful API provided by our Web services. 
 \end{itemize}
 
 \subsection{Applications}
@@ -169,7 +199,7 @@ Using Grouper framework, we are developing the following demo applications.
 	\setlength{\parsep}{0pt}
 	\item \emph{Account Book}, an iOS app in Objective-C, records the income and expenditure.
 	\item \emph{Test}, a benchmark iOS app in Swift, tests the performance of Grouper.
-	\item \emph{Notes}, a macOS app in Swift, takes notes for small group.
+	\item \emph{Notes}, a macOS app in Swift, takes shares notes for small groups.
 \end{itemize}
 
 \section{Evaluation}
@@ -196,26 +226,27 @@ grouper.receiver.receive {
 grouper.sender.confirm()
 \end{lstlisting}
 
-We have developed 2 applications including \emph{Account Book} and \emph{Test} with Grouper. As described in table 1, compared with application LoC, Grouper related LoC that developer has to add is only a small part. 
+We have developed 2 applications including \emph{Account Book} and \emph{Test} with Grouper. As described in Table 1, based on the standard application without data synchronization, developers can developing the application with Grouper by adding little code. 
 
-\begin{table}[!htb]
-	\centering
-	\caption{Applications' lines of code}
-	\label{my-label}
+\begin{table}[tbp]
+	\footnotesize
+	\centering  
 	\begin{tabular}{c|c|c}
 		\hline
-		Attribute           & Test  & Account Book \\ \hline
+		Application Name           & Test  & Account Book \\ \hline
 		Platform            & iOS   & iOS          \\ \hline
 		Lanaguage           & Swift & Objective-C  \\ \hline
-		Application LoC     & 632   & 8950         \\ \hline
-		Grouper related LoC & 11    & 19           \\ \hline
 		Number of Entities  & 1     & 5            \\ \hline
+		Standard Application LoC     & 621   & 8760         \\ \hline
+		Application with Groper LoC     & 632   & 8950         \\ \hline
+		Increased LoC & 11    & 19           \\ \hline
 	\end{tabular}
+	\caption{Applications' lines of code}
 \end{table}
 
 \subsection{Performance}
 
-The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. To evaluate whether Grouper meets this goal, we use the benchmark app \emph{Test} with the $f(2, 3)$ Secret Sharing scheme to transfer data between iPhone 4s and iPod 5 generation on wireless LAN network.
+The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. To evaluate whether Grouper meets this goal, we use the benchmark app \emph{Test} with the $f(2, 3)$ Secret Sharing scheme to transfer data between iPhone 4s and iPod 5 generation on the wireless LAN network.
 
 \begin{figure}[t]
 	\centering
@@ -241,9 +272,9 @@ Sweets\cite{sweets} is a decentralized social networking service(SNS) mobile app
 
 \section{Conclusion and Future Work}
 
-This paper describes Grouper, a framework using Secret sharing and multiple untrusted servers, to develop applications which is not relying on trusted central servers. Grouper provides two main functions: reliable data synchronization and group management. We implement the Web service in Java EE and the client in Objective-C language. We use Grouper to develop applications including \emph{Account Book}, \emph{Notes} and \emph{Test}. At last, we evaluate Grouper from developer effort and performance. 
+This paper describes Grouper, a framework using Secret sharing and multiple untrusted servers, to develop applications which is not relying on trusted central servers. Grouper provides two main functions including reliable data synchronization and group management. We implement the Web service in Java EE and the client in Objective-C. We use Grouper to develop applications including \emph{Account Book}, \emph{Notes} and \emph{Test}. At last, we evaluate Grouper from developer effort and performance. 
 
-In the future, we will finish the application \emph{Notes} on macOS, solve the synchronization order and JSON string redundancy caused by One-To-Many entity relationship, and improve the performance by retaining only 1 normal message for 1 object in untrusted servers.
+In the future, we will finish the application \emph{Notes} on macOS, solve the synchronization order and JSON string redundancy caused by One-To-Many entity relationship, and improve the performance.
 
 \bibliographystyle{unsrt}
 {
