@@ -1,5 +1,5 @@
 \documentclass[twocolumn,10pt]{article}
-\usepackage[a4paper, top=1.0in, bottom=1.0in, left=0.85in, right=0.85in]{geometry}
+\usepackage[a4paper, top=0.65in, bottom=0.8in, left=0.65in, right=0.65in]{geometry}
 
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -42,7 +42,7 @@
 }
 
 \begin{document}
-\small
+
 \date{July 11th, 2017}
 
 \title{\bf Grouper: a Framework for Developing Mobile Applications using Secret Sharing and Untrusted Servers}
@@ -83,7 +83,7 @@ The Grouper framework provides the following functions to applications.
 	\item Group management: A group owner can create a group and invite other members to his group.
 \end{itemize}
 
-We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message} protocol.
+We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message} Protocol.
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
 We implement \emph{Grouper Message} using untrusted servers and a secret sharing scheme  (Section 2.3). 
 Untrusted servers delete messages after a period of time. 
@@ -95,15 +95,17 @@ We design Grouper based on data synchronization through multiple untrusted serve
 
 Firstly, servers must perform device authentication. 
 Servers generate access keys for group users. 
-When a device wants to get and put data to untrusted servers, the device sends a request with an access key in the request header.
+When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
 
 Secondly, servers keep data temporarily.
 We define a period of time in which data can be kept in a server as an interval time. 
 The data in untrusted servers vanishes after the interval time.
 
-In members inviting, a group owner authenticates group members by a face-to-face way. We assume that inter-mobile device communication as this invitation time is secure. All group members must trust this group owner and they are not malicious.
+In members inviting, a group owner authenticates group members by a face-to-face way. We assume that inter-mobile device communication during this invitation time is secure. All group members must trust this group owner and they are not malicious.
 
 \subsection{Data Synchronization}
+
+\subsubsection{Data Transportation}
 
 Figure 1 describes our data transportation flow using multiple untrusted servers. 
 At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme. 
@@ -112,13 +114,12 @@ At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer share
 We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
  
 Next, Grouper uploads those shares to three untrusted servers. 
-In Figure 4, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
+In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
 In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
 
-\subsubsection{Data Transportation}
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.38]{sync_flow}
+	\includegraphics[scale=0.36]{sync_flow}
 	\caption{Data transportation flow in Grouper.}
 \end{figure}
 
@@ -132,7 +133,7 @@ If he is offline within the interval time, he will miss the new record.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.3]{reliable_sync}
+	\includegraphics[scale=0.32]{reliable_sync}
 	\caption{Reliable synchronization.}
 \end{figure}
 
@@ -146,7 +147,7 @@ At last, the sender will send the message No.3 and No.4 again to the receiver ag
 
 \subsubsection{Grouper Message Protocol}
 
-To transfer data between devices, we design our own protocol, \emph{Grouper Message} protocol. 
+To transfer data between devices, we design our own protocol, \emph{Grouper Message} Protocol. 
 In this protocol, a message is a JSON string that contains an object of an application and the way to handle it in receivers’ devices. 
 There are 4 types of Grouper messages: update message, delete message, confirm message and resend message. 
 Both update message and delete message need resending because they contain the objects of an application. 
@@ -158,8 +159,8 @@ When a user creates a new object or modifies some attributes of an existing obje
 
 When a user deletes an existing object, the device sends a delete message that contains the object ID of this object to all group members.
 
-To confirm all devices have received all normal messages created by a user, the device sends a confirm message to all devices periodically. 
-In this confirm message, the sequence number of all objects created in this device are included.
+To confirm all devices have received all normal messages (update message and delete message) created by a user, the device sends a confirm message to all devices periodically. 
+In this confirm message, the sequence number of objects recently created in this device are included.
 
 When the device of a group member receives a confirm message, it checks the sequence numbers. 
 If some of them do not exist in the persistent store, the device sends a resend message that contains missing sequence numbers.
@@ -206,7 +207,7 @@ Grouper needs its own Web service rather than using commercial general cloud ser
 
 Our Web service provides RESTful API to transfer data with clients. 
 It runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. 
-We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API, and Hibernate, an open source Java Object-Relational mapping Mapping (ORM) framework, to save and operate objects in the Web service. 
+We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API, and Hibernate, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service. 
 
 Our Web service includes three kinds of entities. 
 They are \emph{Group}, \emph{User} and \emph{Transfer} entities. 
@@ -222,8 +223,8 @@ Figure 3 describes the architecture of client framework. It is based on the foll
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.35]{architecture}
-	\caption{Architecture of Client}
+	\includegraphics[scale=0.36]{architecture}
+	\caption{Architecture of client.}
 \end{figure}
 
 \begin{itemize}
@@ -240,7 +241,7 @@ Figure 3 describes the architecture of client framework. It is based on the foll
 	\item 
 	\emph{Sync}\cite{sync}, a synchronization framework for \emph{Core Data} using JSON. 
 	When a user sends messages, Grouper uses it to create JSON strings from objects. 
-	When an other user receives messages, Grouper use it to parse JSON strings and synchronize the recovered objects into \emph{Core Data}.
+	When an other user receives messages, Grouper uses it to parse JSON strings and synchronize the recovered objects into \emph{Core Data}.
 	\item 
 	\emph{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
 	\item 
@@ -269,9 +270,8 @@ This section shows the developer efforts to use Grouper and the performance of G
 
 We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
 Grouper provides the following simple client API for developers.
-\begin{lstlisting}[
-basicstyle=\footnotesize
-]
+
+\begin{lstlisting}
 // Setup Grouper with appId and dataStack.
 grouper.setup(withAppId:"id",
   dataStack:DataStack(modelName: "name"))
@@ -290,13 +290,7 @@ grouper.sender.confirm()
 We have developed two applications including \emph{Account Book} and \emph{Test} with Grouper. 
 As described in Table 1, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
-\subsection{Performance}
-
-The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. 
-To evaluate whether Grouper meets this goal, we use the benchmark application \emph{Test} with the $f(2, 3)$ secret sharing scheme to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n). 
-Both iPhone 4s and iPod 5 generation have A5 CPU and 512MB of RAM.
-
-\begin{table}[t]
+\begin{table}[!htb]
 	\footnotesize
 	\centering  
 	\caption{Applications' lines of code}
@@ -305,12 +299,18 @@ Both iPhone 4s and iPod 5 generation have A5 CPU and 512MB of RAM.
 		Application Name           & Test  & Account Book \\ \hline
 		Platform            & iOS   & iOS          \\ \hline
 		Lanaguage           & Swift & Objective-C  \\ \hline
-		Number of Entities  & 1     & 5            \\ \hline
-		Stand Alone Application LoC     & 621   & 8760         \\ \hline
-		Application with Groper LoC     & 632   & 8950         \\ \hline
-		Increased LoC & 11    & 19           \\ \hline
+		Number of Entities  & \multicolumn{1}{r|}{1}     & \multicolumn{1}{r}{5}            \\ \hline
+		Stand Alone Application LoC     & \multicolumn{1}{r|}{621}   & \multicolumn{1}{r}{8706}         \\ \hline
+		Application with Groper LoC     &  \multicolumn{1}{r|}{632}   & \multicolumn{1}{r}{8950}         \\ \hline
+		Increased LoC & \multicolumn{1}{r|}{11}    & \multicolumn{1}{r}{190}           \\ \hline
 	\end{tabular}
 \end{table}
+
+\subsection{Performance}
+
+The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. 
+To evaluate whether Grouper meets this goal, we use the benchmark application \emph{Test} with the $f(2, 3)$ secret sharing scheme to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n). 
+Both iPhone 4s and iPod 5 generation have A5 CPU and 512MB of RAM.
 
 \begin{figure}[t]
 	\centering
@@ -324,27 +324,24 @@ Both iPhone 4s and iPod 5 generation have A5 CPU and 512MB of RAM.
 	\caption{Sending multiple messages.}
 \end{figure}
 
-First, we measured processing times the benchmark application \emph{Test} needs when a user creates a test object during online. 
-We use iPhone 4s to create an object and send a update message. 
-We use iPod 5 generation to receive the update message from iPhone 4s.
+First, we measured processing times the benchmark application \emph{Test} needed when a user created a test object during online. 
+We used iPhone 4s to create an object and send a update message. 
+We used iPod 5 generation to receive the update message from iPhone 4s.
 Figure 4 shows the processing time for sending and receiving a single message after creating this object.
 This size of the message was 620 bytes.
 Compared to the network time, data sync and secret sharing consumed very little time in both data sending and receiving.
 
-Next, we measured processing times \emph{Test} needs when a device sends update messages to untrusted servers.
-We use iPod 4s to create multiple objects and send multiple update messages at the same time.
+Next, we measured processing times \emph{Test} needed when a device sent update messages to untrusted servers.
+We used iPod 4s to create multiple objects and to send multiple update messages at the same time.
 Figure 5 shows the processing time for sending multiple messages. 
 As the number of messages increased, data sync and secret sharing part increased linearly. 
 The network part increased very slowly and sometimes decreased.
 
-Form the performance experiment, we can conclude that data synchronization within ten messages does not influence the user experience, and the group is able to expand to 100 members. 
+These experimental results show that data synchronization within a hundred messages does not influence the user experience. A group of an application by Grouper is able to expand to 100 members. 
 
 \section{Related Work}
 
-To solve the problem using central servers, some applications use Peer-to-Peer (P2P) models to transfer user data among devices. 
-Some applications encrypt and decrypted user data in clients and save encrypted data in servers. 
-
-Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in browsers of users. 
+Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
 Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
 Mylar uses its browser extension to decrypt data on clients. 
 Like in Grouper, applications in Mylar can control how user data is shared and stored on multiple untrusted servers. 
