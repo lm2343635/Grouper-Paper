@@ -43,28 +43,43 @@
 
 \begin{document}
 
-\date{July 11th, 2017}
-
-\title{\bf Grouper: a Framework for Developing Mobile Applications using Secret Sharing and Untrusted Servers}
+\title{\bf Grouper: a Framework for Developing Mobile Applications using Untrusted Servers}
 
 \author{
-	Meng Li, 201620728  
-	\\ Supervisor: Yasushi Shinjo
+	Meng Li and Yasushi Shinjo \\
+	University of Tsukuba
 }
 
 \maketitle
 
+\begin{abstract}
+
+Conventional mobile applications are built based on a client-server mode and require the central servers for storing shared data and processing confidential information.
+The users of such mobile applications must fully trust the central servers. 
+If the central servers can be accessed by an attacker, a curious administrator, or a government, user information will be revealed because data is often stored on the server in cleartext. 
+In addition, users may lose their data when service providers shut down their servers.
+This paper presents Grouper, a framework for developing mobile applications, which protects user data by storing data in multiple untrusted servers.
+Grouper uses a secret sharing scheme to create several shares from a JSON string of an object and uploads these shares to different untrusted servers. 
+Our multiple untrusted servers system is a self-destruction system.
+Shares will be deleted after a period of time by the Web service running on the multiple untrusted servers.
+To transfer data among mobile devices, we design our own \emph{Grouper Message}. 
+We implement Grouper in the Objective-C language at first and evaluate it from developer efforts and performance. We also describe three applications by Grouper framework: an iOS application \emph{Account Book}, a macOS application \emph{Notes} and a benchmark application \emph{Test}.
+
+\end{abstract}
+
+\textbf{Keywords: secret sharing, untrusted server, mobile application security}
+
 \section{Introduction}
 
-Conventional mobile applications are built based on a client-server mode and require the central servers for storing shared data. 
-The users of such mobile applications must fully trust the central servers. 
-If central servers are compromised by hackers, user information may be revealed because data is often stored on the server in cleartext. 
-Users may lose their data when service providers shut down their servers. 
+Using mobile applications using central trusted servers requires the user to trusted the service provider.
+Confidential data stored in a central trusted server will be revealed once a malicious person attacked this server.
+Our research goal is to develop light-weight information sharing application for a small group with our framework Grouper. 
+How to protect the sensitive data stored in the central servers is the most important problem in our research.
+However, achieving the goal is a great challenge because servers cannot be controlled by users themselves.
 
-To address these problems, we are developing Grouper, a framework for developing mobile applications. 
-Grouper uses multiple untrusted servers for data transfer.
-Data is divided into several pieces by a secret sharing scheme and uploaded to those untrusted servers. 
-Each server can only keep a piece of data called a share. A share will be deleted after a period of time. 
+To address such a problem, Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CouldSky\cite{zeng2015cloudsky} use a data self-destruction system as their cloud storage.
+Vanish is a system proposed by a research group at the University of Washington. Messages in Vanish are self-destructed after a period of time.
+
 These ensure that user data cannot be cracked easily. 
 In addition, all devices of group members keep a complete data set of this group, and data can be recovered even untrusted servers shut down.
 
