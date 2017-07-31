@@ -67,23 +67,63 @@ We implement Grouper in the Objective-C language at first and evaluate it from d
 
 \end{abstract}
 
-\textbf{Keywords: secret sharing, untrusted server, mobile application security}
+\textbf{Keywords: mobile application security, secret sharing, untrusted server}
 
 \section{Introduction}
 
 Using mobile applications using central trusted servers requires the user to trusted the service provider.
 Confidential data stored in a central trusted server will be revealed once a malicious person attacked this server.
-Our research goal is to develop light-weight information sharing application for a small group with our framework Grouper. 
+Our research goal is to develop light-weight information sharing applications for small groups with our framework Grouper. 
 How to protect the sensitive data stored in the central servers is the most important problem in our research.
 However, achieving the goal is a great challenge because servers cannot be controlled by users themselves.
 
 To address such a problem, Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CouldSky\cite{zeng2015cloudsky} use a data self-destruction system as their cloud storage.
-Vanish is a system proposed by a research group at the University of Washington. Messages in Vanish are self-destructed after a period of time.
+Vanish is a system proposed by Geambasu's research group at the University of Washington. 
+Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
+Concretely, to protect a message, Vanish encrypts it with a random encryption key not known to the user, destroys the local copy of the key, and store shares created by a secret sharing scheme of the key in a large, public DHT.
+The key in Vanish is permanently after a period of time, and the encrypted message is permanently unreadable.
+Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which are controlled by a single maintainer. 
+Thus, it not strongly secure due to some special P2P oriented attacks\cite{wolchok2010defeating}. 
+In addition, the surviving time of the key in Vanish cannot be controlled by user. 
 
-These ensure that user data cannot be cracked easily. 
-In addition, all devices of group members keep a complete data set of this group, and data can be recovered even untrusted servers shut down.
+To address such issues in Vanish, Zeng et al. at Huazhong University of Science and Technology, propose SafeVanish and SeDas. 
+SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group propose CloudSky, a controllable data self-destruction system for untrusted cloud storage. 
+In CloudSky, user can control the surviving time of a message.Taking advantage of Attribute Based Encryption (ABE), user can also define the access control policy by themselves.
 
-\section{Design of Grouper}
+However, both proposals from Geambasu's group and Zeng's group are not suitable for developing a light-weight information sharing application for following reasons. 
+Vanish is suitable for a mail system, because it is designed without needing to modify any of the stored or archived copies of a message and without user controllability, while messages in our target applications should be modified even if it has been sent to multiple untrusted servers.  
+Although, CloudSky solves the problems about user controllability in Vanish, the encrypted message are only valuable to the user for a limited period of time.
+Our target applications require data usability even user try to synchronize data after the period of time. 
+A trusted authority is necessary in CloudSky to manage user profile, while we do not hope any trusted authority in our target application.
+
+Other proposals also use data encryption to protect user data.
+DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
+DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. 
+\emph{Cloud-of-Clouds} is the core concept in DepSky. 
+It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
+DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
+In fact, DepSky is suitable for such data storage applications. 
+In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
+
+Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
+Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
+Mylar uses its browser extension to decrypt data on clients. 
+Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided in the secret sharing scheme.
+
+Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
+Sweets uses Advanced Encryption Standard (AES) to encrypt user data and ABE to encrypt the keys of AES. 
+However, there is an obvious problem in such a P2P approach. 
+Data transfer can only be finished during two devices are online at the same time. 
+Therefore, it is very troublesome for a user of our a target application if nobody is online when he want to synchronize data.
+The user can synchronize data from multiple untrusted servers anytime if the application uses the proposal of Grouper.
+
+Inspired by such researches, we proposal our own framework Grouper.
+It ensure both data security and usability.
+Other advantage of Grouper is data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group, and .
+
+\section{Assumption and Threat Model}
+
+\section{Design}
 
 \subsection{Overview}
 
@@ -124,7 +164,7 @@ In members inviting, a group owner authenticates group members by a face-to-face
 
 Figure 1 describes our data transportation flow using multiple untrusted servers. 
 At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme. 
-In a secret sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function. 
+In a secret sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
 At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
 We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
  
@@ -356,17 +396,7 @@ These experimental results show that data synchronization within a hundred messa
 
 \section{Related Work}
 
-Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
-Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
-Mylar uses its browser extension to decrypt data on clients. 
-Like in Grouper, applications in Mylar can control how user data is shared and stored on multiple untrusted servers. 
-Mylar builds its system on a browser with extension while Grouper builds on mobile devices.
 
-Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
-Sweets uses Advanced Encryption Standard (AES) to encrypt user data and Attribute Based Encryption (ABE) to encrypt the keys of AES. 
-However, there is an obvious problem in such a P2P approach. 
-Data transfer can only be finished during two devices are online at the same time. 
-Grouper uses multiple untrusted servers to synchronize user data rather than a P2P approach in Sweets.
 
 \section{Conclusion and Future Work}
 
