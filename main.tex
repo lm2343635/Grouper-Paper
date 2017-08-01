@@ -142,26 +142,47 @@ Due to the assumptions and key properties of threat model, we can design and imp
 
 \section{Design}
 
+In this section, we explain our target applications, basic functions provided by Grouper and advantages in overview (Section 3.1). Then we show the architecture (Section 3.2) of Web service and client of Grouper. At last, we introduce how we design the Grouper framework.
+
 \subsection{Overview}
 
-We are aiming at developing applications which are not relying on trusted central servers. 
-The Grouper framework provides the following functions to applications.
+We are aiming at developing applications which are not relying on trusted central servers.
+Concretely, the basic function of target applications is to share some light-weight informations among members in a small groups.
+Now, Grouper support to exchange object among devices.
+Binary data can be included in an object, but the isolated binary file is not supported in Grouper.
+For example, \emph{Account Book} is an iOS application developed by Grouper. 
+In this application, a leader of a small company creates a group and invites employees to the group. 
+Then, everyone can record the income and expenditure of this company and share this record to others.
+Anyone can edit and delete all records.
+
+To developer such a target application, the Grouper framework should provide the following functions:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item Data Synchronization: If an user updates an object in his device, the mirrors of this object in other devices are updated.
-	\item Group management: A group owner can create a group and invite other members to his group.
+	\item \emph{Data Synchronization.} If an user updates an object in his device, the mirrors of this object in other devices are updated.
+	\item \emph{Group management.} A group owner can create a group and invite other members to his group.
 \end{itemize}
+
+Compared to pute data self-destruction proposals Vanish, SafeVanish, SeDas and CloudSky, or pure data encryption proposals Mylar and Sweets, Grouper is suitable for developing such light-weight informations sharing applications due to such advantages:
+
+\begin{enumerate}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item User invitation requires a face-to-face way between group owner and new member. It ensures group members are not malicious.
+	\item Unlike CouldSky, users are not required to know the approximate lifetime of a message and synchronize it within the lifetime.
+	\item Damaged shares from untrusted server do not destroy data synchronization among users completely.
+\end{enumerate}
+
+\subsection{Data Synchronization}
 
 We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message} Protocol.
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
 We implement \emph{Grouper Message} using untrusted servers and a secret sharing scheme  (Section 2.3). 
 Untrusted servers delete messages after a period of time. 
 \emph{Grouper Message} implements reliable messaging over this feature (Section 2.3).
-
-\subsection{Data Synchronization}
 
 \subsubsection{Data Transportation}
 
@@ -349,7 +370,8 @@ Grouper provides the following simple client API for developers.
 		grouper.sender.\textbf{delete}(object) & 
 		\begin{tabular}{@{}l@{}}
 			Invoke this method when a user wants to delete an existing object. Developers \\
-			need not to delete the object and save to persistent store before invoking delete \\ method. Once you delete it, Grouper cannot create Grouper message from this \\ 
+			need not to delete the object and save to persistent store before invoking delete \\ 
+			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
 			object. Grouper will delete the object and save it to persistent store automatically \\
 			after finishing message transportation.
 		\end{tabular} \\ \hline
