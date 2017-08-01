@@ -119,9 +119,53 @@ The user can synchronize data from multiple untrusted servers anytime if the app
 
 Inspired by such researches, we proposal our own framework Grouper.
 It ensure both data security and usability.
-Other advantage of Grouper is data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group, and .
+Other advantage of Grouper is data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group.
 
 \section{Assumption and Threat Model}
+
+In this section, we introduce assumptions and threat model of Grouper.
+
+\subsection{Assumption}
+
+There are following basic assumptions underlying the Grouper framework:
+
+\begin{enumerate}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item All group members must trust the group owner and they are not malicious.
+	\item In members inviting, a group owner authenticates group members by a face-to-face way.
+	\item Nobody has privilege of more than $k$ (the threshold of a secret sharing scheme) untrusted servers.
+\end{enumerate}
+
+We consider target users usage scenario of an application by Grouper is a small group like all members in a small office, so all group members of this application are acquaintances and they are not malicious. Due to this reason, their devices can also connect to each other by a face-to-face way.
+
+In Grouper, we use the secret sharing scheme to protect our user data. In a secret sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
+At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
+We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+Therefore, anyone who has access to $k$ or more shares, he can recover the original data. Although Grouper store shares created by a secret sharing scheme in multiple untrusted servers, these servers are managed by human beings. If one person can access to $k$ or more untrusted servers, he has enough shares to recover the original user data. In fact, we hope each untrusted server's manager does not know the existence of others. For example, the leader of a small company can assign three different employees to deploy the Web service in different servers secretly. This leader must ensure those employees do not collude to crack user data.
+
+\subsection{Threat Model}
+
+There are following key properties of our threat model:
+
+\begin{enumerate}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \emph{Server side authentication.}
+	Our untrusted servers must perform device authentication. 
+	Servers generate access keys for group users. 
+	When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
+	\item \emph{Data self-destruction.} 
+	Our untrusted servers keep data temporarily.
+	We define a period of time in which data can be kept in a server as an interval time. 
+	The data in untrusted servers vanishes after the interval time.
+	\item \emph{Secure data transportation.}
+	We assume that both inter-mobile device communication during user invitation and HTTP connection between a device and an untrusted server is secure. 
+\end{enumerate}
+
+Due to the assumptions and key properties of threat model, we can design and implement our Grouper framework.
 
 \section{Design}
 
@@ -144,29 +188,13 @@ We implement \emph{Grouper Message} using untrusted servers and a secret sharing
 Untrusted servers delete messages after a period of time. 
 \emph{Grouper Message} implements reliable messaging over this feature (Section 2.3).
 
-\subsection{Threat Model}
-
-We design Grouper based on data synchronization through multiple untrusted servers. Our untrusted servers have the following features.
-
-Firstly, servers must perform device authentication. 
-Servers generate access keys for group users. 
-When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
-
-Secondly, servers keep data temporarily.
-We define a period of time in which data can be kept in a server as an interval time. 
-The data in untrusted servers vanishes after the interval time.
-
-In members inviting, a group owner authenticates group members by a face-to-face way. We assume that inter-mobile device communication during this invitation time is secure. All group members must trust this group owner and they are not malicious.
-
 \subsection{Data Synchronization}
 
 \subsubsection{Data Transportation}
 
 Figure 1 describes our data transportation flow using multiple untrusted servers. 
 At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme. 
-In a secret sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
-At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
-We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+
  
 Next, Grouper uploads those shares to three untrusted servers. 
 In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
