@@ -14,33 +14,6 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}  
 \graphicspath{{figure/}}
 
-\lstdefinelanguage{swift}
-{
-	morekeywords={
-		func,if,then,else,for,in,while,do,switch,case,default,where,break,continue,fallthrough,return,
-		typealias,struct,class,enum,protocol,var,func,let,get,set,willSet,didSet,inout,init,deinit,extension,
-		subscript,prefix,operator,infix,postfix,precedence,associativity,left,right,none,convenience,dynamic,
-		final,lazy,mutating,nonmutating,optional,override,required,static,unowned,safe,weak,internal,
-		private,public,is,as,self,unsafe,dynamicType,true,false,nil,Type,Protocol,
-	},
-	morecomment=[l]{//}, % l is for line comment
-	morecomment=[s]{/*}{*/}, % s is for start and end delimiter
-	morestring=[b]" % defines that strings are enclosed in double quotes
-}
-\definecolor{keyword}{HTML}{BA2CA3}
-\definecolor{string}{HTML}{D12F1B}
-\definecolor{comment}{HTML}{008400}
-\lstset{
-	language=swift,
-	basicstyle=\ttfamily,
-	showstringspaces=false, % lets spaces in strings appear as real spaces
-	columns=fixed,
-	keepspaces=true,
-	keywordstyle=\color{keyword},
-	stringstyle=\color{string},
-	commentstyle=\color{comment},
-}
-
 \begin{document}
 
 \title{\bf Grouper: a Framework for Developing Mobile Applications using Untrusted Servers}
@@ -354,21 +327,43 @@ This section shows the developer efforts to use Grouper and the performance of G
 We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
 Grouper provides the following simple client API for developers.
 
-\begin{lstlisting}
-// Setup Grouper with appId and dataStack.
-grouper.setup(withAppId:"id",
-  dataStack:DataStack(modelName: "name"))
-// Update an object.
-grouper.sender.update(object)
-// Delete an object.
-grouper.sender.delete(object)
-// Receive objects.
-grouper.receiver.receive { 
-  // Callback after receiving objects.
-}
-// Send a confirm message.
-grouper.sender.confirm()
-\end{lstlisting}
+\begin{table*}[t]
+	\centering
+	\caption{Client APIs of Grouper}
+	\label{my-label}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Methods} & \textbf{Semantics} \\ \hline
+		grouper.\textbf{setup}(appId, dataStack) & 
+		\begin{tabular}{@{}l@{}}
+			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
+			unique. Datastack can be created by invoking the API provided in the Sync \\
+			framework.
+		\end{tabular}  \\ \hline
+		grouper.sender.\textbf{update}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method after creating a new object or modifying an existing object. \\
+			Developers must ensure  this object has been saved to persistent store before\\
+			invoking update method.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{delete}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method when a user wants to delete an existing object. Developers \\
+			need not to delete the object and save to persistent store before invoking delete \\ method. Once you delete it, Grouper cannot create Grouper message from this \\ 
+			object. Grouper will delete the object and save it to persistent store automatically \\
+			after finishing message transportation.
+		\end{tabular} \\ \hline
+		grouper.receiver.\textbf{receive}(callback) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method if a user wants to synchronize data from untrusted servers.\\
+			Callback functions is provided for executing UI updating code.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{confirm}() & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method to send confirm message to other group members. \\
+		\end{tabular} \\ \hline
+	\end{tabular}
+\end{table*}
 
 We have developed two applications including \emph{Account Book} and \emph{Test} with Grouper. 
 As described in Table 1, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
