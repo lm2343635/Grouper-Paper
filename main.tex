@@ -122,21 +122,21 @@ Therefore, anyone who has access to $k$ or more shares, he can recover the origi
 
 There are following key properties of our threat model:
 
-\begin{enumerate}
+\begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item \emph{Server side authentication.}
+	\item \textbf{Server side authentication.}
 	Our untrusted servers must perform device authentication. 
 	Servers generate access keys for group users. 
 	When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
-	\item \emph{Data self-destruction.} 
+	\item \textbf{Data self-destruction.} 
 	Our untrusted servers keep data temporarily.
 	We define a period of time in which data can be kept in a server as an interval time. 
 	The data in untrusted servers vanishes after the interval time.
-	\item \emph{Secure data transportation.}
+	\item \textbf{Secure data transportation.}
 	We assume that both inter-mobile device communication during user invitation and HTTP connection between a device and an untrusted server is secure. 
-\end{enumerate}
+\end{itemize}
 
 Due to the assumptions and key properties of threat model, we can design and implement our Grouper framework.
 
@@ -147,8 +147,18 @@ In this section, we explain our target applications, basic functions provided by
 \subsection{Overview}
 
 We are aiming at developing applications which are not relying on trusted central servers.
-Concretely, the basic function of target applications is to share some light-weight informations among members in a small groups.
-Now, Grouper support to exchange object among devices.
+Concretely, Grouper's design is suitable for applications that:
+
+\begin{enumerate}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item Use in a small groups.
+	\item Require light-weight informations sharing among members in a small groups.
+	\item Allow face-to-face connection among members' devices.
+\end{enumerate}
+
+Grouper support to exchange object among devices.
 Binary data can be included in an object, but the isolated binary file is not supported in Grouper.
 For example, \emph{Account Book} is an iOS application developed by Grouper. 
 In this application, a leader of a small company creates a group and invites employees to the group. 
@@ -161,8 +171,8 @@ To developer such a target application, the Grouper framework should provide the
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item \emph{Data Synchronization.} If an user updates an object in his device, the mirrors of this object in other devices are updated.
-	\item \emph{Group management.} A group owner can create a group and invite other members to his group.
+	\item \textbf{Data Synchronization.} If an user updates an object in his device, the mirrors of this object in other devices are updated.
+	\item \textbf{Group management.} A group owner can create a group and invite other members to his group.
 \end{itemize}
 
 Compared to pute data self-destruction proposals Vanish, SafeVanish, SeDas and CloudSky, or pure data encryption proposals Mylar and Sweets, Grouper is suitable for developing such light-weight informations sharing applications due to such advantages:
@@ -176,20 +186,47 @@ Compared to pute data self-destruction proposals Vanish, SafeVanish, SeDas and C
 	\item Damaged shares from untrusted server do not destroy data synchronization among users completely.
 \end{enumerate}
 
+\subsection{Architecture}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.36]{architecture}
+	\caption{Architecture of Grouper.}
+\end{figure}
+
+Grouper consists of a Web service (Section 3.1) running on multiple untrusted servers and a client framework (Section 3.2) for developing applications.
+Figure 1 describes the architecture of Grouper. 
+The clouds represents Web services and the telephones represent the clients.
+From clients to the Web service, there are following components:
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Application.}
+	The Application by Grouper is installed in the client.
+	\item \textbf{Object-Relational Mapping.} 
+	Grouper saves data in relational database while access data as the object.
+	\item \textbf{Synchronization.}
+	Grouper creates a JSON string from an object. Other device synchronize this object by the JSON string. 
+	\item \textbf{Secret Sharing.}
+	Grouper uses the secret sharing scheme to create several shares from a JSON string and recover the JSON string with the shares.
+	\item \textbf{RESTful API.}
+	Clients upload shares to untrusted servers and download shares from untrusted server by the RESTful API provided in the Web service.
+\end{itemize}
+
 \subsection{Data Synchronization}
 
 We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message} Protocol.
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
-We implement \emph{Grouper Message} using untrusted servers and a secret sharing scheme  (Section 2.3). 
-Untrusted servers delete messages after a period of time. 
-\emph{Grouper Message} implements reliable messaging over this feature (Section 2.3).
+We implement \emph{Grouper Message} using untrusted servers and a secret sharing scheme. 
+Untrusted servers delete shares after a period of time. 
+\emph{Grouper Message} implements reliable messaging over this feature.
 
 \subsubsection{Data Transportation}
 
-Figure 1 describes our data transportation flow using multiple untrusted servers. 
-At first, the sender adds a record and Grouper creates three shares by a secret sharing scheme. 
-
- 
+Figure 2 describes our data transportation flow using multiple untrusted servers. 
+At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
 Next, Grouper uploads those shares to three untrusted servers. 
 In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
 In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
@@ -199,6 +236,16 @@ In this process, these servers cannot recover user data because they do not have
 	\includegraphics[scale=0.36]{sync_flow}
 	\caption{Data transportation flow in Grouper.}
 \end{figure}
+
+To improve the reliability in data transportation, we design our own scheme $f(k, n, r)$ for Grouper based on the basic the Shamir's secret sharing scheme $f(k, n)$.
+In the $f(k, n, r)$ scheme, the parameter $k$ and $n$ is same as which in the  $f(k, n)$ scheme. 
+The parameter $r$ represents the number of necessary untrusted servers when a sender uploads shares.
+Although the receiver is able to recover the original data from the receiver with more than $k$ shares, we should consider a situation that some shares are broken.
+Those broken shares may caused by the unstable network connection, the database damage in untrusted servers or malicious attackers.
+Consider the situation that there are $n$ untrusted servers. 
+When a sender wants to upload shares to multiple untrusted servers, Grouper will try to upload these shares to all untrusted servers at first.
+If the shares are uploaded to $r$ or more untrusted servers, we consider share uploading transaction is successful.
+Otherwise, Grouper should try to upload these shares again after a period of time.
 
 \subsubsection{Reliable Synchronization}
 
@@ -268,7 +315,7 @@ After receiving them, the new member can access these untrusted servers with the
 
 \section{Implementation}
 
-Grouper consists of a Web service (Section 3.1) running on multiple untrusted servers and a client framework (Section 3.2) for developing applications.
+We introduce the implementation of the Web service (Section 3.1), the implementation of the client framework (Section 3.2) and demo applications (Section 4.3) in this section.
 
 \subsection{Web Service}
 
@@ -295,14 +342,8 @@ For each user, there is a unique access key for him in an untrusted server. For 
 
 \subsection{Client}
 
-Grouper's client framework is developed in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS . 
-Figure 3 describes the architecture of client framework. It is based on the following frameworks.   
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.36]{architecture}
-	\caption{Architecture of client.}
-\end{figure}
+Grouper's client framework is developed in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
+It is based on the following frameworks.   
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
