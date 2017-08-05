@@ -194,48 +194,65 @@ Compared to pute data self-destruction proposals Vanish, SafeVanish, SeDas and C
 	\caption{Architecture of Grouper.}
 \end{figure}
 
-Grouper consists of a Web service (Section 3.1) running on multiple untrusted servers and a client framework (Section 3.2) for developing applications.
 Figure 1 describes the architecture of Grouper. 
-The clouds represents Web services and the telephones represent the clients.
-From clients to the Web service, there are following components:
+An application by Grouper consists of the following layers:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Application.}
-	The Application by Grouper is installed in the client.
-	\item \textbf{Object-Relational Mapping.} 
-	Grouper saves data in relational database while access data as the object.
-	\item \textbf{Synchronization.}
-	Grouper creates a JSON string from an object. Other device synchronize this object by the JSON string. 
-	\item \textbf{Secret Sharing.}
-	Grouper uses the secret sharing scheme to create several shares from a JSON string and recover the JSON string with the shares.
-	\item \textbf{RESTful API.}
-	Clients upload shares to untrusted servers and download shares from untrusted server by the RESTful API provided in the Web service.
+	A developer develops a stand alone application without data synchronization at first. 
+	He can use the API provided in the client framework of Grouper to extend synchronization function to his application.
+	\item \textbf{Synchronization.} 
+	Grouper uses the third-party framework for data synchronization.
+	This layer marshall and unmarshall the message from the reliable message layer and get it into persistent store.
+	\item \textbf{Reliable Message.}
+	This layer provide a reliable message service.
+	This layer try ensure a message can be received in another device even its shares has been deleted in untrusted servers.
+	\item \textbf{Unreliable Message.}
+	This layer provide an unreliable message service to exchange data between two devices in a group.
+	This layer do not ensure the message can be received in another device.
+	\item \textbf{Data Protecting.}
+	Grouper protect user data by a secret sharing scheme in this layer.
+	A message is divided to several shares and these shares can be recovered be a part of shares in this layer.
+	\item \textbf{Untrusted servers.}
+	Clients upload shares to untrusted servers and download shares from untrusted server by the RESTful API provided in this layer.
+	The untrusted servers install our own Web service of Grouper.
 \end{itemize}
 
 \subsection{Data Synchronization}
 
-We implement data synchronization using the Sync framework\cite{sync} and our own messaging function called \emph{Grouper Message} Protocol.
-Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
-We implement \emph{Grouper Message} using untrusted servers and a secret sharing scheme. 
-Untrusted servers delete shares after a period of time. 
-\emph{Grouper Message} implements reliable messaging over this feature.
+To synchronize data from one device to another device, we consider the following problems:
 
-\subsubsection{Data Transportation}
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Transportation:}
+	How to transport shares from one device to another device.
+	\item \textbf{Synchronization: } 
+	How to create several shares from an object in a device. 
+	How to recover the shares to an object and get it into persistent store.
+	\item \textbf{Reliability:}
+	How to ensure a device can synchronize the messages even he missed in the limited period of time. 
+\end{itemize}
 
-Figure 2 describes our data transportation flow using multiple untrusted servers. 
-At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
-Next, Grouper uploads those shares to three untrusted servers. 
-In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
-In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
+We answer these questions and describe data synchronization flow in this section.
+
+\subsubsection{Transportation}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.36]{sync_flow}
 	\caption{Data transportation flow in Grouper.}
 \end{figure}
+
+Figure 2 describes our data transportation flow using multiple untrusted servers. 
+At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
+Next, Grouper uploads those shares to three untrusted servers. 
+In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
+In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
 
 To improve the reliability in data transportation, we design our own scheme $f(k, n, r)$ for Grouper based on the basic the Shamir's secret sharing scheme $f(k, n)$.
 In the $f(k, n, r)$ scheme, the parameter $k$ and $n$ is same as which in the  $f(k, n)$ scheme. 
@@ -247,13 +264,16 @@ When a sender wants to upload shares to multiple untrusted servers, Grouper will
 If the shares are uploaded to $r$ or more untrusted servers, we consider share uploading transaction is successful.
 Otherwise, Grouper should try to upload these shares again after a period of time.
 
-\subsubsection{Reliable Synchronization}
+\subsubsection{Synchronization}
 
-Grouper should provide a reliable synchronization service. 
-A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record is deleted by untrusted servers after an interval time. 
-We call this problem reliable synchronization. 
-A receiver can only download shares from untrusted server with the interval time. 
-If he is offline within the interval time, he will miss the new record.
+Because we implement our client framework in Objective-C at first, we user the \emph{Sync} framework\cite{sync} for data synchronization.
+To assist the Sync framework, we design our own messaging function called \emph{Grouper Message} Protocol (Section 3.4).
+Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
+
+We should consider the confliction problem in data synchronization. Most data sharing applications like Evernote provide a function that user can select an edition by themselves when data is conflicting. However, the Sync framework has not provide such functions by now. The default policy in the Sync framework is using the newest edition. For example, both Alice has modified an object and Bob modified it one hour later. Grouper will receive Bob's modification due to the newest edition policy. 
+
+\subsubsection{Reliability}
+
 
 \begin{figure}[t]
 	\centering
@@ -261,23 +281,75 @@ If he is offline within the interval time, he will miss the new record.
 	\caption{Reliable synchronization.}
 \end{figure}
 
-To solve this problem, we use the idea of reliable multicasting in distribute systems. 
-In Figure 2, the sender has sent messages from No.1 to No.4. 
+Grouper should provide a reliable synchronization service. 
+A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record is deleted by untrusted servers after an interval time. 
+We call this problem reliable synchronization. 
+A receiver can only download shares from untrusted server with the interval time. 
+If he is offline within the interval time, he will miss the new record.
+
+To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. 
+Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. 
+For example, the sender of a group send a message No.25 and all of the receivers receive the message No.25 successfully. 
+When the receivers receive new message No.25, they will compare No.25 with the newest sequence number in their persistent store. 
+One of the receivers finds that his newest sequence number is No.23, that means he missed the message No.24. 
+Thus, when they send feedback to the receiver, he will report that he missed the message No.24. 
+At last, the sender will send the missed message to him.
+
+Based on the basic reliable multicasting scheme, we designed our own protocol to ensure the reliability in data synchronization of Grouper. 
+As described in Figure 2, the sender has sent messages from No.1 to No.4. 
 Next, he sends sequence numbers of all messages he sent to the receiver. 
 When the receiver receives the sequence numbers, he checks his local persistent store. 
 In this situation, the receiver finds that he missed the message No.3 and No.4. 
 Thus, he will send a resend request that contains the sequence numbers of messages he missed to the sender. 
 At last, the sender will send the message No.3 and No.4 again to the receiver again.
 
-\subsubsection{Grouper Message Protocol}
+\subsection{Grouper Message Protocol}
+
+\begin{table}[]
+	\centering
+	\caption{Attributes of Grouper message}
+	\label{my-label}
+	\begin{tabular}{lll}
+		\hline
+		\textbf{Attributes} & \textbf{Type} & \textbf{Explanation} \\ \hline
+		type & String & Type of this message. \\
+		content & String & JSON string of an object. \\
+		messageId & String & Physical ID of this message. \\
+		object & String & Object name. \\
+		objectId & String & Object physical ID. \\
+		receiver & String & Node identifier of the receiver. \\
+		sender & String & Node identifier of the sender. \\
+		email & String & Email address of the sender. \\
+		name & String & Name of the sender. \\
+		sendtime & Integer & Unix timestamp of sendtime. \\
+		sequence & Integer & Sequence number of this message. \\ \hline
+	\end{tabular}
+\end{table}
 
 To transfer data between devices, we design our own protocol, \emph{Grouper Message} Protocol. 
-In this protocol, a message is a JSON string that contains an object of an application and the way to handle it in receivers’ devices. 
-There are 4 types of Grouper messages: update message, delete message, confirm message and resend message. 
-Both update message and delete message need resending because they contain the objects of an application. 
-We call these messages normal messages. 
-Both confirm message and resend message contain control information about reliable multicast and need not resending. 
-We call these messages control messages.
+In this protocol, a message is a JSON string that contains an object of an application and the way to handle it in receivers’ devices.
+Table 1 shows the attributes in a Grouper message.
+We concentrate on three important attributes here.
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Type.}
+	There are 4 types of Grouper messages: update message, delete message, confirm message and resend message. 
+	Both update message and delete message need resending because they contain the objects of an application. 
+	We call these messages normal messages. 
+	Both confirm message and resend message contain control information about reliable multicast and need not resending. 
+	We call these messages control messages.
+	\item \textbf{Content.} 
+	If this message is an update message, content is a JSON string of an object.
+	If this message is a delete message, content contains the objectId of an object.
+	If this message is a confirm message or a resend, content contains the sequence numbers.
+	\item \textbf{Sequence.}
+	The sequence number increases one by one in a device.
+	Combined with the node identifier, it can indicate an unique Grouper message.
+	Thus, it is contained in a confirm message to indicate the all normal messages a device sent or in a resend message to indicate the normal message a device has not been received.
+\end{itemize}
 
 When a user creates a new object or modifies some attributes of an existing object, the device sends an update message that contains the JSON string of this object to all group members.
 
@@ -315,7 +387,8 @@ After receiving them, the new member can access these untrusted servers with the
 
 \section{Implementation}
 
-We introduce the implementation of the Web service (Section 3.1), the implementation of the client framework (Section 3.2) and demo applications (Section 4.3) in this section.
+Grouper consists of a Web service running on multiple untrusted servers and a client framework for developing applications.
+We introduce the implementation of the Web service (Section 4.1), the implementation of the client framework (Section 4.2) and demo applications (Section 4.3) in this section.
 
 \subsection{Web Service}
 
@@ -387,7 +460,7 @@ This section shows the developer efforts to use Grouper and the performance of G
 \subsection{Developer Efforts}
 
 We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
-Grouper provides the following simple client API for developers.
+As described in Table 2, Grouper provides the simple client APIs for developers.
 
 \begin{table*}[t]
 	\centering
