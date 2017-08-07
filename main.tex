@@ -70,14 +70,6 @@ Our target applications require data usability even user try to synchronize data
 A trusted authority is necessary in CloudSky to manage user profile, while we do not hope any trusted authority in our target application.
 
 Other proposals also use data encryption to protect user data.
-DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
-DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. 
-\emph{Cloud-of-Clouds} is the core concept in DepSky. 
-It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
-DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
-In fact, DepSky is suitable for such data storage applications. 
-In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
-
 Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
 Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
 Mylar uses its browser extension to decrypt data on clients. 
@@ -266,14 +258,13 @@ Otherwise, Grouper should try to upload these shares again after a period of tim
 
 \subsubsection{Synchronization}
 
-Because we implement our client framework in Objective-C at first, we user the \emph{Sync} framework\cite{sync} for data synchronization.
+Because we implement our client framework in Objective-C at first, we use the \emph{Sync} framework\cite{sync} for data synchronization.
 To assist the Sync framework, we design our own messaging function called \emph{Grouper Message} Protocol (Section 3.4).
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
 
 We should consider the confliction problem in data synchronization. Most data sharing applications like Evernote provide a function that user can select an edition by themselves when data is conflicting. However, the Sync framework has not provide such functions by now. The default policy in the Sync framework is using the newest edition. For example, both Alice has modified an object and Bob modified it one hour later. Grouper will receive Bob's modification due to the newest edition policy. 
 
 \subsubsection{Reliability}
-
 
 \begin{figure}[t]
 	\centering
@@ -551,21 +542,36 @@ Figure 5 shows the processing time for sending multiple messages.
 As the number of messages increased, data sync and secret sharing part increased linearly. 
 The network part increased very slowly and sometimes decreased.
 
-These experimental results show that data synchronization within a hundred messages does not influence the user experience. A group of an application by Grouper is able to expand to 100 members. 
+These experimental results show that data synchronization within a hundred messages does not influence the user experience. 
+A group of an application by Grouper is able to expand to 100 members. 
 
 \section{Related Work}
 
+We have introduced a large amount of related works in Section 1 throughout the text. 
+Their proposals protect user data by self-destruction and encryption.
+As additional related work, DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
+DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. 
+\emph{Cloud-of-Clouds} is the core concept in DepSky. 
+It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
+DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
+In fact, DepSky is suitable for such data storage applications. 
+In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
 
+\section{Conclusion}
 
-\section{Conclusion and Future Work}
+This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop light-weight information sharing mobile applications.
+In such an application, users can create a group and exchange the information safely via multiple untrusted servers.
+Grouper provides two main functions: reliable data synchronization and group management for developing such applications.
+Compared to self-destruction proposals introduced in related works, Grouper solves the reliable synchronization problem and ensures a member of a group can synchronize data from others even Grouper includes a self-destruction scheme.
+Compared to pure data encryption proposals introduction in related works, Grouper improves dependability by using multiple untrusted servers and our new enhanced secret sharing scheme $f(k, n, r)$.
 
-This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop mobile applications.
-Grouper provides two main functions: reliable data synchronization and group management. 
 We implement Grouper's Web service in Java EE and clients in Objective-C. 
-We use Grouper to develop applications including \emph{Account Book}, \emph{Notes} and \emph{Test}. 
-We evaluate Grouper from developer efforts and performance. 
+To evaluate Grouper's design, we develop applications including \emph{Account Book}, \emph{Notes} and \emph{Test} on the top of Grouper.
+These applications shows that Grouper requires little developer effort to extend an stand alone application to data sharing application with synchronization.
+We also evaluated the performance of Groper using our benchmark application.
+The results shows that using Grouper in an application does not influence the user experience.
 
-In the future, we will finish the application \emph{Notes} on macOS, solve the problems of synchronization order and JSON string redundancy caused by One-To-Many entity relationship, and improve the performance.
+In the future, we will try improve the performance for data synchronizations and support more platforms .
 
 \bibliographystyle{unsrt}
 {
