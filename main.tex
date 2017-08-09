@@ -520,6 +520,7 @@ In our performance experiments, we use the benchmark application \emph{Test} to 
 We installed 30 Web services on three different servers (azuma1, azuma2 and azuma3).
 Each server runs a Tomcat server which includes 10 Web services.
 Table 4 shows the hardware and software information of in our performance experiment.
+In our benchmark application, the size of a normal message is about 620 bytes.
 
 \begin{table}[!htb]
 	\footnotesize
@@ -568,19 +569,21 @@ To answer these questions, we design the following groups of experiments.
 	\caption{Processing time of sending and receiving a single message with a constant ${k}$ or ${n}$.}
 \end{figure*}
 
-\subsubsection{Multiple Message Transportation}
+\subsubsection{Multiple Message}
 
 To answer the first and second questions, we design the multiple message transportation experiment.
 In this experiment, we set the secret sharing scheme to ${f(2, 3)}$.
 We send multiple messages from a device and receive them in another device. 
 To ensure the veracity, we send multiple message from iPod 5 generation to iPhone 4s for three time and from iPhone 4s to iPod 5 generation for three times.
 We use the average value of the six groups of data as our experiment results.
+In the next experiments, we also use this method to statistic the results.
 
 Figure 5 shows the processing time of sending and receiving multiple messages.
 We divide the processing time into three parts: data sync, secret sharing and network.
 As the number of messages increased, data sync and secret sharing part increased linearly. 
 The network part increased very slowly and sometimes decreased.
 On the whole, the total processing time increased linearly.
+Compared with sending messages, receiving messages cost about two times of processing time.
 These experimental results show that data synchronization within a hundred messages does not influence the user experience.
 
 With the increase of the group scale, a device must be able to handle many messages at the same time.
@@ -588,19 +591,26 @@ For example, in 100 devices in a group, each device sends an update message at t
 In this situation, each device has to receive and handle 99 messages at the same time.
 Thus, a group of an application by Grouper is able to expand to 100 members.
 
-\subsubsection{Single Message with Different Scheme}
+\subsubsection{Single Message with Different Schemes}
+
+To answer the third question, we design the single message transportation experiment with different the secret sharing scheme.
+Specifically, we change the parameter ${k}$  and ${n}$ of the secret sharing scheme and test the processing time of sending and receiving a single message.
+Figure 5 shows the relationship between processing time and the data set ${\left \{ \left (k, n \right )\mid 0< k < n, k=3i, n=3j+3, i, j\in\left [ 1,5 \right ]\bigcap N\right \}}$.
+For sending a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
+However, for receiving a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
 
 \subsubsection{Control Variable}
 
-First, we measured processing times the benchmark application \emph{Test} needed when a user created a test object during online. 
-We used iPhone 4s to create an object and send a update message. 
-We used iPod 5 generation to receive the update message from iPhone 4s.
-Figure 4 shows the processing time for sending and receiving a single message after creating this object.
-This size of the message was 620 bytes.
-Compared to the network time, data sync and secret sharing consumed very little time in both data sending and receiving.
+We need more data to verify the result introduced above further. 
+We use control variate method to design this experiment.
+Figure 6a shows the relationship between processing time and ${n}$, here ${k=3}$ and ${n \in \left \{ x\mid x=3i, i \in \left [ 2, 10 \right ] \bigcap N \right \}}$. 
+Figure 6b shows the relationship between processing time and ${k}$, here ${n=30}$ and ${k \in \left \{ x\mid x=3i, i \in \left [ 1, 9 \right ] \bigcap N \right \}}$. 
+Here, we can answer the third question.
+With the increase of ${n}$, processing time of sending and receiving increase linearly.
+With the increase of ${k}$, processing time of sending increase linearly and processing of receiving does not change.
+We find the reason is that the time of recovering shares by the secret sharing scheme depends only on the parameter ${n}$.
 
-Next, we measured processing times \emph{Test} needed when a device sent update messages to untrusted servers.
-We used iPod 4s to create multiple objects and to send multiple update messages at the same time.
+From these performance experiment, we can conclude that Grouper is able to support at least 100 members' group and at least 30 untrusted servers.
 
 \section{Related Work}
 
