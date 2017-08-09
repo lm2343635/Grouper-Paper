@@ -444,16 +444,9 @@ Using Grouper framework, we are developing the following applications.
 	\item \emph{Notes}, a macOS application in Swift, takes shared notes for a small group.
 \end{itemize}
 
-\section{Evaluation}
-
-This section shows the developer efforts to use Grouper and the performance of Grouper.
-
-\subsection{Developer Efforts}
-
-We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
-As described in Table 2, Grouper provides the simple client APIs for developers.
 
 \begin{table*}[t]
+	\small
 	\centering
 	\caption{Client APIs of Grouper}
 	\label{my-label}
@@ -492,42 +485,112 @@ As described in Table 2, Grouper provides the simple client APIs for developers.
 	\end{tabular}
 \end{table*}
 
-We have developed two applications including \emph{Account Book} and \emph{Test} with Grouper. 
-As described in Table 1, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
-
-\begin{table}[!htb]
-	\footnotesize
-	\centering  
+\begin{table*}[t]
+	\small
+	\centering
 	\caption{Applications' lines of code}
-	\begin{tabular}{c|c|c}
+	\label{my-label}
+	\begin{tabular}{cccccc}
 		\hline
-		Application Name           & Test  & Account Book \\ \hline
-		Platform            & iOS   & iOS          \\ \hline
-		Lanaguage           & Swift & Objective-C  \\ \hline
-		Number of Entities  & \multicolumn{1}{r|}{1}     & \multicolumn{1}{r}{5}            \\ \hline
-		Stand Alone Application LoC     & \multicolumn{1}{r|}{621}   & \multicolumn{1}{r}{8760}         \\ \hline
-		Application with Groper LoC     &  \multicolumn{1}{r|}{632}   & \multicolumn{1}{r}{8950}         \\ \hline
-		Increased LoC & \multicolumn{1}{r|}{11}    & \multicolumn{1}{r}{190}           \\ \hline
+		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Stand Alone Application LoC} & \textbf{Increased LoC} \\ \hline 
+		Test & iOS & Swift & 1 & 621 & 8760 \\
+		Account Book & iOS & Objective-C & 5 & 8760 & 190 \\ \hline
 	\end{tabular}
-\end{table}
+\end{table*}
+
+\section{Evaluation}
+
+This section shows the developer efforts to use Grouper and the performance of Grouper.
+
+\subsection{Developer Efforts}
+
+We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
+As described in Table 2, Grouper provides the simple client APIs for developers.
+To extend a stand alone application, developers invoke the \emph{grouper.setup()} to set appId and data stack.
+To synchronize data among devices, developers invoke the \emph{grouper.sender.update()}, \emph{grouper.sender.delete()} and \emph{grouper.receiver.receive()} method.
+To ensure the data created in a device has been synchronized in other devices, developer invoke the \emph{grouper.confirm} method.
+
+We have developed two applications including \emph{Account Book} and \emph{Test} with Grouper. 
+As described in Table 3, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
 \subsection{Performance}
 
 The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. 
-To evaluate whether Grouper meets this goal, we use the benchmark application \emph{Test} with the $f(2, 3)$ secret sharing scheme to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n). 
-Both iPhone 4s and iPod 5 generation have A5 CPU and 512MB of RAM.
+In our performance experiments, we use the benchmark application \emph{Test} to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n).
+We installed 30 Web services on three different servers (azuma1, azuma2 and azuma3).
+Each server runs a Tomcat server which includes 10 Web services.
+Table 4 shows the hardware and software information of in our performance experiment.
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.12]{processing1}
-	\caption{Sending and receiving a single message.}
-\end{figure}
+\begin{table}[!htb]
+	\footnotesize
+	\centering  
+	\caption{Devices in the performance experiment.}
+	\label{my-label}
+	\begin{tabular}{llll}
+		\hline
+		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ \hline
+		iPod 5 & A5 & 512MB & iOS 9.3.5 \\
+		iPhone 4s & A5 & 512MB & iOS 9.3.5 \\
+		azuma1 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
+		azuma2 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
+		azuma3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\ \hline
+	\end{tabular}
+\end{table}
 
-\begin{figure}[t]
+To evaluate whether Grouper meets this goal, we answer the following questions:
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item How much processing time does Grouper add to the application in data sending and receiving.
+	\item How many users can an application by Grouper support.
+	\item How does the number of servers $n$ and threshold ${k}$ of the secret sharing scheme influence the processing time.
+\end{itemize}
+
+To answer these questions, we design the following groups of experiments.
+
+\begin{figure*}[t]
 	\centering
-	\includegraphics[scale=0.12]{processing2}
-	\caption{Sending multiple messages.}
-\end{figure}
+	\includegraphics[scale=0.13]{multiple_messages}
+	\caption{Processing time of sending and receiving multiple messages.}
+\end{figure*}
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[scale=0.35]{3d}
+	\caption{Processing time of sending and receiving a single message with different scheme.}
+\end{figure*}
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[scale=0.13]{constant_k_n}
+	\caption{Processing time of sending and receiving a single message with a constant ${k}$ or ${n}$.}
+\end{figure*}
+
+\subsubsection{Multiple Message Transportation}
+
+To answer the first and second questions, we design the multiple message transportation experiment.
+In this experiment, we set the secret sharing scheme to ${f(2, 3)}$.
+We send multiple messages from a device and receive them in another device. 
+To ensure the veracity, we send multiple message from iPod 5 generation to iPhone 4s for three time and from iPhone 4s to iPod 5 generation for three times.
+We use the average value of the six groups of data as our experiment results.
+
+Figure 5 shows the processing time of sending and receiving multiple messages.
+We divide the processing time into three parts: data sync, secret sharing and network.
+As the number of messages increased, data sync and secret sharing part increased linearly. 
+The network part increased very slowly and sometimes decreased.
+On the whole, the total processing time increased linearly.
+These experimental results show that data synchronization within a hundred messages does not influence the user experience.
+
+With the increase of the group scale, a device must be able to handle many messages at the same time.
+For example, in 100 devices in a group, each device sends an update message at the same time and then tries to synchronize messages created by others.
+In this situation, each device has to receive and handle 99 messages at the same time.
+Thus, a group of an application by Grouper is able to expand to 100 members.
+
+\subsubsection{Single Message with Different Scheme}
+
+\subsubsection{Control Variable}
 
 First, we measured processing times the benchmark application \emph{Test} needed when a user created a test object during online. 
 We used iPhone 4s to create an object and send a update message. 
@@ -538,12 +601,6 @@ Compared to the network time, data sync and secret sharing consumed very little 
 
 Next, we measured processing times \emph{Test} needed when a device sent update messages to untrusted servers.
 We used iPod 4s to create multiple objects and to send multiple update messages at the same time.
-Figure 5 shows the processing time for sending multiple messages. 
-As the number of messages increased, data sync and secret sharing part increased linearly. 
-The network part increased very slowly and sometimes decreased.
-
-These experimental results show that data synchronization within a hundred messages does not influence the user experience. 
-A group of an application by Grouper is able to expand to 100 members. 
 
 \section{Related Work}
 
