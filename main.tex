@@ -46,45 +46,18 @@ We implement Grouper in the Objective-C language at first and evaluate it from d
 
 Using mobile applications using central trusted servers requires the user to trusted the service provider.
 Confidential data stored in a central trusted server will be revealed once a malicious person attacked this server.
-Our research goal is to develop light-weight information sharing applications for small groups with our framework Grouper. 
+Our research goal is to develop safe light-weight information sharing applications for small groups with our framework Grouper. 
 How to protect the sensitive data stored in the central servers is the most important problem in our research.
 However, achieving the goal is a great challenge because servers cannot be controlled by users themselves.
 
 To address such a problem, Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CouldSky\cite{zeng2015cloudsky} use a data self-destruction system as their cloud storage.
-Vanish is a system proposed by Geambasu's research group at the University of Washington. 
-Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
-Concretely, to protect a message, Vanish encrypts it with a random encryption key not known to the user, destroys the local copy of the key, and store shares created by a secret sharing scheme of the key in a large, public DHT.
-The key in Vanish is permanently after a period of time, and the encrypted message is permanently unreadable.
-Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which are controlled by a single maintainer. 
-Thus, it not strongly secure due to some special P2P oriented attacks\cite{wolchok2010defeating}. 
-In addition, the surviving time of the key in Vanish cannot be controlled by user. 
-
-To address such issues in Vanish, Zeng et al. at Huazhong University of Science and Technology, propose SafeVanish and SeDas. 
-SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group propose CloudSky, a controllable data self-destruction system for untrusted cloud storage. 
-In CloudSky, user can control the surviving time of a message.Taking advantage of Attribute Based Encryption (ABE), user can also define the access control policy by themselves.
-
-However, both proposals from Geambasu's group and Zeng's group are not suitable for developing a light-weight information sharing application for following reasons. 
-Vanish is suitable for a mail system, because it is designed without needing to modify any of the stored or archived copies of a message and without user controllability, while messages in our target applications should be modified even if it has been sent to multiple untrusted servers.  
-Although, CloudSky solves the problems about user controllability in Vanish, the encrypted message are only valuable to the user for a limited period of time.
-Our target applications require data usability even user try to synchronize data after the period of time. 
-A trusted authority is necessary in CloudSky to manage user profile, while we do not hope any trusted authority in our target application.
-
-Other proposals also use data encryption to protect user data.
-Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
-Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
-Mylar uses its browser extension to decrypt data on clients. 
-Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided in the secret sharing scheme.
-
-Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
-Sweets uses Advanced Encryption Standard (AES) to encrypt user data and ABE to encrypt the keys of AES. 
-However, there is an obvious problem in such a P2P approach. 
-Data transfer can only be finished during two devices are online at the same time. 
-Therefore, it is very troublesome for a user of our a target application if nobody is online when he want to synchronize data.
-The user can synchronize data from multiple untrusted servers anytime if the application uses the proposal of Grouper.
+Mylar\cite{popa2014building} and Sweets\cite{sweets} use data encryption to protect user data.
+They are described in the related work (Section 6).
 
 Inspired by such researches, we proposal our own framework Grouper.
-It ensure both data security and usability.
-Other advantage of Grouper is data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group.
+Compared to those proposal, Grouper's contribution is that it ensure both data security and reliability, which is necessary for developing our target applications.
+Although Grouper uses the data self-destruction scheme, reliable information sharing can also be ensured.
+Data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group.
 
 \section{Assumption and Threat Model}
 
@@ -323,7 +296,7 @@ We concentrate on three important attributes here.
 
 \begin{table}[t]
 	\centering
-	\caption{Attributes of Grouper message}
+	\caption{Attributes of Grouper message.}
 	\label{my-label}
 	\begin{tabular}{lll}
 		\hline
@@ -403,6 +376,59 @@ Thirdly, untrusted servers returns access keys for the new member to the owner.
 Lastly, the owner sends the access keys, server addresses and the list of existing members to the new member. 
 After receiving them, the new member can access these untrusted servers with the keys.
 
+\begin{table*}[t]
+	\small
+	\centering
+	\caption{Client APIs of Grouper.}
+	\label{my-label}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Methods} & \textbf{Semantics} \\ \hline
+		grouper.\textbf{setup}(appId, dataStack) & 
+		\begin{tabular}{@{}l@{}}
+			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
+			unique. Datastack can be created by invoking the API provided in the Sync \\
+			framework.
+		\end{tabular}  \\ \hline
+		grouper.sender.\textbf{update}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method after creating a new object or modifying an existing object. \\
+			Developers must ensure  this object has been saved to persistent store before\\
+			invoking update method.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{delete}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method when a user wants to delete an existing object. Developers \\
+			need not to delete the object and save to persistent store before invoking delete \\ 
+			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
+			object. Grouper will delete the object and save it to persistent store automatically \\
+			after finishing message transportation.
+		\end{tabular} \\ \hline
+		grouper.receiver.\textbf{receive}(callback) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method if a user wants to synchronize data from untrusted servers.\\
+			Callback functions is provided for executing UI updating code.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{confirm}() & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method to send confirm message to other group members. \\
+		\end{tabular} \\ \hline
+	\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+	\small
+	\centering
+	\caption{Applications' lines of code.}
+	\label{my-label}
+	\begin{tabular}{cccccc}
+		\hline
+		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Stand Alone Application LoC} & \textbf{Increased LoC} \\ \hline 
+		Test & iOS & Swift & 1 & 621 & 8760 \\
+		Account Book & iOS & Objective-C & 5 & 8760 & 190 \\ \hline
+	\end{tabular}
+\end{table*}
+
 \section{Implementation}
 
 Grouper consists of a Web service running on multiple untrusted servers and a client framework for developing applications.
@@ -471,59 +497,23 @@ Using Grouper framework, we are developing the following applications.
 	\item \emph{Notes}, a macOS application in Swift, takes shared notes for a small group.
 \end{itemize}
 
-
-\begin{table*}[t]
-	\small
+\begin{figure*}[t]
 	\centering
-	\caption{Client APIs of Grouper}
-	\label{my-label}
-	\begin{tabular}{ll}
-		\hline
-		\textbf{Methods} & \textbf{Semantics} \\ \hline
-		grouper.\textbf{setup}(appId, dataStack) & 
-		\begin{tabular}{@{}l@{}}
-			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
-			unique. Datastack can be created by invoking the API provided in the Sync \\
-			framework.
-		\end{tabular}  \\ \hline
-		grouper.sender.\textbf{update}(object) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method after creating a new object or modifying an existing object. \\
-			Developers must ensure  this object has been saved to persistent store before\\
-			invoking update method.
-		\end{tabular} \\ \hline
-		grouper.sender.\textbf{delete}(object) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method when a user wants to delete an existing object. Developers \\
-			need not to delete the object and save to persistent store before invoking delete \\ 
-			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
-			object. Grouper will delete the object and save it to persistent store automatically \\
-			after finishing message transportation.
-		\end{tabular} \\ \hline
-		grouper.receiver.\textbf{receive}(callback) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method if a user wants to synchronize data from untrusted servers.\\
-			Callback functions is provided for executing UI updating code.
-		\end{tabular} \\ \hline
-		grouper.sender.\textbf{confirm}() & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method to send confirm message to other group members. \\
-		\end{tabular} \\ \hline
-	\end{tabular}
-\end{table*}
+	\includegraphics[scale=0.13]{multiple_messages}
+	\caption{Processing time of sending and receiving multiple messages.}
+\end{figure*}
 
-\begin{table*}[t]
-	\small
+\begin{figure*}[t]
 	\centering
-	\caption{Applications' lines of code}
-	\label{my-label}
-	\begin{tabular}{cccccc}
-		\hline
-		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Stand Alone Application LoC} & \textbf{Increased LoC} \\ \hline 
-		Test & iOS & Swift & 1 & 621 & 8760 \\
-		Account Book & iOS & Objective-C & 5 & 8760 & 190 \\ \hline
-	\end{tabular}
-\end{table*}
+	\includegraphics[scale=0.35]{3d}
+	\caption{Processing time of sending and receiving a single message with different scheme.}
+\end{figure*}
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[scale=0.13]{constant_k_n}
+	\caption{Processing time of sending and receiving a single message with a constant ${k}$ or ${n}$.}
+\end{figure*}
 
 \section{Evaluation}
 
@@ -549,7 +539,7 @@ Each server runs a Tomcat server which includes 10 Web services.
 Table 4 shows the hardware and software information of in our performance experiment.
 In our benchmark application, the size of a normal message is about 620 bytes.
 
-\begin{table}[!htb]
+\begin{table}[t]
 	\footnotesize
 	\centering  
 	\caption{Devices in the performance experiment.}
@@ -577,24 +567,6 @@ To evaluate whether Grouper meets this goal, we answer the following questions:
 \end{itemize}
 
 To answer these questions, we design the following groups of experiments.
-
-\begin{figure*}[t]
-	\centering
-	\includegraphics[scale=0.13]{multiple_messages}
-	\caption{Processing time of sending and receiving multiple messages.}
-\end{figure*}
-
-\begin{figure*}[t]
-	\centering
-	\includegraphics[scale=0.35]{3d}
-	\caption{Processing time of sending and receiving a single message with different scheme.}
-\end{figure*}
-
-\begin{figure*}[t]
-	\centering
-	\includegraphics[scale=0.13]{constant_k_n}
-	\caption{Processing time of sending and receiving a single message with a constant ${k}$ or ${n}$.}
-\end{figure*}
 
 \subsubsection{Multiple Message}
 
@@ -641,9 +613,37 @@ From these performance experiment, we can conclude that Grouper is able to suppo
 
 \section{Related Work}
 
-We have introduced a large amount of related works in Section 1 throughout the text. 
-Their proposals protect user data by self-destruction and encryption.
-As additional related work, DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
+Vanish is a system proposed by Geambasu's research group at the University of Washington. 
+Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
+Concretely, to protect a message, Vanish encrypts it with a random encryption key not known to the user, destroys the local copy of the key, and store shares created by a secret sharing scheme of the key in a large, public DHT.
+The key in Vanish is permanently after a period of time, and the encrypted message is permanently unreadable.
+Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which are controlled by a single maintainer. 
+Thus, it not strongly secure due to some special P2P oriented attacks\cite{wolchok2010defeating}. 
+In addition, the surviving time of the key in Vanish cannot be controlled by user. 
+
+To address such issues in Vanish, Zeng et al. at Huazhong University of Science and Technology, propose SafeVanish and SeDas. 
+SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group propose CloudSky, a controllable data self-destruction system for untrusted cloud storage. 
+In CloudSky, user can control the surviving time of a message.Taking advantage of Attribute Based Encryption (ABE), user can also define the access control policy by themselves.
+
+However, both proposals from Geambasu's group and Zeng's group are not suitable for developing a light-weight information sharing application for following reasons. 
+Vanish is suitable for a mail system, because it is designed without needing to modify any of the stored or archived copies of a message and without user controllability, while messages in our target applications should be modified even if it has been sent to multiple untrusted servers.  
+Although, CloudSky solves the problems about user controllability in Vanish, the encrypted message are only valuable to the user for a limited period of time.
+Our target applications require data usability even user try to synchronize data after the period of time. 
+A trusted authority is necessary in CloudSky to manage user profile, while we do not hope any trusted authority in our target application.
+
+Mylar stores encrypted data on servers, and decrypts this data only in the browsers of users. 
+Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
+Mylar uses its browser extension to decrypt data on clients. 
+Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided in the secret sharing scheme.
+
+Sweets is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
+Sweets uses Advanced Encryption Standard (AES) to encrypt user data and ABE to encrypt the keys of AES. 
+However, there is an obvious problem in such a P2P approach. 
+Data transfer can only be finished during two devices are online at the same time. 
+Therefore, it is very troublesome for a user of our a target application if nobody is online when he want to synchronize data.
+The user can synchronize data from multiple untrusted servers anytime if the application uses the proposal of Grouper.
+
+DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
 DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. 
 \emph{Cloud-of-Clouds} is the core concept in DepSky. 
 It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
