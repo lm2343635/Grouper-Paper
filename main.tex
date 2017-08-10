@@ -1,5 +1,5 @@
 \documentclass[twocolumn,10pt]{article}
-\usepackage[a4paper, top=0.65in, bottom=0.8in, left=0.65in, right=0.65in]{geometry}
+\usepackage[a4paper, top=0.5in, bottom=0.7in, left=0.5in, right=0.5in]{geometry}
 
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -16,7 +16,7 @@
 
 \begin{document}
 
-\title{\bf Grouper: a Framework for Developing Mobile Applications using Untrusted Servers}
+\title{\bf Grouper: a Framework for Developing Mobile Applications using Secret Sharing and Untrusted Servers}
 
 \author{
 	Meng Li and Yasushi Shinjo \\
@@ -296,27 +296,6 @@ At last, the sender will send the message No.3 and No.4 again to the receiver ag
 
 \subsection{Grouper Message Protocol}
 
-\begin{table}[]
-	\centering
-	\caption{Attributes of Grouper message}
-	\label{my-label}
-	\begin{tabular}{lll}
-		\hline
-		\textbf{Attributes} & \textbf{Type} & \textbf{Explanation} \\ \hline
-		type & String & Type of this message. \\
-		content & String & JSON string of an object. \\
-		messageId & String & Physical ID of this message. \\
-		object & String & Object name. \\
-		objectId & String & Object physical ID. \\
-		receiver & String & Node identifier of the receiver. \\
-		sender & String & Node identifier of the sender. \\
-		email & String & Email address of the sender. \\
-		name & String & Name of the sender. \\
-		sendtime & Integer & Unix timestamp of sendtime. \\
-		sequence & Integer & Sequence number of this message. \\ \hline
-	\end{tabular}
-\end{table}
-
 To transfer data between devices, we design our own protocol, \emph{Grouper Message} Protocol. 
 In this protocol, a message is a JSON string that contains an object of an application and the way to handle it in receivers’ devices.
 Table 1 shows the attributes in a Grouper message.
@@ -342,15 +321,63 @@ We concentrate on three important attributes here.
 	Thus, it is contained in a confirm message to indicate the all normal messages a device sent or in a resend message to indicate the normal message a device has not been received.
 \end{itemize}
 
+\begin{table}[t]
+	\centering
+	\caption{Attributes of Grouper message}
+	\label{my-label}
+	\begin{tabular}{lll}
+		\hline
+		\textbf{Attributes} & \textbf{Type} & \textbf{Explanation} \\ \hline
+		type & String & Type of this message. \\
+		content & String & JSON string of an object. \\
+		messageId & String & Physical ID of this message. \\
+		object & String & Object name. \\
+		objectId & String & Object physical ID. \\
+		receiver & String & Node identifier of the receiver. \\
+		sender & String & Node identifier of the sender. \\
+		email & String & Email address of the sender. \\
+		name & String & Name of the sender. \\
+		sendtime & Integer & Unix timestamp of sendtime. \\
+		sequence & Integer & Sequence number of this message. \\ \hline
+	\end{tabular}
+\end{table}
+
+\begin{algorithm}[t]
+	\caption{Handle messages algorithm}\label{alg:euclid}
+	\begin{algorithmic}[1]		
+		\Procedure{handleMessages}{$msgs$}
+		\For{$msg$ \textbf{in} $msgs$} 
+		\If{$msg.sender$ not exist}
+		\State $saveUser()$
+		\EndIf
+		\If{$msg.type \in \left \{ "update", "delete" \right \} $}
+		\State $sync(message)$
+		\ElsIf{$msg.type \in \left \{ "confirm" \right \} $}
+		\State $seqs \gets getSeqs(msg.content)$
+		\State $seqs \gets removeExisted(seqs)$
+		\State $resendMsg(seqs)$
+		\ElsIf{$msg.type \in \left \{ "resend" \right \} $}
+		\If{$msg.receiver = currentUser$}
+		\State $seqs \gets getSeqs(msg.content)$
+		\State $sendExistingMsgs(seqs)$
+		\EndIf
+		\EndIf
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Developers need to send the update, delete and confirm message using client API of Grouper.
 When a user creates a new object or modifies some attributes of an existing object, the device sends an update message that contains the JSON string of this object to all group members.
-
 When a user deletes an existing object, the device sends a delete message that contains the object ID of this object to all group members.
-
-To confirm all devices have received all normal messages (update message and delete message) created by a user, the device sends a confirm message to all devices periodically. 
+To confirm all devices have received all normal messages (update message and delete message) created by a user, the device sends a confirm message to all devices periodically.
 In this confirm message, the sequence number of objects recently created in this device are included.
 
-When the device of a group member receives a confirm message, it checks the sequence numbers. 
-If some of them do not exist in the persistent store, the device sends a resend message that contains missing sequence numbers.
+Algorithm 1 describe the handle process when a device get some messages.
+For an update message or a delete message, Grouper invokes the API provided in third-party synchronization framework to get the object into persistent store.
+Fo ra confirm message, Grouper gets the sequence numbers from the message content and removes those sequence numbers which is existing in the device.
+Then Grouper creates a resend message that contains missing sequence numbers and sends it to the sender of this confirm message.
+For a resend messages, Grouper gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
 
 \subsection{Group Management}
 
