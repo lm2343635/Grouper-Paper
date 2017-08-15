@@ -1,5 +1,5 @@
 \documentclass[twocolumn,10pt]{article}
-\usepackage[a4paper, top=0.5in, bottom=0.7in, left=0.5in, right=0.5in]{geometry}
+\usepackage[a4paper, top=0.5in, bottom=0.6in, left=0.5in, right=0.5in]{geometry}
 
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -27,16 +27,14 @@
 
 \begin{abstract}
 
-Conventional mobile applications are built based on a client-server mode and require the central servers for storing shared data and processing confidential information.
-The users of such mobile applications must fully trust the central servers. 
-If the central servers can be accessed by an attacker, a curious administrator, or a government, user information will be revealed because data is often stored on the server in cleartext. 
-In addition, users may lose their data when service providers shut down their servers.
 This paper presents Grouper, a framework for developing mobile applications, which protects user data by storing data in multiple untrusted servers.
-Grouper uses a secret sharing scheme to create several shares from a JSON string of an object and uploads these shares to different untrusted servers. 
-Our multiple untrusted servers system is a self-destruction system.
-Shares will be deleted after a period of time by the Web service running on the multiple untrusted servers.
+Grouper uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
+Our multiple untrusted servers are a self-destruction system.
+Uploaded shares will be deleted after a period of time by the Web service running on the multiple untrusted servers.
 To transfer data among mobile devices, we design our own \emph{Grouper Message}. 
-We implement Grouper in the Objective-C language at first and evaluate it from developer efforts and performance. We also describe three applications by Grouper framework: an iOS application \emph{Account Book}, a macOS application \emph{Notes} and a benchmark application \emph{Test}.
+We have implemented Grouper in the Objective-C language.
+We evaluate the developer efforts and the performance of Grouper. 
+We have implemented three applications using Grouper: an iOS application Account Book, a macOS application Notes and a benchmark application Test.
 
 \end{abstract}
 
@@ -44,66 +42,73 @@ We implement Grouper in the Objective-C language at first and evaluate it from d
 
 \section{Introduction}
 
-Using mobile applications using central trusted servers requires the user to trusted the service provider.
-Confidential data stored in a central trusted server will be revealed once a malicious person attacked this server.
-Our research goal is to develop safe light-weight information sharing applications for small groups with our framework Grouper. 
-How to protect the sensitive data stored in the central servers is the most important problem in our research.
-However, achieving the goal is a great challenge because servers cannot be controlled by users themselves.
+Conventional mobile applications are built based on a client-server mode and require the central servers for storing shared data and processing confidential information.
+The users of such mobile applications must fully trust the central servers. 
+If the central servers can be accessed by an attacker, a curious administrator, or a government, user information will be revealed because data is often stored on the server in cleartext. 
+In addition, users may lose their data when service providers shut down their servers.
 
 To address such a problem, Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CouldSky\cite{zeng2015cloudsky} use a data self-destruction system as their cloud storage.
+In these approaches, servers store data temporarily and delete data after period of time.
 Mylar\cite{popa2014building} and Sweets\cite{sweets} use data encryption to protect user data.
-They are described in the related work (Section 6).
+These existing approaches have following problems.
+Firstly, these existing approaches do not support data recovery when some nodes miss getting data from shared storage.
+Application developers have to deal with such cases by themselves.
+Further, these approaches do not support developing mobile applications.
 
-Inspired by such researches, we proposal our own framework Grouper.
-Compared to those proposal, Grouper's contribution is that it ensure both data security and reliability, which is necessary for developing our target applications.
-Although Grouper uses the data self-destruction scheme, reliable information sharing can also be ensured.
-Data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group.
+To address these problems, we are developing Grouper, a framework for developing mobile applications. 
+Grouper provides objects synchronization among mobile devices.
+In Grouper, a sender node translates an updated object into shares using a secret sharing scheme and uploads these shares to untrusted servers. 
+A receiver node downloads some of these shares and reconstructs the object.
+The untrusted servers construct a self-destruction system, and delete these shares after a period of time.
+Unlike existing approaches, although Grouper uses the data self-destruction scheme, it support data recovery when some nodes miss getting shares from untrusted servers.
+When a receiver node misses getting shares, the Grouper framework automatically asks the sender to upload missing shares again.
+Such scheme ensures reliable information sharing among devices of a group.
+In addition, data can be recovered even untrusted servers shut down because all devices of group members keep a complete data set of this group.
+
+Grouper consists of a client framework and a Web service.
+We have implemented the Grouper framework for iOS, macOS, tvOS and watchOS in the Objective-C language.
+We have implemented the Web service running on the multiple untrusted servers in Java. 
+We have embedded the Sync framework in Grouper to synchronize objects among mobile nodes.
+We have implemented three applications using Grouper: an iOS application Account Book, a macOS application Notes and a benchmark application Test.
+These implementations shows that Grouper makes it easy to develop mobile applications with data synchronization.
+Experimental results show that the performance of Grouper is feasible for mobile applications that are used in a small group of people.
+
+The contributions of this paper are as follows.
+Firstly, we provide support for data recovery when some nodes miss getting data from untrusted servers.
+Grouper realizes reliable data synchronization among nodes using a reliable multicast technique.
+Secondly, we make it easier to develop mobile applications.
+A developer can add data synchronization functions to an applications with a few lines of code.
 
 \section{Assumption and Threat Model}
 
 In this section, we introduce assumptions and threat model of Grouper.
+There are four following basic assumptions underlying the Grouper framework.
 
-\subsection{Assumption}
+Firstly, a server is a passive adversary, and can read all data, but it does not actively attack.
+The server hosts Web services and performs device authentication.
+Servers generate access keys for group users. 
+When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
+A node divides data into shared before it is uploaded to the server, and recover the data after downloading using a secret sharing scheme. 
+In this paper, we do not address other attack types such as user tracking and metadata collection by servers. 
+For example, the server can track users with IP addresses, and Grouper cannot hide social graphs against such tracking.
 
-There are following basic assumptions underlying the Grouper framework:
+Secondly, data transportation between a device and an untrusted server is secure.
+Grouper improves mobile application security by concentrating on data storage in servers rather than data transportation.
+If some one attacks the HTTP connection and gets some shares, he can try to recover these shares and may get the original data.
 
-\begin{enumerate}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item All group members must trust the group owner and they are not malicious.
-	\item In members inviting, a group owner authenticates group members by a face-to-face way.
-	\item Nobody has privilege of more than $k$ (the threshold of a secret sharing scheme) untrusted servers.
-\end{enumerate}
+Thirdly,  in an application, all group members are not malicious and their devices connect to each other in a face-to-face distance.
+We target applications that are used in a small group, like all members in a small office.
+Thus, the group members are persons this office know one another and they are not malicious.
+In members inviting, a group owner authenticates group members by a face-to-face way.
+Connections for data transportation between two devices only be established in members inviting.
+Malicious users outside the group can pretend as the member of the group to get secret information.
 
-We consider target users usage scenario of an application by Grouper is a small group like all members in a small office, so all group members of this application are acquaintances and they are not malicious. Due to this reason, their devices can also connect to each other by a face-to-face way.
-
-In Grouper, we use the secret sharing scheme to protect our user data. In a secret sharing scheme, a member securely shares a secret with a group of members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
-At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
-We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
-Therefore, anyone who has access to $k$ or more shares, he can recover the original data. Although Grouper store shares created by a secret sharing scheme in multiple untrusted servers, these servers are managed by human beings. If one person can access to $k$ or more untrusted servers, he has enough shares to recover the original user data. In fact, we hope each untrusted server's manager does not know the existence of others. For example, the leader of a small company can assign three different employees to deploy the Web service in different servers secretly. This leader must ensure those employees do not collude to crack user data.
-
-\subsection{Threat Model}
-
-There are following key properties of our threat model:
-
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Server side authentication.}
-	Our untrusted servers must perform device authentication. 
-	Servers generate access keys for group users. 
-	When a device wants to get/put data from/to untrusted servers, the device sends a request with an access key in the request header.
-	\item \textbf{Data self-destruction.} 
-	Our untrusted servers keep data temporarily.
-	We define a period of time in which data can be kept in a server as an interval time. 
-	The data in untrusted servers vanishes after the interval time.
-	\item \textbf{Secure data transportation.}
-	We assume that both inter-mobile device communication during user invitation and HTTP connection between a device and an untrusted server is secure. 
-\end{itemize}
-
-Due to the assumptions and key properties of threat model, we can design and implement our Grouper framework.
+At last, server are isolated from one another and managed by independent providers.
+In fact, we hope each untrusted server’s manager does not know the existence of others.
+To use applications by grouper, the leader of a small company can assign three different employees to deploy the Web service in different servers secretly. 
+This leader must ensure those employees do not collude to crack user data.
+For example, a group owner picks up servers of Amazon, Google, and Microsoft, which are supposed not to expose users' data to other cloud providers.
+If anyone has privilege to access more than enough untrusted servers to recover the shares to original data, he can get all shared information of a group.
 
 \section{Design}
 
@@ -215,6 +220,11 @@ We answer these questions and describe data synchronization flow in this section
 
 Figure 2 describes our data transportation flow using multiple untrusted servers. 
 At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
+In Grouper, we use the secret sharing scheme to protect our user data. 
+In a secret sharing scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
+At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
+We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+If one person outside a group can access to $k$ or more untrusted servers, he has enough shares to recover the original user data. 
 Next, Grouper uploads those shares to three untrusted servers. 
 In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
 In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
@@ -246,10 +256,10 @@ We should consider the confliction problem in data synchronization. Most data sh
 \end{figure}
 
 Grouper should provide a reliable synchronization service. 
-A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record is deleted by untrusted servers after an interval time. 
+A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record is deleted by untrusted servers after the TTL. 
 We call this problem reliable synchronization. 
-A receiver can only download shares from untrusted server with the interval time. 
-If he is offline within the interval time, he will miss the new record.
+A receiver can only download shares from untrusted server with the TTL. 
+If he is offline within the TTL, he will miss the new record.
 
 To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. 
 Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. 
