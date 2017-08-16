@@ -94,16 +94,16 @@ For example, the server can track users with IP addresses, and Grouper cannot hi
 
 Secondly, data transportation between a device and an untrusted server is secure.
 Grouper improves mobile application security by concentrating on data storage in servers rather than data transportation.
-If some one attacks the HTTP connection and gets some shares, he can try to recover these shares and may get the original data.
+If someone attacks the HTTP connection and gets some shares, he can try to recover these shares and may get the original data.
 
-Thirdly,  in an application, all group members are not malicious and their devices connect to each other in a face-to-face distance.
+Thirdly, in an application, all group members are not malicious and their devices connect to each other in a face-to-face distance.
 We target applications that are used in a small group, like all members in a small office.
 Thus, the group members are persons this office know one another and they are not malicious.
 In members inviting, a group owner authenticates group members by a face-to-face way.
 Connections for data transportation between two devices only be established in members inviting.
 Malicious users outside the group can pretend as the member of the group to get secret information.
 
-At last, server are isolated from one another and managed by independent providers.
+At last, a server is isolated from one another and managed by independent providers.
 In fact, we hope each untrusted server’s manager does not know the existence of others.
 To use applications by grouper, the leader of a small company can assign three different employees to deploy the Web service in different servers secretly. 
 This leader must ensure those employees do not collude to crack user data.
@@ -112,30 +112,18 @@ If anyone has privilege to access more than enough untrusted servers to recover 
 
 \section{Design}
 
-In this section, we explain our target applications, basic functions provided by Grouper and advantages in overview (Section 3.1). Then we show the architecture (Section 3.2) of Web service and client of Grouper. At last, we introduce how we design the Grouper framework.
+This section describes the design of the Grouper framework.
 
 \subsection{Overview}
 
-We are aiming at developing applications which are not relying on trusted central servers.
-Concretely, Grouper's design is suitable for applications that:
+Our goal is to support developing mobile applications that are not relining on trusted central servers.
+We target mobile applications that are used in a small group of people.
+A group consists of an owner and other members.
+Each member has a mobile device.
+A owner invites other members in a face-to-face way.
 
-\begin{enumerate}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item Use in a small groups.
-	\item Require light-weight informations sharing among members in a small groups.
-	\item Allow face-to-face connection among members' devices.
-\end{enumerate}
-
-Grouper support to exchange object among devices.
-Binary data can be included in an object, but the isolated binary file is not supported in Grouper.
-For example, \emph{Account Book} is an iOS application developed by Grouper. 
-In this application, a leader of a small company creates a group and invites employees to the group. 
-Then, everyone can record the income and expenditure of this company and share this record to others.
-Anyone can edit and delete all records.
-
-To developer such a target application, the Grouper framework should provide the following functions:
+To support developing such mobile applications, we provide the Grouper framework.
+This framework provides the following functions:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
@@ -145,50 +133,76 @@ To developer such a target application, the Grouper framework should provide the
 	\item \textbf{Group management.} A group owner can create a group and invite other members to his group.
 \end{itemize}
 
-Compared to pute data self-destruction proposals Vanish, SafeVanish, SeDas and CloudSky, or pure data encryption proposals Mylar and Sweets, Grouper is suitable for developing such light-weight informations sharing applications due to such advantages:
+For example, \emph{Account Book} is an iOS application developed using Grouper. 
+In this application, a leader of a small company creates a group and invites employees to the group. 
+Then, the employees can record the income and expenditure of this company and share these records to others.
+Anyone can edit and delete existing records.
 
-\begin{enumerate}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item User invitation requires a face-to-face way between group owner and new member. It ensures group members are not malicious.
-	\item Unlike CouldSky, users are not required to know the approximate lifetime of a message and synchronize it within the lifetime.
-	\item Damaged shares from untrusted server do not destroy data synchronization among users completely.
-\end{enumerate}
+Grouper uses untrusted servers to exchange messages among mobile devices.
+Untrusted servers construct a self-destruction system, and delete messages after a period of time.
+Grouper protect messages from the providers of untrusted servers using a secret sharing scheme.
+Grouper has the following advantages over conventional systems using untrusted servers.
+Firstly, it is easy for a developer to recover from message losses in untrusted servers (Section 3.4 and Section 3.5).
+Grouper performs retransmission when some mobile devices miss getting messages from untrusted servers.
+Developers of mobile applications do not have to specify lifetimes of messages.
+Secondly, it is easy for a group owner to invite other members using a safe communication channel in a face-to-face distance (Section 3.6).
+
+\subsection{Comparisons with encryption methods}
+
+Grouper uses the secret sharing scheme to protect user data rather than data encryption methods.
+In a secret sharing scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
+At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
+We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+If one person outside a group can access to $k$ or more untrusted servers, he has enough shares to recover the original user data.
+
+Compared with data encryption methods, the secret sharing scheme has following features.
+Firstly, like data encryption method, using the secret sharing scheme is also secure because a single shares created by it is unreadable for a server manager.
+However, using data encryption requires key management including generation and distribution.
+Data encryption systems like CloudSky always use trusted authorities for key management.
+In Grouper, we require all cloud services are untrusted.
+Secondly, the secret sharing scheme ensures the data availability in the situation that a small number of untrusted servers are not accessible.
+For the $f(k, n)$ scheme, the original object can be recovered after accessing more than $k$ untrusted servers.
+Thirdly, the secret sharing scheme improves the anti-attack ability, because the attacker who can access only $k-1$ or less untrusted servers cannot get any readable informations.
+At last, the performance of the secret sharing scheme we used in Grouper is faster than Attribute Based Encryption (ABE) and slower than Advanced Encryption Standard (AES).
+For these reasons, using a secret sharing scheme is more suitable for the Grouper framework than using a data encryption method.
 
 \subsection{Architecture}
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.36]{architecture}
+	\includegraphics[scale=0.45]{architecture}
 	\caption{Architecture of Grouper.}
 \end{figure}
 
-Figure 1 describes the architecture of Grouper. 
-An application by Grouper consists of the following layers:
+Figure 1 describes the architecture of the Grouper framework. 
+An application using Grouper consists of the six following layers:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Application.}
-	A developer develops a stand alone application without data synchronization at first. 
-	He can use the API provided in the client framework of Grouper to extend synchronization function to his application.
+	A developer develops an application without data synchronization at first. 
+	He can use the API provided in the client framework of Grouper to add the synchronization function to his application.
 	\item \textbf{Synchronization.} 
 	Grouper uses the third-party framework for data synchronization.
-	This layer marshall and unmarshall the message from the reliable message layer and get it into persistent store.
+	This layer marshall an updated object in a persistent store and send it using the lower reliable message layer.
+	When this layer receives a message, this layer unmarshall the message, reconstructs an object, and put the object into the persistent store.
 	\item \textbf{Reliable Message.}
-	This layer provide a reliable message service.
-	This layer try ensure a message can be received in another device even its shares has been deleted in untrusted servers.
+	This layer provides a reliable message service with multicasting capability among devices.
+	The destination of a massage is not only the node identifier (ID) of a single device but also "*", which means delivering to all the other nodes.
+	This layer try to deliver a message to other devices even the message is deleted in untrusted servers before some nodes download the message.
 	\item \textbf{Unreliable Message.}
-	This layer provide an unreliable message service to exchange data between two devices in a group.
-	This layer do not ensure the message can be received in another device.
-	\item \textbf{Data Protecting.}
-	Grouper protect user data by a secret sharing scheme in this layer.
-	A message is divided to several shares and these shares can be recovered be a part of shares in this layer.
+	This layer provide an unreliable message service multicasting capability among devices.
+	This layer do not ensure the message delivery to other devices.
+	\item \textbf{Data Protection.}
+	Grouper protects user data by a secret sharing scheme in this layer.
+	This layer divides a message into several shares, and uploads these shares to untrusted servers.
+	When this layer downloads shares from untrusted servers, it recovers the original message using the secret sharing scheme.
 	\item \textbf{Untrusted servers.}
-	Clients upload shares to untrusted servers and download shares from untrusted server by the RESTful API provided in this layer.
-	The untrusted servers install our own Web service of Grouper.
+	When a mobile device uploads a share to a server, the server receives it and stores it into a database.
+	When a mobile device downloads a share from a server, the server retrieves it from the database and send it into the device.
+	An untrusted server performs device authentication using device keys.
 \end{itemize}
 
 \subsection{Data Synchronization}
@@ -214,17 +228,12 @@ We answer these questions and describe data synchronization flow in this section
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.36]{sync_flow}
+	\includegraphics[scale=0.42]{sync_flow}
 	\caption{Data transportation flow in Grouper.}
 \end{figure}
 
 Figure 2 describes our data transportation flow using multiple untrusted servers. 
 At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
-In Grouper, we use the secret sharing scheme to protect our user data. 
-In a secret sharing scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
-At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
-We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
-If one person outside a group can access to $k$ or more untrusted servers, he has enough shares to recover the original user data. 
 Next, Grouper uploads those shares to three untrusted servers. 
 In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
 In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
@@ -251,7 +260,7 @@ We should consider the confliction problem in data synchronization. Most data sh
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.32]{reliable_sync}
+	\includegraphics[scale=0.38]{reliable_sync}
 	\caption{Reliable synchronization.}
 \end{figure}
 
@@ -331,7 +340,7 @@ We concentrate on three important attributes here.
 		\Procedure{handleMessages}{$msgs$}
 		\For{$msg$ \textbf{in} $msgs$} 
 		\If{$msg.sender$ not exist}
-		\State $saveUser()$
+		\State $saveUser(msg)$
 		\EndIf
 		\If{$msg.type \in \left \{ "update", "delete" \right \} $}
 		\State $sync(message)$
@@ -633,7 +642,7 @@ In addition, the surviving time of the key in Vanish cannot be controlled by use
 
 To address such issues in Vanish, Zeng et al. at Huazhong University of Science and Technology, propose SafeVanish and SeDas. 
 SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group propose CloudSky, a controllable data self-destruction system for untrusted cloud storage. 
-In CloudSky, user can control the surviving time of a message.Taking advantage of Attribute Based Encryption (ABE), user can also define the access control policy by themselves.
+In CloudSky, user can control the surviving time of a message.Taking advantage of ABE, user can also define the access control policy by themselves.
 
 However, both proposals from Geambasu's group and Zeng's group are not suitable for developing a light-weight information sharing application for following reasons. 
 Vanish is suitable for a mail system, because it is designed without needing to modify any of the stored or archived copies of a message and without user controllability, while messages in our target applications should be modified even if it has been sent to multiple untrusted servers.  
@@ -647,7 +656,7 @@ Mylar uses its browser extension to decrypt data on clients.
 Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided in the secret sharing scheme.
 
 Sweets is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
-Sweets uses Advanced Encryption Standard (AES) to encrypt user data and ABE to encrypt the keys of AES. 
+Sweets uses AES to encrypt user data and ABE to encrypt the keys of AES. 
 However, there is an obvious problem in such a P2P approach. 
 Data transfer can only be finished during two devices are online at the same time. 
 Therefore, it is very troublesome for a user of our a target application if nobody is online when he want to synchronize data.
