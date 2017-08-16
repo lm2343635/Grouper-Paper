@@ -214,12 +214,12 @@ To synchronize data from one device to another device, we consider the following
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Transportation:}
-	How to transport shares from one device to another device.
-	\item \textbf{Synchronization: } 
+	How to transport shares from one device to other devices.
+	\item \textbf{Synchronization:}
 	How to create several shares from an object in a device. 
-	How to recover the shares to an object and get it into persistent store.
+	How to recover an object from shares and put it into a persistent store.
 	\item \textbf{Reliability:}
-	How to ensure a device can synchronize the messages even he missed in the limited period of time. 
+	How to ensure message delivery even some nodes miss downloading message from untrusted servers in the TTL.
 \end{itemize}
 
 We answer these questions and describe data synchronization flow in this section.
@@ -229,7 +229,7 @@ We answer these questions and describe data synchronization flow in this section
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.42]{sync_flow}
-	\caption{Data transportation flow in Grouper.}
+	\caption{Implementing unreliable messaging with untrusted servers and a secret sharing scheme.}
 \end{figure}
 
 Figure 2 describes our data transportation flow using multiple untrusted servers. 
