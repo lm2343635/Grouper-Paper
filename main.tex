@@ -138,33 +138,20 @@ In this application, a leader of a small company creates a group and invites emp
 Then, the employees can record the income and expenditure of this company and share these records to others.
 Anyone can edit and delete existing records.
 
+Grouper uses the secret sharing scheme to protect user data rather than data encryption methods.
+In a secret sharing scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
+At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
+We describe this scheme as a function $f(k, n) (0 \leq k \leq n, k \in N, n \in N$), where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
+If one person outside a group can access to $k$ or more untrusted servers, he has enough shares to recover the original user data.
+
 Grouper uses untrusted servers to exchange messages among mobile devices.
 Untrusted servers construct a self-destruction system, and delete messages after a period of time.
 Grouper protect messages from the providers of untrusted servers using a secret sharing scheme.
 Grouper has the following advantages over conventional systems using untrusted servers.
-Firstly, it is easy for a developer to recover from message losses in untrusted servers (Section 3.4 and Section 3.5).
+Firstly, it is easy for a developer to recover from message losses in untrusted servers (Section 3.4).
 Grouper performs retransmission when some mobile devices miss getting messages from untrusted servers.
 Developers of mobile applications do not have to specify lifetimes of messages.
-Secondly, it is easy for a group owner to invite other members using a safe communication channel in a face-to-face distance (Section 3.6).
-
-\subsection{Comparisons with encryption methods}
-
-Grouper uses the secret sharing scheme to protect user data rather than data encryption methods.
-In a secret sharing scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
-At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares can obtain nothing about the secret\cite{pang2005new}. 
-We describe this scheme as a function $f(k, n)$, where $n$ is the number of all shares, and $k$ is the threshold to combine shares. 
-If one person outside a group can access to $k$ or more untrusted servers, he has enough shares to recover the original user data.
-
-Compared with data encryption methods, the secret sharing scheme has following features.
-Firstly, like data encryption method, using the secret sharing scheme is also secure because a single shares created by it is unreadable for a server manager.
-However, using data encryption requires key management including generation and distribution.
-Data encryption systems like CloudSky always use trusted authorities for key management.
-In Grouper, we require all cloud services are untrusted.
-Secondly, the secret sharing scheme ensures the data availability in the situation that a small number of untrusted servers are not accessible.
-For the $f(k, n)$ scheme, the original object can be recovered after accessing more than $k$ untrusted servers.
-Thirdly, the secret sharing scheme improves the anti-attack ability, because the attacker who can access only $k-1$ or less untrusted servers cannot get any readable informations.
-At last, the performance of the secret sharing scheme we used in Grouper is faster than Attribute Based Encryption (ABE) and slower than Advanced Encryption Standard (AES).
-For these reasons, using a secret sharing scheme is more suitable for the Grouper framework than using a data encryption method.
+Secondly, it is easy for a group owner to invite other members using a safe communication channel in a face-to-face distance (Section 3.7).
 
 \subsection{Architecture}
 
@@ -247,7 +234,7 @@ The following subsections describe details of these layers from the top layer to
 	\end{tabular}
 \end{table*}
 
-\subsection{Grouper API}% 3.3
+\subsection{Grouper API}
 
 The Grouper framework provides object synchronization among mobile devices throughput a simple API.
 A developer can add object synchronization functions to a standalone application with a few lines of code.
@@ -259,60 +246,55 @@ The the application uses the method grouper.receiver.receive() to register a cal
 This callback function is called when another node updates an object and its local mirror has been updated.
 The application can use this callback function to change the values that are shown in a user interface screen.
 The method grouper.confirm() is used for realizing reliable messaging.
-We will describe reliable messaging in Section 3.X.
+We will describe reliable messaging in Section 3.4.
 
-\subsection{Data Synchronization}
+The Grouper API layer rely on two lower layers: the synchronization layer and the reliable messaging layer.
+When an object is updated in a local device, the synchronization layer marshall an updated object and obtains a message.
+Next, the Grouper API layer sends this messages using the reliable messaging layer.
+When an object is updated in an other device, the Grouper API layer receives a message using the reliable messaging layer.
+Next, the Grouper API layer updated the object by passing the received message to the synchronization layer.
 
-To synchronize data from one device to another device, we consider the following problems:
+We have not implemented the synchronization layer by ourselves, but we make this layer as a pluggable module.
+This is because there are many such synchronization modules that provide various features, and application requirements also vary.
+Each application developer should choose a suitable module based on a consistency model and other requirements.
+Currently, we use the Sync framework [12] as a data synchronization module.
+The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
+Application developers can use other data synchronization modules, such as Ensemblesm\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
 
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Transportation:}
-	How to transport shares from one device to other devices.
-	\item \textbf{Synchronization:}
-	How to create several shares from an object in a device. 
-	How to recover an object from shares and put it into a persistent store.
-	\item \textbf{Reliability:}
-	How to ensure message delivery even some nodes miss downloading message from untrusted servers in the TTL.
-\end{itemize}
+Because we implement our client framework in Objective-C at first, we use the Sync framework[12] for data synchronization. 
+To assist the Sync framework, we design our own messaging function called Grouper Message Protocol (Section 3.6). 
+Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices.
 
-We answer these questions and describe data synchronization flow in this section.
+\subsection{Reliable Messaging}
 
-\subsubsection{Transportation}
+The reliable message layer provides a reliable messaging service over the unreliable message layer.
+The upper layer rely on this reliable communication.
+The reliable message layer supports not only unicasting but also multicasting.
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.42]{sync_flow}
-	\caption{Implementing unreliable messaging with untrusted servers and a secret sharing scheme.}
-\end{figure}
+To address this problem, we use a reliable multicasting technique in distribute systems\cite{tanenbaum2007distributed}.
+In this reliable multicasting technique, each message has a sequence number for each sender.
+Each member keeps the newest sequence numbers for senders and detects missing messages.
+If a member notices missing a message from a sender, the member asks the sender to resend the message.
+For example, consider that a sender sends Message No.25 to all other members using a multicast address.
+When a member receives this Message No.25, the member compares the sequence number 25 with the newest sequence number of the sender.
+If the the newest sequence number of the sender is 23, this means the member missed Message No.24.
+The member asks the sender to resend Message No.24.
+The sender will send Message No.24 to the asked member using a unicast address.
 
-Figure 2 describes our data transportation flow using multiple untrusted servers. 
-At first, the sender adds an object in his device and Grouper creates three shares by a secret sharing scheme. 
-Next, Grouper uploads those shares to three untrusted servers. 
-In Figure 2, the receiver is online, and he downloads two shares from two servers and recovers the new record. 
-In this process, these servers cannot recover user data because they do not have permission to access other untrusted servers. 
+This basic reliable multicasting technique works well for continuous medias, such as video streaming in Internet communication.
+However, this does not work if receivers become often offline for a long time and servers delete messages soon.
 
-To improve the reliability in data transportation, we design our own scheme $f(k, n, r)$ for Grouper based on the basic the Shamir's secret sharing scheme $f(k, n)$.
-In the $f(k, n, r)$ scheme, the parameter $k$ and $n$ is same as which in the  $f(k, n)$ scheme. 
-The parameter $r$ represents the number of necessary untrusted servers when a sender uploads shares.
-Although the receiver is able to recover the original data from the receiver with more than $k$ shares, we should consider a situation that some shares are broken.
-Those broken shares may caused by the unstable network connection, the database damage in untrusted servers or malicious attackers.
-Consider the situation that there are $n$ untrusted servers. 
-When a sender wants to upload shares to multiple untrusted servers, Grouper will try to upload these shares to all untrusted servers at first.
-If the shares are uploaded to $r$ or more untrusted servers, we consider share uploading transaction is successful.
-Otherwise, Grouper should try to upload these shares again after a period of time.
-
-\subsubsection{Synchronization}
-
-Because we implement our client framework in Objective-C at first, we use the \emph{Sync} framework\cite{sync} for data synchronization.
-To assist the Sync framework, we design our own messaging function called \emph{Grouper Message} Protocol (Section 3.4).
-Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices. 
-
-We should consider the confliction problem in data synchronization. Most data sharing applications like Evernote provide a function that user can select an edition by themselves when data is conflicting. However, the Sync framework has not provide such functions by now. The default policy in the Sync framework is using the newest edition. For example, both Alice has modified an object and Bob modified it one hour later. Grouper will receive Bob's modification due to the newest edition policy. 
-
-\subsubsection{Reliability}
+To address this problem, we design our own reliable messaging by extending the basic reliable multicasting technique.
+We add a special message type that includes active sequence numbers.
+A receiver can easily know missing messages.
+This idea is inspired from the checkgroups message of Usenet\cite{usenet}.
+In Usenet, the list of active newsgroups is maintained with two basic massages: newgroup and rmgroup.
+When a node receives a newgroup message, the node adds the newsgroup to the list.
+When a node receives a rmgroup message, the node removes the newsgroup from the list.
+These basic messages can be lost and the list can be obsolete.
+Ckeckgroups message messages supplement these basic messages.
+A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
+A checkgroups message is distributed periodically or after some time after basic messages are distributed.
 
 \begin{figure}[t]
 	\centering
@@ -320,54 +302,52 @@ We should consider the confliction problem in data synchronization. Most data sh
 	\caption{Implementing reliable messaging with sequence numbers.}
 \end{figure}
 
-Grouper should provide a reliable synchronization service. 
-A user in a group creates a new record and all of other members in this group should synchronize this record, even if this record is deleted by untrusted servers after the TTL. 
-We call this problem reliable synchronization. 
-A receiver can only download shares from untrusted server with the TTL. 
-If he is offline within the TTL, he will miss the new record.
+Figure 2 shows that the sender is sending four messages, No.1 to No.4, to the receiver.
+The sender uploads two messages, No.1 and No.2 using a multicast address.
+The receiver downloads these two messages and becomes offline.
+The servers delete these two messages.
+The sender uploads next two messages, No.3 and No.4  using a multicast address.
+The receiver becomes online, but the receiver does not notice that the receiver has missing messages soon.
 
-To solve this problem, we reference the basic reliable multicasting scheme in distribute systems. 
-Messages in this scheme should have sequence number which is added one by one, to indicate the sending order of those messages. 
-For example, the sender of a group send a message No.25 and all of the receivers receive the message No.25 successfully. 
-When the receivers receive new message No.25, they will compare No.25 with the newest sequence number in their persistent store. 
-One of the receivers finds that his newest sequence number is No.23, that means he missed the message No.24. 
-Thus, when they send feedback to the receiver, he will report that he missed the message No.24. 
-At last, the sender will send the missed message to him.
+At this time, the sender sends a special message that includes active sequence numbers, No.1 to No.4.
+The receiver receives these sequence numbers and compares them with the newest sequence number in the persistent store.
+In Figure 3, the receiver notices that Messages No.3 and No.4 are missing.
+The receiver asks the sender to resend Messages No.3 and No.4.
+The sender will send Messages No.3 and No.4 to the receiver again  using a unicast address.
 
-Based on the basic reliable multicasting scheme, we designed our own protocol to ensure the reliability in data synchronization of Grouper. 
-As described in Figure 2, the sender has sent messages from No.1 to No.4. 
-Next, he sends sequence numbers of all messages he sent to the receiver. 
-When the receiver receives the sequence numbers, he checks his local persistent store. 
-In this situation, the receiver finds that he missed the message No.3 and No.4. 
-Thus, he will send a resend request that contains the sequence numbers of messages he missed to the sender. 
-At last, the sender will send the message No.3 and No.4 again to the receiver again.
+\subsection{Unreliable Messaging}
+
+This subsection describes the design of unreliable messaging in the layers of Unreliable Message, Data Protection, and Untrusted Servers.
+
+In these layers, we use untrusted servers and a secret sharing scheme as shown in Figure 2.
+In this figure, the unreliable message layer in the sender is sending a message to that in the receiver.
+
+First, this layer calls the data protection layer and creates three shares by a secret sharing scheme.
+Next, this layer uploads those shares to three untrusted servers.
+Each untrusted server receives one of these shares and stores it into a database.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.42]{sync_flow}
+	\caption{Implementing unreliable messaging with untrusted servers and a secret sharing scheme.}
+\end{figure}
+
+In Figure 3, the receiver is online, and its the unreliable message layer downloads two shares from two servers.
+Next, this layer calls the the data protection layer and recovers the message from these two shares using the secret sharing scheme.
+Finally, the unreliable message layer in the receiver puts the message to the upper layer, the reliable message layer.
+
+The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ introduced in Section 3.1 to protect a message from untrusted servers.
+In this scheme, a message is divided into $n$ shares using a cryptographic function.
+A receiver gets more than $k$ shares to combine them to original message.
+In Grouper, we use our new scheme $ f(k, n, s)$ by extending the scheme $f(k, n)$.
+In our scheme, the parameter $k$ and $n$ are same as these in the scheme $f(k, n)$. 
+The parameter s represents the minimum number of untrusted servers when a sender uploads shares, where $s \in  [k, n] \bigcap N$.
+Although a receiver is able to recover the original message from at least $k$ shares, we should consider server crashing. 
+When a sender uploads $n$ shares to $n$ untrusted servers, Grouper will try to upload these $n$ shares to all $n$ untrusted servers at first.
+If the shares are uploaded to $s$ or more untrusted servers, we consider that this share uploading is successful.
+Otherwise, Grouper keeps trying to upload these shares.
 
 \subsection{Grouper Message Protocol}
-
-To transfer data between devices, we design our own protocol, \emph{Grouper Message} Protocol. 
-In this protocol, a message is a JSON string that contains an object of an application and the way to handle it in receivers’ devices.
-Table 1 shows the attributes in a Grouper message.
-We concentrate on three important attributes here.
-
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Type.}
-	There are 4 types of Grouper messages: update message, delete message, confirm message and resend message. 
-	Both update message and delete message need resending because they contain the objects of an application. 
-	We call these messages normal messages. 
-	Both confirm message and resend message contain control information about reliable multicast and need not resending. 
-	We call these messages control messages.
-	\item \textbf{Content.} 
-	If this message is an update message, content is a JSON string of an object.
-	If this message is a delete message, content contains the objectId of an object.
-	If this message is a confirm message or a resend, content contains the sequence numbers.
-	\item \textbf{Sequence.}
-	The sequence number increases one by one in a device.
-	Combined with the node identifier, it can indicate an unique Grouper message.
-	Thus, it is contained in a confirm message to indicate the all normal messages a device sent or in a resend message to indicate the normal message a device has not been received.
-\end{itemize}
 
 \begin{table}[t]
 	\centering
@@ -375,20 +355,51 @@ We concentrate on three important attributes here.
 	\label{my-label}
 	\begin{tabular}{lll}
 		\hline
-		\textbf{Attributes} & \textbf{Type} & \textbf{Explanation} \\ \hline
-		type & String & Type of this message. \\
-		content & String & JSON string of an object. \\
-		messageId & String & Physical ID of this message. \\
-		object & String & Object name. \\
-		objectId & String & Object physical ID. \\
-		receiver & String & Node identifier of the receiver. \\
-		sender & String & Node identifier of the sender. \\
-		email & String & Email address of the sender. \\
-		name & String & Name of the sender. \\
-		sendtime & Integer & Unix timestamp of sendtime. \\
-		sequence & Integer & Sequence number of this message. \\ \hline
+		\textbf{Attributes} & \textbf{Explanation} \\ \hline
+		type & Type of this message. \\
+		content & A marshalled object or sequence numbers. \\
+		sequence & Sequence number of this message. \\
+		class & Class name of an object. \\
+		objectId & Physical ID of an object. \\
+		receiverId & Node identifier of the receiver. \\
+		senderId & Node identifier of the sender. \\
+		email & Email address of the sender. \\
+		name & Name of the sender. \\
+		sendtime & Unix timestamp of sendtime. \\
+		\hline
 	\end{tabular}
 \end{table}
+
+The Grouper API layer sends and receives messages using our own protocol, Grouper Message Protocol.
+In this protocol, a message is a JSON string that contains a marshalled object and attributes.
+Table 2 shows the attributes in a Grouper message.
+There are three important attributes:
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Type.}
+	This attribute means types of messages.
+	There are four types: update messages, delete messages, confirm messages and resend messages.
+	Both update message and delete message contain the marshalled objects of an application.
+	We call these messages \emph{normal messages}. 
+	Both confirm message and resend message contain control information about reliable multicast. 
+	We call these messages control \emph{messages}.
+	\item \textbf{Content.} 
+	If this message is an update message, the content value is a JSON string of a marshalled object..
+	If this message is a delete message, the content value contains the objectId of an object.
+	If this message is a confirm message or a resend message, the content value contains sequence numbers.
+	\item \textbf{Sequence.}
+	This attribute means the sequence number of the message.
+	When a sender sends a new message, the sender increments the sequence number and includes it to the new message.
+	Using both the sequence number and the sender ID identify a unique message.
+\end{itemize}
+
+The receiver attribute contains the addresses of destination devices.
+An address is either a list of device IDs or ``*'' that means multicasting to all devices.
+
+
 
 \begin{algorithm}[t]
 	\caption{Handle messages algorithm}\label{alg:euclid}
@@ -415,9 +426,9 @@ We concentrate on three important attributes here.
 	\end{algorithmic}
 \end{algorithm}
 
-Developers need to send the update, delete and confirm message using client API of Grouper.
-When a user creates a new object or modifies some attributes of an existing object, the device sends an update message that contains the JSON string of this object to all group members.
-When a user deletes an existing object, the device sends a delete message that contains the object ID of this object to all group members.
+Applications send update, delete and confirm messages through the Grouper API.
+When the applications invokes the method grouper.sender.update() of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
+When the applications invokes the method grouper.sender.delete() of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
 To confirm all devices have received all normal messages (update message and delete message) created by a user, the device sends a confirm message to all devices periodically.
 In this confirm message, the sequence number of objects recently created in this device are included.
 
@@ -685,6 +696,17 @@ It represents that DepSky is a virtual storage, and its users invoke operations 
 DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
 In fact, DepSky is suitable for such data storage applications. 
 In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
+
+Compared with data encryption methods, the secret sharing scheme has following features.
+Firstly, like data encryption method, using the secret sharing scheme is also secure because a single shares created by it is unreadable for a server manager.
+However, using data encryption requires key management including generation and distribution.
+Data encryption systems like CloudSky always use trusted authorities for key management.
+In Grouper, we require all cloud services are untrusted.
+Secondly, the secret sharing scheme ensures the data availability in the situation that a small number of untrusted servers are not accessible.
+For the $f(k, n, s)$ scheme in Grouper, the original object can be recovered after accessing more than $k$ untrusted servers.
+Thirdly, the secret sharing scheme improves the anti-attack ability, because the attacker who can access only $k-1$ or less untrusted servers cannot get any readable informations.
+At last, the performance of the secret sharing scheme we used in Grouper is faster than Attribute Based Encryption (ABE) and slower than Advanced Encryption Standard (AES).
+For these reasons, using a secret sharing scheme is more suitable for the Grouper framework than using a data encryption method.
 
 \section{Conclusion}
 
