@@ -155,47 +155,8 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 
 \subsection{Architecture}
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.45]{architecture}
-	\caption{Architecture of Grouper.}
-\end{figure}
-
-Figure 1 describes the architecture of the Grouper framework. 
-An application using Grouper consists of the six following layers:
-
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Grouper API}
-	A developer develops an application without data synchronization at first. 
-	He can use the API provided in the client framework of Grouper to add the synchronization function to his application.
-	\item \textbf{Synchronization.} 
-	Grouper uses the third-party framework for data synchronization.
-	This layer marshall an updated object in a persistent store and send it using the lower reliable message layer.
-	When this layer receives a message, this layer unmarshall the message, reconstructs an object, and put the object into the persistent store.
-	\item \textbf{Reliable Message.}
-	This layer provides a reliable message service with multicasting capability among devices.
-	The destination of a massage is not only the node identifier (ID) of a single device but also "*", which means delivering to all the other nodes.
-	This layer try to deliver a message to other devices even the message is deleted in untrusted servers before some nodes download the message.
-	\item \textbf{Unreliable Message.}
-	This layer provide an unreliable message service multicasting capability among devices.
-	This layer do not ensure the message delivery to other devices.
-	\item \textbf{Data Protection.}
-	Grouper protects user data by a secret sharing scheme in this layer.
-	This layer divides a message into several shares, and uploads these shares to untrusted servers.
-	When this layer downloads shares from untrusted servers, it recovers the original message using the secret sharing scheme.
-	\item \textbf{Untrusted servers.}
-	When a mobile device uploads a share to a server, the server receives it and stores it into a database.
-	When a mobile device downloads a share from a server, the server retrieves it from the database and send it into the device.
-	An untrusted server performs device authentication using device keys.
-\end{itemize}
-
-The following subsections describe details of these layers from the top layer to the bottom layer.
-
 \begin{table*}[t]
-	\small
+	
 	\centering
 	\caption{Client APIs of Grouper.}
 	\label{my-label}
@@ -234,6 +195,57 @@ The following subsections describe details of these layers from the top layer to
 	\end{tabular}
 \end{table*}
 
+\begin{table*}[t]
+	\centering
+	\caption{The API of the synchronization layer}
+	\label{my-label}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Name} & \textbf{Description} \\ \hline
+		marshall(o) & Marshalls the object o and returns the marshalled byte array. \\
+		sync(b) & Unmarshalls the byte array b to the object and puts the object into the persistent store. \\ \hline
+	\end{tabular}
+\end{table*}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.45]{architecture}
+	\caption{Architecture of Grouper.}
+\end{figure}
+
+Figure 1 describes the architecture of the Grouper framework. 
+An application using Grouper consists of the six following layers:
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Grouper API}
+	A developer develops an application without data synchronization at first. 
+	He can use the API provided in the client framework of Grouper to add the synchronization function to his application.
+	\item \textbf{Sync Plug-in.} 
+	Grouper uses the third-party framework for data synchronization.
+	This layer marshall an updated object in a persistent store and send it using the lower reliable message layer.
+	When this layer receives a message, this layer unmarshall the message, reconstructs an object, and put the object into the persistent store.
+	\item \textbf{Reliable Message.}
+	This layer provides a reliable message service with multicasting capability among devices.
+	The destination of a massage is not only the node identifier (ID) of a single device but also "*", which means delivering to all the other nodes.
+	This layer try to deliver a message to other devices even the message is deleted in untrusted servers before some nodes download the message.
+	\item \textbf{Unreliable Message.}
+	This layer provide an unreliable message service multicasting capability among devices.
+	This layer do not ensure the message delivery to other devices.
+	\item \textbf{Data Protection.}
+	Grouper protects user data by a secret sharing scheme in this layer.
+	This layer divides a message into several shares, and uploads these shares to untrusted servers.
+	When this layer downloads shares from untrusted servers, it recovers the original message using the secret sharing scheme.
+	\item \textbf{Untrusted servers.}
+	When a mobile device uploads a share to a server, the server receives it and stores it into a database.
+	When a mobile device downloads a share from a server, the server retrieves it from the database and send it into the device.
+	An untrusted server performs device authentication using device keys.
+\end{itemize}
+
+The following subsections describe details of these layers from the top layer to the bottom layer.
+
 \subsection{Grouper API}
 
 The Grouper framework provides object synchronization among mobile devices throughput a simple API.
@@ -248,15 +260,18 @@ The application can use this callback function to change the values that are sho
 The method grouper.confirm() is used for realizing reliable messaging.
 We will describe reliable messaging in Section 3.4.
 
-The Grouper API layer rely on two lower layers: the synchronization layer and the reliable messaging layer.
-When an object is updated in a local device, the synchronization layer marshall an updated object and obtains a message.
+The Grouper API layer rely on two lower layers: the sync plug-in layer and the reliable messaging layer.
+When an object is updated in a local device, the sync plug-in layer marshall an updated object and obtains a message.
 Next, the Grouper API layer sends this messages using the reliable messaging layer.
 When an object is updated in an other device, the Grouper API layer receives a message using the reliable messaging layer.
-Next, the Grouper API layer updated the object by passing the received message to the synchronization layer.
+Next, the Grouper API layer updated the object by passing the received message to the sync plug-in layer.
 
-We have not implemented the synchronization layer by ourselves, but we make this layer as a pluggable module.
+We have not implemented the sync plug-in layer by ourselves, but we make this layer as a pluggable module.
 This is because there are many such synchronization modules that provide various features, and application requirements also vary.
 Each application developer should choose a suitable module based on a consistency model and other requirements.
+As described in Table 2, the sync plug-in layer should provide the $marshall(o)$ and $sync(b)$ functions.
+Grouper invokes them to get marshalled data from the persistent store and save unmarshalled data into the persistent store.
+
 Currently, we use the Sync framework [12] as a data synchronization module.
 The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
 Application developers can use other data synchronization modules, such as Ensemblesm\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
@@ -399,8 +414,6 @@ There are three important attributes:
 The receiver attribute contains the addresses of destination devices.
 An address is either a list of device IDs or ``*'' that means multicasting to all devices.
 
-
-
 \begin{algorithm}[t]
 	\caption{Handle messages algorithm}\label{alg:euclid}
 	\begin{algorithmic}[1]		
@@ -426,17 +439,29 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 	\end{algorithmic}
 \end{algorithm}
 
-Applications send update, delete and confirm messages through the Grouper API.
-When the applications invokes the method grouper.sender.update() of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
-When the applications invokes the method grouper.sender.delete() of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
-To confirm all devices have received all normal messages (update message and delete message) created by a user, the device sends a confirm message to all devices periodically.
-In this confirm message, the sequence number of objects recently created in this device are included.
+Applications send update, delete and confirm messages through the Grouper API and send resend message after receiving messages automatically.
+When the applications invoke the method grouper.sender.update() of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
+When the applications invoke the method grouper.sender.delete() of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
+When the applications invoke the method grouper.confirm(), the Grouper API layer sends a confirm message to all devices. 
+This confirm message includes the sequence numbers of objects that are recently created in this device.
+Generally, the method grouper.confirm() is invoked at the following occasions:
 
-Algorithm 1 describe the handle process when a device get some messages.
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Periodically.}
+	For example, an application sends a confirm message now, and it will try to send a confirm message after the TTL because the shares of normal messages are deleted in untrusted servers after the TTL.
+	\item \textbf{After the device becomes online.} 
+	Sometimes, a device is offline and cannot send a confirm message after the TTL.
+	Grouper tries to send a confirm message when this devices becomes online.
+\end{itemize}
+
+Algorithm 1 describes the handle process when the Grouper API layer receives messages.
 For an update message or a delete message, Grouper invokes the API provided in third-party synchronization framework to get the object into persistent store.
-Fo ra confirm message, Grouper gets the sequence numbers from the message content and removes those sequence numbers which is existing in the device.
+For a confirm message, Grouper gets the sequence numbers from the message content and removes those sequence numbers which is existing in the device.
 Then Grouper creates a resend message that contains missing sequence numbers and sends it to the sender of this confirm message.
-For a resend messages, Grouper gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
+For a resend messages, the Grouper API layer gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
 
 \subsection{Group Management}
 
@@ -454,7 +479,7 @@ The owner can add other members to an untrusted server by the master key.
 After creating a group, the owner can invite a new member to his group. 
 To join the group, the new member prepares his user information at first. 
 The owner invites the new member by a face-to-face way rather than using central servers. 
-Before inviting, Grouper establishes connection between their devices using local secure links like \emph{Multipeer Connectivity}\cite{mc}. 
+Before inviting, Grouper establishes connection between their devices using a local safe communication channel like \emph{Multipeer Connectivity}\cite{mc}. 
 Firstly, the new member sends user information and a node identifier to the owner. 
 Owner saves the user information and the node identifier of the new member to his device. 
 Secondly, the owner registers the new member on multiple untrusted servers by submitting the node identifier of the new member. 
