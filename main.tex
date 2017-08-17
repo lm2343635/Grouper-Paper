@@ -181,7 +181,7 @@ An application using Grouper consists of the six following layers:
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item \textbf{Application.}
+	\item \textbf{Grouper API}
 	A developer develops an application without data synchronization at first. 
 	He can use the API provided in the client framework of Grouper to add the synchronization function to his application.
 	\item \textbf{Synchronization.} 
@@ -204,6 +204,62 @@ An application using Grouper consists of the six following layers:
 	When a mobile device downloads a share from a server, the server retrieves it from the database and send it into the device.
 	An untrusted server performs device authentication using device keys.
 \end{itemize}
+
+The following subsections describe details of these layers from the top layer to the bottom layer.
+
+\begin{table*}[t]
+	\small
+	\centering
+	\caption{Client APIs of Grouper.}
+	\label{my-label}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Methods} & \textbf{Semantics} \\ \hline
+		grouper.\textbf{setup}(appId, dataStack) & 
+		\begin{tabular}{@{}l@{}}
+			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
+			unique. Datastack can be created by invoking the API provided in the Sync \\
+			framework.
+		\end{tabular}  \\ \hline
+		grouper.sender.\textbf{update}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method after creating a new object or modifying an existing object. \\
+			Developers must ensure  this object has been saved to persistent store before\\
+			invoking update method.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{delete}(object) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method when a user wants to delete an existing object. Developers \\
+			need not to delete the object and save to persistent store before invoking delete \\ 
+			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
+			object. Grouper will delete the object and save it to persistent store automatically \\
+			after finishing message transportation.
+		\end{tabular} \\ \hline
+		grouper.receiver.\textbf{receive}(callback) & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method if a user wants to synchronize data from untrusted servers.\\
+			Callback functions is provided for executing UI updating code.
+		\end{tabular} \\ \hline
+		grouper.sender.\textbf{confirm}() & 
+		\begin{tabular}{@{}l@{}}
+			Invoke this method to send confirm message to other group members. \\
+		\end{tabular} \\ \hline
+	\end{tabular}
+\end{table*}
+
+\subsection{Grouper API}% 3.3
+
+The Grouper framework provides object synchronization among mobile devices throughput a simple API.
+A developer can add object synchronization functions to a standalone application with a few lines of code.
+Table 1 shows the API of Grouper.
+An application initializes the framework by invoking the method grouper.setup().
+When the application needs to update an object in all devices, the application invokes the method grouper.sender.update().
+When the application needs to delete an object in all devices, the application invokes the method grouper.sender.delete().
+The the application uses the method grouper.receiver.receive() to register a callback function.
+This callback function is called when another node updates an object and its local mirror has been updated.
+The application can use this callback function to change the values that are shown in a user interface screen.
+The method grouper.confirm() is used for realizing reliable messaging.
+We will describe reliable messaging in Section 3.X.
 
 \subsection{Data Synchronization}
 
@@ -261,7 +317,7 @@ We should consider the confliction problem in data synchronization. Most data sh
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.38]{reliable_sync}
-	\caption{Reliable synchronization.}
+	\caption{Implementing reliable messaging with sequence numbers.}
 \end{figure}
 
 Grouper should provide a reliable synchronization service. 
@@ -394,46 +450,6 @@ Secondly, the owner registers the new member on multiple untrusted servers by su
 Thirdly, untrusted servers returns access keys for the new member to the owner. 
 Lastly, the owner sends the access keys, server addresses and the list of existing members to the new member. 
 After receiving them, the new member can access these untrusted servers with the keys.
-
-\begin{table*}[t]
-	\small
-	\centering
-	\caption{Client APIs of Grouper.}
-	\label{my-label}
-	\begin{tabular}{ll}
-		\hline
-		\textbf{Methods} & \textbf{Semantics} \\ \hline
-		grouper.\textbf{setup}(appId, dataStack) & 
-		\begin{tabular}{@{}l@{}}
-			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
-			unique. Datastack can be created by invoking the API provided in the Sync \\
-			framework.
-		\end{tabular}  \\ \hline
-		grouper.sender.\textbf{update}(object) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method after creating a new object or modifying an existing object. \\
-			Developers must ensure  this object has been saved to persistent store before\\
-			invoking update method.
-		\end{tabular} \\ \hline
-		grouper.sender.\textbf{delete}(object) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method when a user wants to delete an existing object. Developers \\
-			need not to delete the object and save to persistent store before invoking delete \\ 
-			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
-			object. Grouper will delete the object and save it to persistent store automatically \\
-			after finishing message transportation.
-		\end{tabular} \\ \hline
-		grouper.receiver.\textbf{receive}(callback) & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method if a user wants to synchronize data from untrusted servers.\\
-			Callback functions is provided for executing UI updating code.
-		\end{tabular} \\ \hline
-		grouper.sender.\textbf{confirm}() & 
-		\begin{tabular}{@{}l@{}}
-			Invoke this method to send confirm message to other group members. \\
-		\end{tabular} \\ \hline
-	\end{tabular}
-\end{table*}
 
 \begin{table*}[t]
 	\small
