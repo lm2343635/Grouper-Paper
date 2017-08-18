@@ -10,6 +10,8 @@
 \usepackage{xcolor}
 \usepackage{listings}
 
+\algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
+
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}  
 \renewcommand{\algorithmicensure}{\textbf{Output:}}  
 \graphicspath{{figure/}}
@@ -158,11 +160,11 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 \begin{table*}[t]
 	
 	\centering
-	\caption{Client APIs of Grouper.}
+	\caption{Client API of Grouper.}
 	\label{my-label}
 	\begin{tabular}{ll}
 		\hline
-		\textbf{Methods} & \textbf{Semantics} \\ \hline
+		\textbf{Method} & \textbf{Description} \\ \hline
 		grouper.\textbf{setup}(appId, dataStack) & 
 		\begin{tabular}{@{}l@{}}
 			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
@@ -197,11 +199,11 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 
 \begin{table*}[t]
 	\centering
-	\caption{The API of the synchronization layer}
+	\caption{The API of the sync plug-in layer}
 	\label{my-label}
 	\begin{tabular}{ll}
 		\hline
-		\textbf{Name} & \textbf{Description} \\ \hline
+		\textbf{Method} & \textbf{Description} \\ \hline
 		marshall(o) & Marshalls the object o and returns the marshalled byte array. \\
 		sync(b) & Unmarshalls the byte array b to the object and puts the object into the persistent store. \\ \hline
 	\end{tabular}
@@ -272,11 +274,9 @@ Each application developer should choose a suitable module based on a consistenc
 As described in Table 2, the sync plug-in layer should provide the $marshall(o)$ and $sync(b)$ functions.
 Grouper invokes them to get marshalled data from the persistent store and save unmarshalled data into the persistent store.
 
-Currently, we use the Sync framework [12] as a data synchronization module.
-The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
-Application developers can use other data synchronization modules, such as Ensemblesm\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
-
-Because we implement our client framework in Objective-C at first, we use the Sync framework[12] for data synchronization. 
+Because we implement our client framework in Objective-C at first, we use the Sync framework\cite{sync} as a data synchronization module currently.
+ The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
+ Application developers can use other data synchronization modules, such as Ensemblesm\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
 To assist the Sync framework, we design our own messaging function called Grouper Message Protocol (Section 3.6). 
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices.
 
@@ -290,11 +290,11 @@ To address this problem, we use a reliable multicasting technique in distribute 
 In this reliable multicasting technique, each message has a sequence number for each sender.
 Each member keeps the newest sequence numbers for senders and detects missing messages.
 If a member notices missing a message from a sender, the member asks the sender to resend the message.
-For example, consider that a sender sends Message No.25 to all other members using a multicast address.
-When a member receives this Message No.25, the member compares the sequence number 25 with the newest sequence number of the sender.
-If the the newest sequence number of the sender is 23, this means the member missed Message No.24.
-The member asks the sender to resend Message No.24.
-The sender will send Message No.24 to the asked member using a unicast address.
+For example, consider that a sender sends Message No.3 to all other members using a multicast address.
+When a member receives this Message No.3, the member compares the sequence number 3 with the newest sequence number of the sender.
+If the the newest sequence number of the sender is 1, this means the member missed Message No.2.
+The member asks the sender to resend Message No.2.
+The sender will send Message No.2 to the asked member using a unicast address.
 
 This basic reliable multicasting technique works well for continuous medias, such as video streaming in Internet communication.
 However, this does not work if receivers become often offline for a long time and servers delete messages soon.
@@ -404,10 +404,12 @@ There are three important attributes:
 	\item \textbf{Content.} 
 	If this message is an update message, the content value is a JSON string of a marshalled object..
 	If this message is a delete message, the content value contains the objectId of an object.
-	If this message is a confirm message or a resend message, the content value contains sequence numbers.
+	If this message is a confirm message, the content value contains max sequence number of messages created in the device of the sender.
+	If this message is a resend message, the content value contains the range of missing messages' sequence numbers.
 	\item \textbf{Sequence.}
 	This attribute means the sequence number of the message.
-	When a sender sends a new message, the sender increments the sequence number and includes it to the new message.
+	When a sender sends a new normal message, the sender increments the sequence number and includes it to the new message.
+	The sequence number of any control messages is 0, because it need not to resend.
 	Using both the sequence number and the sender ID identify a unique message.
 \end{itemize}
 
@@ -415,27 +417,53 @@ The receiver attribute contains the addresses of destination devices.
 An address is either a list of device IDs or ``*'' that means multicasting to all devices.
 
 \begin{algorithm}[t]
-	\caption{Handle messages algorithm}\label{alg:euclid}
+	\caption{Handle message algorithm}\label{alg:euclid}
 	\begin{algorithmic}[1]		
-		\Procedure{handleMessages}{$msgs$}
-		\For{$msg$ \textbf{in} $msgs$} 
-		\If{$msg.sender$ not exist}
-		\State $saveUser(msg)$
+		\Procedure{onMessageReceived}{$msg$}
+		\LeftComment Check duplicate message.
+		\State  $historyMsgs \gets getMsgsBySender(msg.sender)$
+		\If{$msg \in historyMsgs$}
+		\State \textbf{return}
 		\EndIf
-		\If{$msg.type \in \left \{ "update", "delete" \right \} $}
-		\State $sync(message)$
-		\ElsIf{$msg.type \in \left \{ "confirm" \right \} $}
+		\State $lastMsg \gets historyMsgs.last()$
+		\State $historyMsgs.add(msg)$
+		
+		\LeftComment Save user information of sender.
+		\If{$!isSenderExisted(msg.sender)$}
+		\State $saveUser(msg.sender, msg.email, msg.name)$
+		\EndIf
+		 
+		\LeftComment Begin basic reliable multicast.
+		\If{$lastMsg.seq + 1 != msg.seq$}
+		\State $missingMsg \gets generateSeqs(lastMsg.seq + 1, msg.seq)$
+		\State $sendResendMsg(missingSeqs)$
+		\EndIf
+		
+		\LeftComment Handle the message by its type.
+		\If{$msg.type = "update"$}
+		\State $sync.updateRemote(msg)$
+		\ElsIf{$msg.type = "delete"$}
+		\State $sync.deleteRemote(msg)$
+		\ElsIf{$msg.type = "confirm"$}
+		\State $maxSeq = getMaxSeqFrom(msg.content)$
+		\State $missingMsg \gets generateSeqs(lastMsg.seq + 1, maxSeg)$
+		\State $sendResendMsg(missingSeqs)$
+		\ElsIf{$msg.type = "resend"$}
 		\State $seqs \gets getSeqs(msg.content)$
-		\State $seqs \gets removeExisted(seqs)$
-		\State $resendMsg(seqs)$
-		\ElsIf{$msg.type \in \left \{ "resend" \right \} $}
-		\If{$msg.receiver = currentUser$}
-		\State $seqs \gets getSeqs(msg.content)$
-		\State $sendExistingMsgs(seqs)$
-		\EndIf
-		\EndIf
+		\For{$\forall seq \in seqs$}
+		\State $missingMsg \gets getMsg(seq)$
+		\State $sendMsg(missingMsg)$
 		\EndFor
+		\EndIf
 		\EndProcedure
+		
+		\Function{generateSeqs}{$min, max$}
+		\State $missingSeqs \gets newArray()$
+		\For{$\forall i \in [min, max] \bigcap N$} 
+		\State $missingSeqs.add(i)$
+		\EndFor
+		\State \textbf{return} $missingSeqs$
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
@@ -458,34 +486,38 @@ Generally, the method grouper.confirm() is invoked at the following occasions:
 \end{itemize}
 
 Algorithm 1 describes the handle process when the Grouper API layer receives messages.
-For an update message or a delete message, Grouper invokes the API provided in third-party synchronization framework to get the object into persistent store.
-For a confirm message, Grouper gets the sequence numbers from the message content and removes those sequence numbers which is existing in the device.
-Then Grouper creates a resend message that contains missing sequence numbers and sends it to the sender of this confirm message.
+For an update message or a delete message, Grouper invokes the method $sync()$ of sync plug-in layer to put the object into the persistent store.
+For a confirm message, the Grouper API layer creates the sequence numbers from the message content and removes those sequence numbers which exist in the device.
+Next, the Grouper API layer creates a resend message that contains missing sequence numbers and sends it to the sender of this confirm message.
 For a resend messages, the Grouper API layer gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
 
 \subsection{Group Management}
 
-\subsubsection{Creating a Group}
+To manage a group, Grouper provides the following two functions:
 
-A user creates a group, and he becomes the owner of this group.  
-Before creating a group, the owner prepares his own user information including his email and name, multiple untrusted servers, a group ID and a group name. 
-Next, he initializes this group on all untrusted server by submitting his node identifier. 
-The node identifier, which represents his device, is generated by Grouper randomly when the application is launched at the first time. 
-In each untrusted server, the Web service initializes this new group and returns a master key including the highest privilege to the owner. 
-The owner can add other members to an untrusted server by the master key.
-
-\subsubsection{Inviting a Member}
-
-After creating a group, the owner can invite a new member to his group. 
-To join the group, the new member prepares his user information at first. 
-The owner invites the new member by a face-to-face way rather than using central servers. 
-Before inviting, Grouper establishes connection between their devices using a local safe communication channel like \emph{Multipeer Connectivity}\cite{mc}. 
-Firstly, the new member sends user information and a node identifier to the owner. 
-Owner saves the user information and the node identifier of the new member to his device. 
-Secondly, the owner registers the new member on multiple untrusted servers by submitting the node identifier of the new member. 
-Thirdly, untrusted servers returns access keys for the new member to the owner. 
-Lastly, the owner sends the access keys, server addresses and the list of existing members to the new member. 
-After receiving them, the new member can access these untrusted servers with the keys.
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Group Creation.}
+	A user creates a group, and he becomes the owner of this group.  
+	Before creating a group, the owner prepares his own user information including his email and name, multiple untrusted servers, a group ID and a group name. 
+	Next, he initializes this group on all untrusted server by submitting his node identifier. 
+	The node identifier, which represents his device, is generated by Grouper randomly when the application is launched at the first time. 
+	In each untrusted server, the Web service initializes this new group and returns a master key including the highest privilege to the owner. 
+	The owner can add other members to an untrusted server by the master key.
+	\item \textbf{Member Invitation.} 
+	After creating a group, the owner can invite a new member to his group. 
+	To join the group, the new member prepares his user information at first. 
+	The owner invites the new member by a face-to-face way rather than using central servers. 
+	Before inviting, Grouper establishes connection between their devices using a local safe communication channel like \emph{Multipeer Connectivity}\cite{mc}. 
+	Firstly, the new member sends user information and a node identifier to the owner. 
+	Owner saves the user information and the node identifier of the new member to his device. 
+	Secondly, the owner registers the new member on multiple untrusted servers by submitting the node identifier of the new member. 
+	Thirdly, untrusted servers returns access keys for the new member to the owner. 
+	Lastly, the owner sends the access keys, server addresses and the list of existing members to the new member. 
+	After receiving them, the new member can access these untrusted servers with the keys.
+\end{itemize}
 
 \begin{table*}[t]
 	\small
@@ -545,7 +577,7 @@ It is based on the following frameworks.
 	\emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to manage model layer objects. 
 	\item 
-	\emph{Sync}\cite{sync}, a synchronization framework for \emph{Core Data} using JSON. 
+	\emph{Sync}, a synchronization framework for \emph{Core Data} using JSON. 
 	When a user sends messages, Grouper uses it to create JSON strings from objects. 
 	When an other user receives messages, Grouper uses it to parse JSON strings and synchronize the recovered objects into \emph{Core Data}.
 	\item 
