@@ -167,39 +167,31 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 		\textbf{Method} & \textbf{Description} \\ \hline
 		grouper.\textbf{setup}(appId, dataStack) & 
 		\begin{tabular}{@{}l@{}}
-			Setup Grouper with appId and dataStack. AppId of an application must be \\ 
-			unique. Datastack can be created by invoking the API provided in the Sync \\
+			This method setups Grouper with appId and dataStack. AppId is a unique ID of\\ an application. Datastack is used by the synchronization plugin. \\
 			framework.
 		\end{tabular}  \\ \hline
 		grouper.sender.\textbf{update}(object) & 
 		\begin{tabular}{@{}l@{}}
-			Invoke this method after creating a new object or modifying an existing object. \\
-			Developers must ensure  this object has been saved to persistent store before\\
-			invoking update method.
+			An application invokes this method after creating a new object or modifying an\\ existing object. Grouper performs updating asynchronously and can send messages\\ to other devices.
 		\end{tabular} \\ \hline
 		grouper.sender.\textbf{delete}(object) & 
 		\begin{tabular}{@{}l@{}}
-			Invoke this method when a user wants to delete an existing object. Developers \\
-			need not to delete the object and save to persistent store before invoking delete \\ 
-			method. Once you delete it, Grouper cannot create Grouper message from this \\ 
-			object. Grouper will delete the object and save it to persistent store automatically \\
-			after finishing message transportation.
+			An application invokes this method when the application wants to delete an existing\\ object. Grouper will delete the object and save it to persistent store automatically\\ after sending a message to other devices.
 		\end{tabular} \\ \hline
 		grouper.receiver.\textbf{receive}(callback) & 
 		\begin{tabular}{@{}l@{}}
-			Invoke this method if a user wants to synchronize data from untrusted servers.\\
-			Callback functions is provided for executing UI updating code.
+			An applications invokes this method to register the callback function that is called\\ after Grouper processes received messages and update objects according to the\\ messages. The application can use this callback function to update the user screen. 
 		\end{tabular} \\ \hline
 		grouper.sender.\textbf{confirm}() & 
 		\begin{tabular}{@{}l@{}}
-			Invoke this method to send confirm message to other group members. \\
+			An application needs to invoke this method periodically or occasionally to send\\ confirm messages to other devices.
 		\end{tabular} \\ \hline
 	\end{tabular}
 \end{table*}
 
 \begin{table*}[t]
 	\centering
-	\caption{The API of the sync plug-in layer}
+	\caption{The API of the synchronization plugin.}
 	\label{my-label}
 	\begin{tabular}{ll}
 		\hline
@@ -262,16 +254,16 @@ The application can use this callback function to change the values that are sho
 The method grouper.confirm() is used for realizing reliable messaging.
 We will describe reliable messaging in Section 3.4.
 
-The Grouper API layer rely on two lower layers: the sync plug-in layer and the reliable messaging layer.
-When an object is updated in a local device, the sync plug-in layer marshall an updated object and obtains a message.
+The Grouper API layer rely on two lower layers: the synchronization plugin and the reliable messaging layer.
+When an object is updated in a local device, the synchronization plugin marshall an updated object and obtains a message.
 Next, the Grouper API layer sends this messages using the reliable messaging layer.
 When an object is updated in an other device, the Grouper API layer receives a message using the reliable messaging layer.
-Next, the Grouper API layer updated the object by passing the received message to the sync plug-in layer.
+Next, the Grouper API layer updated the object by passing the received message to the synchronization plugin.
 
-We have not implemented the sync plug-in layer by ourselves, but we make this layer as a pluggable module.
+We have not implemented the synchronization plugin by ourselves, but we make this layer as a pluggable module.
 This is because there are many such synchronization modules that provide various features, and application requirements also vary.
 Each application developer should choose a suitable module based on a consistency model and other requirements.
-As described in Table 2, the sync plug-in layer should provide the $marshall(o)$ and $sync(b)$ functions.
+As described in Table 2, the synchronization plugin should provide the $marshall(o)$ and $sync(b)$ functions.
 Grouper invokes them to get marshalled data from the persistent store and save unmarshalled data into the persistent store.
 
 Because we implement our client framework in Objective-C at first, we use the Sync framework\cite{sync} as a data synchronization module currently.
@@ -486,7 +478,7 @@ Generally, the method grouper.confirm() is invoked at the following occasions:
 \end{itemize}
 
 Algorithm 1 describes the handle process when the Grouper API layer receives messages.
-For an update message or a delete message, Grouper invokes the method $sync()$ of sync plug-in layer to put the object into the persistent store.
+For an update message or a delete message, Grouper invokes the method $sync()$ of synchronization plugin to put the object into the persistent store.
 For a confirm message, the Grouper API layer creates the sequence numbers from the message content and removes those sequence numbers which exist in the device.
 Next, the Grouper API layer creates a resend message that contains missing sequence numbers and sends it to the sender of this confirm message.
 For a resend messages, the Grouper API layer gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
@@ -526,43 +518,42 @@ To manage a group, Grouper provides the following two functions:
 	\label{my-label}
 	\begin{tabular}{cccccc}
 		\hline
-		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Stand Alone Application LoC} & \textbf{Increased LoC} \\ \hline 
-		Test & iOS & Swift & 1 & 621 & 8760 \\
-		Account Book & iOS & Objective-C & 5 & 8760 & 190 \\ \hline
+		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Standalone Application LoC} & \textbf{Increased LoC} \\ \hline
+		Account Book & iOS & Objective-C & \multicolumn{1}{r}{5} & \multicolumn{1}{r}{8076} & \multicolumn{1}{r}{190} \\ 
+		Notes & macOS & Swift & \multicolumn{1}{r}{5} & \multicolumn{1}{r}{???} & \multicolumn{1}{r}{???} \\
+		Test & iOS & Swift & \multicolumn{1}{r}{1} & \multicolumn{1}{r}{621} & \multicolumn{1}{r}{18} \\  \hline 
 	\end{tabular}
 \end{table*}
 
 \section{Implementation}
 
-Grouper consists of a Web service running on multiple untrusted servers and a client framework for developing applications.
-We introduce the implementation of the Web service (Section 4.1), the implementation of the client framework (Section 4.2) and demo applications (Section 4.3) in this section.
+Grouper consists of a Web service running on multiple untrusted servers and a client framework for developing　mobile applications.
+We describe the implementation of the Web service (Section 4.1), the implementation of the client framework (Section 4.2) and demo applications (Section 4.3) in this section.
 
 \subsection{Web Service}
 
-Grouper needs its own Web service rather than using commercial general cloud services like Amazon S3, Google Cloud for the following reasons:
+We have chosen implementing own Web service rather than using commercial general cloud services like Amazon Simple Storage Service (S3), Google Cloud Storage, and Microsoft Azure Storage for the following reasons:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item The Web service must provide reliable synchronization based on the \emph{Grouper Message} protocol.
-	\item The Web service must ensure that shares are deleted after a prescriptive time.
+	\item The Web service must support on the Grouper Message protocol.
+	\item The Web service must delete shares after a prescriptive time.
 \end{itemize}
 
-Our Web service provides RESTful API to transfer data with clients. 
-It runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. 
-We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API, and Hibernate, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service. 
+Our Web service provides a RESTful API to clients.
+It runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies\cite{tomcat}. 
+We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API\cite{spring}, and Hibernate, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service\cite{hibernate}. 
 
-Our Web service includes three kinds of entities. 
-They are \emph{Group}, \emph{User} and \emph{Transfer} entities. 
+Our Web service includes three kinds of entities: \emph{Group}, \emph{User} and \emph{Transfer} entities. 
 A \emph{Group} entity saves a group ID, a group name and its owner. 
 A \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
-A \emph{Transfer} entity saves a share generated with a secret sharing scheme, the time when the user uploads the share. 
-For each user, there is a unique access key for him in an untrusted server. For a group, one of a user is its owner who has the highest privilege of this group.
+A \emph{Transfer} entity saves a share generated with the secret sharing scheme, the time when a client uploads the share. 
 
 \subsection{Client}
 
-Grouper's client framework is developed in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
+Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
 It is based on the following frameworks.   
 
 \begin{itemize}
@@ -578,27 +569,35 @@ It is based on the following frameworks.
 	Grouper uses it to manage model layer objects. 
 	\item 
 	\emph{Sync}, a synchronization framework for \emph{Core Data} using JSON. 
-	When a user sends messages, Grouper uses it to create JSON strings from objects. 
-	When an other user receives messages, Grouper uses it to parse JSON strings and synchronize the recovered objects into \emph{Core Data}.
+	This framework marshalls objects into JSON strings and vice versa. 
+	Grouper uses it in the synchronization plugin.
 	\item 
 	\emph{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
 	\item 
-	\emph{AFNetworking}\cite{afnetworking}, a delightful networking library in Objective-C. 
+	\emph{AFNetworking}\cite{afnetworking}, a networking library in Objective-C. 
 	Grouper uses it to invoke the RESTful API provided by our Web services running on multiple untrusted servers. 
 \end{itemize}
 
 \subsection{Applications}
 
-Using Grouper framework, we are developing the following applications. 
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.5]{account_book}
+	\caption{Screenshots of demo application Account Book.}
+\end{figure}
+
+Using the Grouper framework, we have developed the following applications. 
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \emph{Account Book}, an iOS application in Objective-C, records the income and expenditure of a group.
-	\item \emph{Test}, a benchmark iOS aapplication in Swift, tests the performance of Grouper.
 	\item \emph{Notes}, a macOS application in Swift, takes shared notes for a small group.
+	\item \emph{Test}, a benchmark iOS aapplication in Swift, tests the performance of Grouper.
 \end{itemize}
+
+Figure 4(a) shows the screenshot of adding a record in Account Book. Figure 4(b) shows the screenshoot of data synchronization in Account Book.
 
 \begin{figure*}[t]
 	\centering
@@ -697,7 +696,7 @@ Thus, a group of an application by Grouper is able to expand to 100 members.
 
 To answer the third question, we design the single message transportation experiment with different the secret sharing scheme.
 Specifically, we change the parameter ${k}$  and ${n}$ of the secret sharing scheme and test the processing time of sending and receiving a single message.
-Figure 5 shows the relationship between processing time and the data set ${\left \{ \left (k, n \right )\mid 0< k < n, k=3i, n=3j+3, i, j\in\left [ 1,5 \right ]\bigcap N\right \}}$.
+Figure 6 shows the relationship between processing time and the data set ${\left \{ \left (k, n \right )\mid 0< k < n, k=3i, n=3j+3, i, j\in\left [ 1,5 \right ]\bigcap N\right \}}$.
 For sending a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
 However, for receiving a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
 
@@ -705,8 +704,8 @@ However, for receiving a single message, as the parameter ${k}$ increased, proce
 
 We need more data to verify the result introduced above further. 
 We use control variate method to design this experiment.
-Figure 6a shows the relationship between processing time and ${n}$, here ${k=3}$ and ${n \in \left \{ x\mid x=3i, i \in \left [ 2, 10 \right ] \bigcap N \right \}}$. 
-Figure 6b shows the relationship between processing time and ${k}$, here ${n=30}$ and ${k \in \left \{ x\mid x=3i, i \in \left [ 1, 9 \right ] \bigcap N \right \}}$. 
+Figure 7(a) shows the relationship between processing time and ${n}$, here ${k=3}$ and ${n \in \left \{ x\mid x=3i, i \in \left [ 2, 10 \right ] \bigcap N \right \}}$. 
+Figure 7(b) shows the relationship between processing time and ${k}$, here ${n=30}$ and ${k \in \left \{ x\mid x=3i, i \in \left [ 1, 9 \right ] \bigcap N \right \}}$. 
 Here, we can answer the third question.
 With the increase of ${n}$, processing time of sending and receiving increase linearly.
 With the increase of ${k}$, processing time of sending increase linearly and processing of receiving does not change.
