@@ -413,7 +413,7 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 	\caption{Handle message algorithm}\label{alg:euclid}
 	\begin{algorithmic}[1]		
 		\Procedure{onMessageReceived}{$msg$}
-		\LeftComment Check duplicate message and save sender.
+		\LeftComment Check duplicate message.
 		\State  $historyMsgs \gets getMsgsBySender(msg.sender)$
 		\If{$msg \in historyMsgs$}
 		\State \textbf{return}
@@ -421,14 +421,15 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 		\State $lastMsg \gets historyMsgs.last()$
 		\State $historyMsgs.add(msg)$
 		
+		\LeftComment Save user information of the sender.
 		\If{$!isSenderExisted(msg.sender)$}
 		\State $saveUser(msg.sender, msg.email, msg.name)$
 		\EndIf
 		 
 		\LeftComment Begin basic reliable multicast.
 		\If{$lastMsg.seq + 1 != msg.seq$}
-		\State $missingMsg \gets generateSeqs(lastMsg.seq + 1, msg.seq)$
-		\State $resendMsg \gets createResendMsg(missingSeqs)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, msg.seq)$
+		\Comment Create a resend message by the minimum and maximum sequence number.
 		\State $sendMsg(resendMsg)$
 		\EndIf
 		
@@ -439,8 +440,8 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 		\State $sync.deleteRemote(msg)$
 		\ElsIf{$msg.type = "confirm"$}
 		\State $maxSeq = getMaxSeqFrom(msg.content)$
-		\State $missingMsg \gets generateSeqs(lastMsg.seq + 1, maxSeg)$
-		\State $sendResendMsg(missingSeqs)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, maxSeg)$
+		\State $sendMsg(resendMsg)$
 		\ElsIf{$msg.type = "resend"$}
 		\State $seqs \gets getSeqs(msg.content)$
 		\For{$\forall seq \in seqs$}
@@ -449,14 +450,6 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 		\EndFor
 		\EndIf
 		\EndProcedure
-		
-		\Function{generateSeqs}{$min, max$}
-		\State $missingSeqs \gets newArray()$
-		\For{$\forall i \in [min, max] \bigcap N$} 
-		\State $missingSeqs.add(i)$
-		\EndFor
-		\State \textbf{return} $missingSeqs$
-		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
