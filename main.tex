@@ -267,8 +267,8 @@ As described in Table 2, the synchronization plugin should provide the $marshall
 Grouper invokes them to get marshalled data from the persistent store and save unmarshalled data into the persistent store.
 
 Because we implement our client framework in Objective-C at first, we use the Sync framework\cite{sync} as a data synchronization module currently.
- The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
- Application developers can use other data synchronization modules, such as Ensemblesm\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
+The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest edition wins
+Application developers can use other data synchronization modules, such as Ensembles\cite{ensembles}, TICoreDataSync\cite{TICoreDataSync}, etc.
 To assist the Sync framework, we design our own messaging function called Grouper Message Protocol (Section 3.6). 
 Using the Sync framework, we get a JSON string from an updated object, send the JSON to other devices, and update the mirrors of the object in these devices.
 
@@ -309,18 +309,18 @@ A checkgroups message is distributed periodically or after some time after basic
 	\caption{Implementing reliable messaging with sequence numbers.}
 \end{figure}
 
-Figure 2 shows that the sender is sending four messages, No.1 to No.4, to the receiver.
+Figure 2 shows that the sender is sending five messages from No.1 to No.5, to the receiver.
 The sender uploads two messages, No.1 and No.2 using a multicast address.
 The receiver downloads these two messages and becomes offline.
 The servers delete these two messages.
-The sender uploads next two messages, No.3 and No.4  using a multicast address.
+The sender uploads next three messages from No.3 and No.5  using a multicast address.
 The receiver becomes online, but the receiver does not notice that the receiver has missing messages soon.
 
-At this time, the sender sends a special message that includes active sequence numbers, No.1 to No.4.
+At this time, the sender sends a special message that includes the max active sequence number No.5.
 The receiver receives these sequence numbers and compares them with the newest sequence number in the persistent store.
-In Figure 3, the receiver notices that Messages No.3 and No.4 are missing.
-The receiver asks the sender to resend Messages No.3 and No.4.
-The sender will send Messages No.3 and No.4 to the receiver again  using a unicast address.
+In Figure 3, the receiver notices that Messages No.3, No.4 and No.5 are missing.
+The receiver asks the sender to resend Messages No.3, No.4 and No.5 by sending a range $[3, 5]$ to the sender.
+The sender will send Messages No.3 and No.4 to the receiver again using a unicast address.
 
 \subsection{Unreliable Messaging}
 
@@ -399,7 +399,7 @@ There are three important attributes:
 	If this message is a confirm message, the content value contains max sequence number of messages created in the device of the sender.
 	If this message is a resend message, the content value contains the range of missing messages' sequence numbers.
 	\item \textbf{Sequence.}
-	This attribute means the sequence number of the message.
+	This attribute means the continuous sequence number of the message.
 	When a sender sends a new normal message, the sender increments the sequence number and includes it to the new message.
 	The sequence number of any control messages is 0, because it need not to resend.
 	Using both the sequence number and the sender ID identify a unique message.
