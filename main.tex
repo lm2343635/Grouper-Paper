@@ -603,27 +603,27 @@ When the user click the delete button, Account Book invokes the $grouper.sender.
 
 \section{Evaluation}
 
-This section shows the developer efforts to use Grouper and the performance of Grouper.
+This section shows the development efforts to use Grouper and the performance of Grouper.
 
-\subsection{Developer Efforts}
+\subsection{Development Efforts}
 
-We see developer efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
+We see development efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
 As described in Table 1, Grouper provides the simple client APIs for developers.
-To extend a stand alone application, developers invoke the $grouper.setup()$ to set appId and data stack.
-To synchronize data among devices, developers invoke the $grouper.sender.update()$, $grouper.sender.delete()$ and $grouper.receiver.receive()$ method.
-To ensure the data created in a device has been synchronized in other devices, developer invoke the $grouper.confirm()$ method.
+A developer can extend a standalone application to a data sharing application with our client APIs easily.
 
-We have developed the following applications including Account Book, Notes and Test using the Grouper framework.
+To know the LoC developer has to add, we have developed the following applications, Account Book, Notes and Test using the Grouper framework.
 As described in Table 4, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
 \subsection{Performance}
 
-The performance goal is to avoid significantly affecting the user experience with the application developed with Grouper. 
-In our performance experiments, we use the benchmark application \emph{Test} to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n).
-We installed 30 Web services on three different servers (azuma1, azuma2 and azuma3).
-Each server runs a Tomcat server which includes 10 Web services.
-Table 5 shows the hardware and software information of in our performance experiment.
-In our benchmark application, the size of a normal message is about 620 bytes.
+In this subsection, we show that Grouper mobile applications using the Grouper framework provide sufficient performance for small groups of people.
+In our performance experiments, we used the benchmark application \emph{Test} to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n).
+We installed 30 Web services on three different servers.
+Each server ran a Tomcat server instance which hosted 10 Web services.
+Table 5 shows the hardware and software information of our experiment environment.
+In our benchmark application, the size of an object was about 323 bytes.
+This object corresponds to a record of benchmark application Test and contains the creation time of this record.
+When this object was updated in a node, the Grouper API generated a normal message which size was about 656 bytes.
 
 \begin{table}[t]
 	\footnotesize
@@ -635,24 +635,21 @@ In our benchmark application, the size of a normal message is about 620 bytes.
 		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ \hline
 		iPod 5 & A5 & 512MB & iOS 9.3.5 \\
 		iPhone 4s & A5 & 512MB & iOS 9.3.5 \\
-		azuma1 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
-		azuma2 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
-		azuma3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\ \hline
+		Server 1 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
+		Server 2 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\
+		Server 3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 LTS \\ \hline
 	\end{tabular}
 \end{table}
 
-To evaluate whether Grouper meets this goal, we answer the following questions:
+Through experiments, we measured the following processing times of object synchronization (uploading and downloading).
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item How much processing time does Grouper add to the application in data sending and receiving.
-	\item How many users can an application by Grouper support.
-	\item How does the number of servers $n$ and threshold ${k}$ of the secret sharing scheme influence the processing time.
+	\item The processing time according to the number of updated objects (the number of update messages).
+	\item The processing time according to the parameters of the secret sharing scheme.
 \end{itemize}
-
-To answer these questions, we design the following groups of experiments.
 
 \subsubsection{Multiple Message}
 
