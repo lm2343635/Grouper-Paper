@@ -609,7 +609,7 @@ This section shows the development efforts to use Grouper and the performance of
 
 We see development efforts through two factors: the usability of the client API and the code size in the lines of code(LoC) the developer has to add after using Grouper. 
 As described in Table 1, Grouper provides the simple client APIs for developers.
-A developer can extend a standalone application to a data sharing application with our client APIs easily.
+A developer can convert a standalone application to a data sharing application with our client APIs easily.
 
 To know the LoC developer has to add, we have developed the following applications, Account Book, Notes and Test using the Grouper framework.
 As described in Table 4, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
@@ -651,115 +651,108 @@ Through experiments, we measured the following processing times of object synchr
 	\item The processing time according to the parameters of the secret sharing scheme.
 \end{itemize}
 
-\subsubsection{Multiple Message}
+\subsubsection{The processing time according to the number of updated objects}
 
-To answer the first and second questions, we design the multiple message transportation experiment.
+We performed a experiment to measure the processing time of object synchronization according to the number of updated objects.
 In this experiment, we set the secret sharing scheme to ${f(2, 3)}$.
-We send multiple messages from a device and receive them in another device. 
-To ensure the veracity, we send multiple message from iPod 5 generation to iPhone 4s for three time and from iPhone 4s to iPod 5 generation for three times.
-We use the average value of the six groups of data as our experiment results.
-In the next experiments, we also use this method to statistic the results.
+We sent multiple messages from a device and received them in another device. 
+Concretely, We sent multiple message from iPod to iPhone for three time and from iPhone to generation for three times.
+We obtained the average value of these experimental results.
 
-Figure 5 shows the processing time of sending and receiving multiple messages.
+Figure 5 shows the processing time of uploading and downloading multiple messages.
 We divide the processing time into three parts: data sync, secret sharing and network.
-As the number of messages increased, data sync and secret sharing part increased linearly. 
-The network part increased very slowly and sometimes decreased.
+As the number of messages increased, the data sync and secret sharing part increased linearly. 
+The network part increased slowly and sometimes decreased.
 On the whole, the total processing time increased linearly.
-Compared with sending messages, receiving messages cost about two times of processing time.
-These experimental results show that data synchronization within a hundred messages does not influence the user experience.
+Compared with uploading messages, downloading messages cost about two times of processing time.
+Note that object synchronization is done in a background task.
+Note that object synchronization is done asynchronously.
+While the Grouper framework is performing object synchronization, user interface of a mobile application never freezes.
+A user is not aware of data synchronization.
 
-With the increase of the group scale, a device must be able to handle many messages at the same time.
-For example, in 100 devices in a group, each device sends an update message at the same time and then tries to synchronize messages created by others.
-In this situation, each device has to receive and handle 99 messages at the same time.
-Thus, a group of an application by Grouper is able to expand to 100 members.
+The number of messages a device has to handle is independent of the number of devices in a group.
+For example, consider that a group consists of 100 members and their 100 devices.
+When an object is updated in a device, the device has to send a single update message.
+The device divides the message into multiple shares, and uploads them to multiple untrusted servers.
+This process is independent of the number of devices in a group. 
 
-\subsubsection{Single Message with Different Schemes}
+\subsubsection{The processing time according to the parameters of the secret sharing scheme}
 
-To answer the third question, we design the single message transportation experiment with different the secret sharing scheme.
-Specifically, we change the parameter ${k}$  and ${n}$ of the secret sharing scheme and test the processing time of sending and receiving a single message.
-Figure 6 shows the relationship between processing time and the data set ${\left \{ \left (k, n \right )\mid 0< k < n, k=3i, n=3j+3, i, j\in\left [ 1,5 \right ]\bigcap N\right \}}$.
+We performed a experiment to measure the processing time of object synchronization according the parameters of the secret sharing scheme.
+Specifically, we changed the parameter ${k}$  and ${n}$ of the secret sharing scheme and measured the processing time of sending and receiving a single message.
+Figure 6 shows the relationship between processing time and the parameters, where ${0< k < n, k=3i, n=3j+3, 1 \leq i, j \leq 5}$.
 For sending a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
 However, for receiving a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
 
-\subsubsection{Control Variable}
-
-We need more data to verify the result introduced above further. 
-We use control variate method to design this experiment.
-Figure 7(a) shows the relationship between processing time and ${n}$, here ${k=3}$ and ${n \in \left \{ x\mid x=3i, i \in \left [ 2, 10 \right ] \bigcap N \right \}}$. 
-Figure 7(b) shows the relationship between processing time and ${k}$, here ${n=30}$ and ${k \in \left \{ x\mid x=3i, i \in \left [ 1, 9 \right ] \bigcap N \right \}}$. 
+Figure 7(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$ and ${n = 2, 4, 6, ... , 10}$. 
+Figure 7(b) shows the relationship between processing time and the threshold ${k}$, where ${n=30}$ and ${k = 3, 6, 9, ... , 27}$. 
 Here, we can answer the third question.
-With the increase of ${n}$, processing time of sending and receiving increase linearly.
-With the increase of ${k}$, processing time of sending increase linearly and processing of receiving does not change.
-We find the reason is that the time of recovering shares by the secret sharing scheme depends only on the parameter ${n}$.
+As n increased, the processing time of sending and receiving increase linearly. 
+As k increased, the processing time of sending increased linearly and that of receiving did not change. 
 
-From these performance experiment, we can conclude that Grouper is able to support at least 100 members' group and at least 30 untrusted servers.
+\subsection{Discussion About the Numbers of Messages}
 
 \section{Related Work}
 
-Vanish is a system proposed by Geambasu's research group at the University of Washington. 
+Vanish is a self-destruction system\cite{geambasu2009vanish}. 
 Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
-Concretely, to protect a message, Vanish encrypts it with a random encryption key not known to the user, destroys the local copy of the key, and store shares created by a secret sharing scheme of the key in a large, public DHT.
-The key in Vanish is permanently after a period of time, and the encrypted message is permanently unreadable.
-Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which are controlled by a single maintainer. 
-Thus, it not strongly secure due to some special P2P oriented attacks\cite{wolchok2010defeating}. 
-In addition, the surviving time of the key in Vanish cannot be controlled by user. 
+Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares to a public DHT and eliminate the key from the local storage.
+The key in Vanish is removed after a period of time, and the encrypted message is permanently unreadable.
+Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
+Thus, it not strongly secure due to some Sybil attacks\cite{wolchok2010defeating}. 
+In addition, the surviving time of the key in Vanish cannot be controlled by applications. 
 
-To address such issues in Vanish, Zeng et al. at Huazhong University of Science and Technology, propose SafeVanish and SeDas. 
-SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group propose CloudSky, a controllable data self-destruction system for untrusted cloud storage. 
-In CloudSky, user can control the surviving time of a message.Taking advantage of ABE, user can also define the access control policy by themselves.
+To address these issues in Vanish, Zeng et al., propose SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
+SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group proposes CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
+In CloudSky, a user can control the surviving time of a message.
+Taking advantage of ABE, a user can also define the access control policy.
 
-However, both proposals from Geambasu's group and Zeng's group are not suitable for developing a light-weight information sharing application for following reasons. 
-Vanish is suitable for a mail system, because it is designed without needing to modify any of the stored or archived copies of a message and without user controllability, while messages in our target applications should be modified even if it has been sent to multiple untrusted servers.  
-Although, CloudSky solves the problems about user controllability in Vanish, the encrypted message are only valuable to the user for a limited period of time.
-Our target applications require data usability even user try to synchronize data after the period of time. 
-A trusted authority is necessary in CloudSky to manage user profile, while we do not hope any trusted authority in our target application.
+However, these proposals are not suitable for developing information sharing applications introduced above. 
+They are suitable for exchanging immutable messages, while our target applications need to modify a object repeatedly after other devices received the object. 
+Although, CloudSky solves the problems about user controllability in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
+In Grouper, offline devices can download such messages by using confirm and resend messages.
+A trusted authority is necessary in CloudSky to manage user profiles, while Grouper does not rely on any trusted authority.
 
-Mylar stores encrypted data on servers, and decrypts this data only in the browsers of users. 
+Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
 Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
 Mylar uses its browser extension to decrypt data on clients. 
-Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided in the secret sharing scheme.
+Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided by the secret sharing scheme.
 
-Sweets is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
-Sweets uses AES to encrypt user data and ABE to encrypt the keys of AES. 
-However, there is an obvious problem in such a P2P approach. 
-Data transfer can only be finished during two devices are online at the same time. 
-Therefore, it is very troublesome for a user of our a target application if nobody is online when he want to synchronize data.
-The user can synchronize data from multiple untrusted servers anytime if the application uses the proposal of Grouper.
+Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
+Sweets performs data synchronization not only between two online nodes directly but also via common friends' nodes indirectly for offline nodes.
+This indirect synchronization uses ABE to realize access control.
+Direct synchronization can only be finished during two devices are online at the same time. 
+In Grouper, on the other hand, users can synchronize data from multiple untrusted servers anytime.
 
-DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic. 
-DepSky provides a storage service that improves the availability and confidentiality by using commercial storage services. 
+DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic on clients.
 \emph{Cloud-of-Clouds} is the core concept in DepSky. 
 It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
 DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
-In fact, DepSky is suitable for such data storage applications. 
 In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
 
-Compared with data encryption methods, the secret sharing scheme has following features.
-Firstly, like data encryption method, using the secret sharing scheme is also secure because a single shares created by it is unreadable for a server manager.
-However, using data encryption requires key management including generation and distribution.
+Compared with data encryption methods, the secret sharing scheme has following advantages.
+Firstly, using a secret sharing scheme does not require key management including generation and distribution.
 Data encryption systems like CloudSky always use trusted authorities for key management.
 In Grouper, we require all cloud services are untrusted.
 Secondly, the secret sharing scheme ensures the data availability in the situation that a small number of untrusted servers are not accessible.
-For the $f(k, n, s)$ scheme in Grouper, the original object can be recovered after accessing more than $k$ untrusted servers.
-Thirdly, the secret sharing scheme improves the anti-attack ability, because the attacker who can access only $k-1$ or less untrusted servers cannot get any readable informations.
-At last, the performance of the secret sharing scheme we used in Grouper is faster than Attribute Based Encryption (ABE) and slower than Advanced Encryption Standard (AES).
-For these reasons, using a secret sharing scheme is more suitable for the Grouper framework than using a data encryption method.
+For the $f(k, n, s)$ scheme in Grouper, the original object can be recovered after accessing at least $k$ untrusted servers.
+Thirdly, the secret sharing scheme reduces the risk of attack, because the attacker who can access only $k-1$ or less untrusted servers cannot get any information.
 
 \section{Conclusion}
 
-This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop light-weight information sharing mobile applications.
+This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop light-weight information sharing for mobile applications.
 In such an application, users can create a group and exchange the information safely via multiple untrusted servers.
 Grouper provides two main functions: reliable data synchronization and group management for developing such applications.
-Compared to self-destruction proposals introduced in related works, Grouper solves the reliable synchronization problem and ensures a member of a group can synchronize data from others even Grouper includes a self-destruction scheme.
-Compared to pure data encryption proposals introduction in related works, Grouper improves dependability by using multiple untrusted servers and our new enhanced secret sharing scheme $f(k, n, r)$.
+Compared to conventional systems, Grouper provides the reliable synchronization and ensures that a member of a group can synchronize data from others after untrusted severs remove data.
+Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended scheme $f(k, n, r)$.
 
-We implement Grouper's Web service in Java EE and clients in Objective-C. 
-To evaluate Grouper's design, we develop applications including \emph{Account Book}, \emph{Notes} and \emph{Test} on the top of Grouper.
-These applications shows that Grouper requires little developer effort to extend an stand alone application to data sharing application with synchronization.
+We implement Grouper's Web service in Java EE and client's framework in Objective-C. 
+To evaluate Grouper's design, we have developed applications, \emph{Account Book}, \emph{Notes} and \emph{Test} on the top of Grouper.
+Developing these applications shows that Grouper requires little development efforts to convert an stand alone application to data sharing application.
 We also evaluated the performance of Groper using our benchmark application.
 The results shows that using Grouper in an application does not influence the user experience.
 
-In the future, we will try improve the performance for data synchronizations and support more platforms .
+In the future, we would like to support more platforms including Android.
 
 \bibliographystyle{unsrt}
 {
