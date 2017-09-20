@@ -9,6 +9,7 @@
 \usepackage{url}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{enumitem}
 
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
 
@@ -338,11 +339,30 @@ A receiver gets more than $k$ shares to combine them to original message.
 
 In Grouper, we use our new scheme $ f(k, n, s)$ by extending the scheme $f(k, n)$.
 In our scheme, the parameter $k$ and $n$ are same as these in the scheme $f(k, n)$. 
-The parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
+The  parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.is different.
 Although a receiver is able to recover the original message from at least $k$ shares, we should consider server crashing. 
 When a sender uploads $n$ shares to $n$ untrusted servers successfully, Grouper will try to upload these $n$ shares to all $n$ untrusted servers at first. 
 If the shares are uploaded to $s$ or more untrusted servers, we consider that this share uploading is successful.
 Otherwise, Grouper keeps trying to upload these shares.
+The parameter $s$ is different in the following two policies.
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Ensure uploading at first.} 
+	If Grouper ensures uploading message successfully at first, the parameter $s$ is close to $k$.
+	In this situation, a device can upload shares successfully with accessing less untrusted servers.
+	For this devices, the probability of uploading successfully becomes higher.
+	\item \textbf{Ensure downloading at first.}
+	If Grouper ensures uploading message successfully at first, the parameter $s$ is close to $n$.
+	In this situation, more untrusted servers hold shares of a message.
+	For a devices, the probability of downloading successfully becomes higher.
+\end{itemize}
+
+These two polices are opposite.
+If we ensure uploading at first, the probability of uploading successfully becomes higher while the probability of downloading successfully becomes lower.
+On the other hand, id we ensure downloading at first, the probability of downloading successfully becomes higher while the probability of uploading successfully becomes lower.
 
 \subsection{Grouper Message Protocol}
 
@@ -586,19 +606,19 @@ When the user click the delete button, Account Book invokes the $grouper.sender.
 \begin{figure*}[t]
 	\centering
 	\includegraphics[scale=0.13]{multiple_messages}
-	\caption{Processing time of sending and receiving multiple messages.}
+	\caption{Processing time of uploading and downloading multiple messages.}
 \end{figure*}
 
 \begin{figure*}[t]
 	\centering
 	\includegraphics[scale=0.35]{3d}
-	\caption{Processing time of sending and receiving a single message with different scheme.}
+	\caption{Processing time of uploading and downloading a single message with different scheme.}
 \end{figure*}
 
 \begin{figure*}[t]
 	\centering
 	\includegraphics[scale=0.13]{constant_k_n}
-	\caption{Processing time of sending and receiving a single message with a constant ${k}$ or ${n}$.}
+	\caption{Processing time of uploading and downloading a single message with a constant ${k}$ or ${n}$.}
 \end{figure*}
 
 \section{Evaluation}
@@ -643,15 +663,12 @@ When this object was updated in a node, the Grouper API generated a normal messa
 
 Through experiments, we measured the following processing times of object synchronization (uploading and downloading).
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item The processing time according to the number of updated objects (the number of update messages).
-	\item The processing time according to the parameters of the secret sharing scheme.
+	\item \textbf{The processing time according to the number of updated objects (the number of update messages)}.
 \end{itemize}
-
-\subsubsection{The processing time according to the number of updated objects}
 
 We performed a experiment to measure the processing time of object synchronization according to the number of updated objects.
 In this experiment, we set the secret sharing scheme to ${f(2, 3)}$.
@@ -676,21 +693,107 @@ When an object is updated in a device, the device has to send a single update me
 The device divides the message into multiple shares, and uploads them to multiple untrusted servers.
 This process is independent of the number of devices in a group. 
 
-\subsubsection{The processing time according to the parameters of the secret sharing scheme}
+\begin{itemize}[leftmargin=*]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{The processing time according to the parameters of the secret sharing scheme.}
+\end{itemize}
 
 We performed a experiment to measure the processing time of object synchronization according the parameters of the secret sharing scheme.
-Specifically, we changed the parameter ${k}$  and ${n}$ of the secret sharing scheme and measured the processing time of sending and receiving a single message.
+Specifically, we changed the parameter ${k}$  and ${n}$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
 Figure 6 shows the relationship between processing time and the parameters, where ${0< k < n, k=3i, n=3j+3, 1 \leq i, j \leq 5}$.
-For sending a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
-However, for receiving a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
+For uploading a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
+However, for downloading a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
 
 Figure 7(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$ and ${n = 2, 4, 6, ... , 10}$. 
 Figure 7(b) shows the relationship between processing time and the threshold ${k}$, where ${n=30}$ and ${k = 3, 6, 9, ... , 27}$. 
 Here, we can answer the third question.
-As n increased, the processing time of sending and receiving increase linearly. 
-As k increased, the processing time of sending increased linearly and that of receiving did not change. 
+As n increased, the processing time of uploading and downloading increase linearly. 
+As k increased, the processing time of uploading increased linearly and that of downloading did not change. 
 
 \subsection{Discussion About the Numbers of Messages}
+
+In this subsection, we discuss the relationship between TTL and the number of messages. 
+As describe in Table 6, we define the following parameters.
+
+\begin{table*}[t]
+	\centering
+	\caption{The parameters for discussing the relationship between TTL and the number of messages.}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Parameter} & \textbf{Explanation} \\ \hline
+		$D$ & Number of devices. \\
+		$T$ & Time to live (TTL). \\
+		$F$ & Average number of offline devices during TTL. \\
+		$L$ & Average online time. \\
+		$Ui$ & Number of updated/deleted objects created in the device $i$ during the TTL. \\ 
+		$URi$ &  \begin{tabular}{@{}l@{}}
+			Number of updated/deleted objects sent from the device $i$ after downloading resend messages \\ during the TTL. \\
+		\end{tabular}\\ 
+		$U$ & Total number of updated and deleted objects during the TTL. \\ 
+		$C$ & Total number of confirm messages during the TTL. \\ 
+		$NUi$ & Number of uploading for device $i$. \\
+		$NU$ & Total number of uploading. \\
+		$NDi$ & Number of downloading for device $i$. \\
+		$ND$ & Total number of downloading. \\ \hline
+	\end{tabular}
+\end{table*}
+
+At first, we consider the situation that all devices are online ($F=0$).
+In this situation, the number of uploading for the device $i$ is
+
+\begin{equation}
+NUi = Ui + C
+\end{equation}
+
+Total number of uploading is the sum $NU$ of $NUi$.
+
+\begin{equation}
+NU = \sum_{i=1}^{D} NUi = U + C \cdot D
+\end{equation}
+
+A device should not download those messages uploaded by itself.
+To simplify the question, we suppose the device downloads those messages uploaded by itself.
+Thus, the number of downloading for device $i$ $NDi$ is equal to total number of uploading $NU$.
+Total number of downloading $ND$ is the sum of $NDi$.
+
+\begin{equation}
+ND = \sum_{i=1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
+\end{equation}
+
+Equation 1 to 3 shows that for the device $i$ during the TTL, the order of uploading  is $O(U)$, and the order of downloading is $O(U+D)$.
+As the number of updated and deleted objects increased, total number of uploading and downloading increased linearly.
+
+Next, we consider the situation that there are offline devices in a group ($F \neq 0$).
+In this situation, offline devices send the resend messages when they are online and those devices which saved the updated objects will send update messages to offline devices.
+To simplify the question, we suppose that all offline devices should receive the updated messages after they sent the resend message.
+It means that any device will not send a same updated object for more than two times.
+For the device $i$, the number of those update messages which are sent after downloading the resend message $URi$ is
+
+\begin{equation}
+URi = Ui \cdot \frac{L}{T} \cdot F
+\end{equation}
+
+Compared to the situation that $F=0$, in this situation, the number of uploading for the device $i$ includes $URi$.
+Thus, we get $NUi$, $NU$ and $ND$ where $F \neq 0$.
+
+\begin{equation}
+NUi = Ui + C + Ui \cdot \frac{L}{T} \cdot F = Ui \cdot (1 + Ui \cdot \frac{L}{T} \cdot F) + C
+\end{equation}
+
+\begin{equation}
+NU = \sum_{i=1}^{D} NUi = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
+\end{equation}
+
+\begin{equation}
+ND = NU \cdot D = \sum_{i=1}^{D} NUi = U \cdot D \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D^{2}
+\end{equation}
+
+Equation 4 to 7 shows that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C)$.
+As the number of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increased, total number of uploading and downloading increased linearly.
+
+From the discussion above, we get the conclusion that as the TTL increased, the number of resend and update messages decreased, it becomes more convenient for group members to sharing information.
 
 \section{Related Work}
 
@@ -744,7 +847,7 @@ This paper describes Grouper, a framework using a secret sharing scheme and mult
 In such an application, users can create a group and exchange the information safely via multiple untrusted servers.
 Grouper provides two main functions: reliable data synchronization and group management for developing such applications.
 Compared to conventional systems, Grouper provides the reliable synchronization and ensures that a member of a group can synchronize data from others after untrusted severs remove data.
-Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended scheme $f(k, n, r)$.
+Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended scheme $f(k, n, s)$.
 
 We implement Grouper's Web service in Java EE and client's framework in Objective-C. 
 To evaluate Grouper's design, we have developed applications, \emph{Account Book}, \emph{Notes} and \emph{Test} on the top of Grouper.
