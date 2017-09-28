@@ -37,7 +37,7 @@ Uploaded shares will be deleted after a period of time.
 Mobile devices exchange messages via untrusted servers based on the Grouper Message Protocol.
 We have implemented the Grouper framework for iOS, macOS, tvOS and watchOS in the Objective-C language.
 It consists of a client framework and a Web service.
-We have implemented three applications using Grouper: an iOS application Account Book, a macOS application Notes and a benchmark application Test.
+We have implemented three applications using Grouper: an iOS application Account Book and a benchmark application Test.
 We evaluate the development efforts and the performance of Grouper. 
 Experimental results show that the performance of Grouper is feasible for mobile applications that are used in a small group of people.
 
@@ -74,7 +74,7 @@ In addition, data can be recovered even untrusted servers shut down because all 
 Grouper consists of a client framework and a Web service.
 We have implemented the Web service running on the multiple untrusted servers in Java. 
 We have embedded a Sync framework in Grouper to synchronize objects among mobile nodes.
-We have implemented three applications using Grouper: an iOS application Account Book, a macOS application Notes and a benchmark application Test.
+We have implemented two applications using Grouper: an iOS application Account Book and a benchmark application Test.
 These implementations show that Grouper makes it easy to develop mobile applications with data synchronization.
 
 The contributions of this paper are as follows.
@@ -530,7 +530,6 @@ To manage a group, Grouper provides the following two functions:
 		\hline
 		\textbf{Application} & \textbf{Platform} & \textbf{Lanaguage} & \textbf{Number of Entities} & \textbf{Standalone Application LoC} & \textbf{Increased LoC} \\ \hline
 		Account Book & iOS & Objective-C & \multicolumn{1}{r}{5} & \multicolumn{1}{r}{8076} & \multicolumn{1}{r}{190} \\ 
-		Notes & macOS & Swift & \multicolumn{1}{r}{5} & \multicolumn{1}{r}{???} & \multicolumn{1}{r}{???} \\
 		Test & iOS & Swift & \multicolumn{1}{r}{1} & \multicolumn{1}{r}{621} & \multicolumn{1}{r}{18} \\  \hline 
 	\end{tabular}
 \end{table*}
@@ -601,7 +600,6 @@ Using the Grouper framework, we have developed the following applications.
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \emph{Account Book}, an iOS application in Objective-C, records the income and expenditure of a group.
-	\item \emph{Notes}, a macOS application in Swift, takes shared notes for a small group.
 	\item \emph{Test}, a benchmark iOS application in Swift, tests the performance of Grouper.
 \end{itemize}
 
@@ -640,7 +638,7 @@ We see development efforts through two factors: the usability of the client API 
 As described in Table 1, Grouper provides the simple client APIs for developers.
 A developer can convert a standalone application to a data sharing application with our client APIs easily.
 
-To know the LoC developer has to add, we have developed the following applications, Account Book, Notes and Test using the Grouper framework.
+To know the LoC developer has to add, we have developed the following applications, Account Book and Test using the Grouper framework.
 As described in Table 4, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
 \subsection{Performance}
@@ -859,7 +857,7 @@ Compared to conventional systems, Grouper provides the reliable synchronization 
 Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended scheme $f(k, n, s)$.
 
 We implement Grouper's Web service in Java EE and client's framework in Objective-C. 
-To evaluate Grouper's design, we have developed applications, \emph{Account Book}, \emph{Notes} and \emph{Test} on the top of Grouper.
+To evaluate Grouper's design, we have developed applications, \emph{Account Book} and \emph{Test} on the top of Grouper.
 Developing these applications shows that Grouper requires little development efforts to convert an stand alone application to data sharing application.
 We also evaluated the performance of Groper using our benchmark application.
 The results shows that using Grouper in an application does not influence the user experience.
