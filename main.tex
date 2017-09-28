@@ -277,33 +277,25 @@ The Sync framework marshalls objects into JavaScript Object Notation (JSON) stri
 
 \subsection{Reliable Message Delivery}
 
-Grouper realizes reliable message delivery over the self-destruction system in the Grouper API layer.
+Grouper realizes reliable message delivery in the Grouper API layer over the self-destruction system.
 
-To design this, we use a reliable multicasting technique in distribute systems\cite{tanenbaum2007distributed}.
+To design this, we use a reliable multicasting technique in distributed systems\cite{tanenbaum2007distributed}.
 In this reliable multicasting technique, each message has a sequence number for each sender.
 Each member keeps the newest sequence numbers for senders and detects missing messages.
-If a member notices missing a message from a sender, the member asks the sender to resend the message.
-For example, consider that a sender sends Message No.3 to all other members using a multicast address.
-When a member receives this Message No.3, the member compares the sequence number 3 with the newest sequence number of the sender.
-If the the newest sequence number of the sender is 1, this means the member missed Message No.2.
-The member asks the sender to resend Message No.2.
-The sender will send Message No.2 to the asked member using a unicast address.
+If a member notices missing a message from a sender, the member asks the sender to resend the update message.
+For example, consider that a sender sends update message No.3 to all other members using a multicast address.
+When a member receives this update message No.3, the member compares the sequence number 3 with the newest sequence number of the sender.
+If the the newest sequence number of the sender is 1, this means the member missed update message No.2.
+The member asks the sender to resend update message No.2.
+The sender will send update message No.2 to the asked member using a unicast address.
 
 This basic reliable multicasting technique works well for continuous medias, such as video streaming in Internet communication.
 However, this does not work if receivers become often offline for a long time and servers delete messages soon.
 
-To address this problem, we design our own reliable messaging by extending the basic reliable multicasting technique.
-We use special types of messages that include active sequence numbers.
+To address this problem, we extend the basic reliable multicasting technique.
+We use a special type of messages that include active sequence numbers.
 Using these messages, a receiver can easily know missing messages.
-
-This idea is inspired from the checkgroups message of Usenet\cite{usenet}.
-In Usenet, the list of active newsgroups is maintained with two basic messages: newgroup and rmgroup.
-When a node receives a newgroup message, the node adds the newsgroup to the list.
-When a node receives a rmgroup message, the node removes the newsgroup from the list.
-These basic messages can be lost and the list can be obsolete.
-Ckeckgroups message messages supplement these basic messages.
-A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
-A checkgroups message is distributed periodically or after some time after basic messages are distributed.
+We call this type of messages confirm messages.
 
 \begin{figure}[t]
 	\centering
@@ -311,19 +303,28 @@ A checkgroups message is distributed periodically or after some time after basic
 	\caption{Implementing reliable messaging with continuous sequence numbers.}
 \end{figure}
 
-Figure 2 shows that the sender is sending five messages from No.1 to No.5 to the receiver.
-The sender uploads two messages, No.1 and No.2 using a multicast address.
+Figure 2 shows that the sender is sending five update messages from No.1 to No.5 to the receiver.
+The sender uploads two messages, No.1 and No.2,  using a multicast address.
 The receiver downloads these two messages and becomes offline.
 The servers delete these two messages.
-The sender uploads next three messages from No.3 and No.5  using a multicast address.
+The sender uploads next three update messages from No.3 and No.5  using a multicast address.
 The receiver becomes online, but the receiver does not notice that the receiver has missing messages soon.
-At this time, the sender sends a special message that includes the newest active sequence number No.5.
-The receiver receives these sequence numbers and compares them with the newest sequence number in the persistent store.
-In Figure 3, the receiver notices that Messages No.3, No.4 and No.5 are missing.
-The receiver asks the sender to resend Messages No.3, No.4 and No.5.
-The sender will send Messages No.3 and No.4 to the receiver again using a unicast address.
+At this time, the sender sends a confirm message that includes the newest active sequence number, 5.
+The receiver receives this sequence number and compares it with the newest sequence number in the persistent store.
+In Figure 3, the receiver notices that update messages No.3, No.4 and No.5 are missing.
+The receiver asks the sender to resend update messages No.3, No.4 and No.5.
+The sender will send update messages No.3 and No.4 to the receiver again using a unicast address.
 
-\subsection{Unreliable Messaging}
+This idea is inspired from the checkgroups message of Usenet\cite{usenet}.
+In Usenet, the list of active newsgroups is maintained with two basic messages: newgroup and rmgroup.
+When a node receives a newgroup message, the node adds the newsgroup to the list.
+When a node receives a rmgroup message, the node removes the newsgroup from the list.
+These basic messages can be lost and the list can be obsolete.
+Ckeckgroups messages supplement these basic messages.
+A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
+A checkgroups message is distributed periodically or after some time after basic messages are distributed.
+
+\subsection{Unreliable Messaging Using Untrusted Servers}
 
 This subsection describes the design of unreliable messaging in the layers of Messaging, Data Protection, and Untrusted Servers.
 
@@ -340,42 +341,33 @@ Each untrusted server receives one of these shares and stores it into a database
 	\caption{Implementing unreliable messaging with a secret sharing scheme and multiple untrusted servers.}
 \end{figure}
 
-In Figure 3, the receiver is online, and its messaging layer downloads two shares from two servers.
-Next, this layer calls the the data protection layer and recovers the message from these two shares using the secret sharing scheme.
-Finally, the messaging layer in the receiver puts the message to the upper layer, the reliable message layer.
-
-The data protection layer uses the Shamir's secret sharing scheme $f(k, n)$ introduced in Section 3.1 to protect a message from untrusted servers.
-In this scheme, a message is divided into $n$ shares using a cryptographic function.
-A receiver gets more than $k$ shares to combine them to original message.
 
 \subsection{Parameters of Secret Sharing Scheme}
 
-In Grouper, we use our new scheme $ f(k, n, s)$ by extending the scheme $f(k, n)$.
+The data protection layer uses the Shamir's secret sharing scheme $f(k, n)$ introduced in Section 3.1.
+In Grouper, we extend this scheme $f(k, n)$ and design our new scheme $ f(k, n, s)$.
 In our scheme, the parameter $k$ and $n$ are same as these in the scheme $f(k, n)$. 
-The  parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.is different.
+The  parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
 Although a receiver is able to recover the original message from at least $k$ shares, we should consider server crashing. 
-When a sender uploads $n$ shares to $n$ untrusted servers successfully, Grouper will try to upload these $n$ shares to all $n$ untrusted servers at first. 
-If the shares are uploaded to $s$ or more untrusted servers, we consider that this share uploading is successful.
+When a sender has $n$ shares, Grouper tries to upload these $n$ shares to all $n$ untrusted servers at first. 
+If the shares are uploaded to $s$ or more untrusted servers, we consider that this uploading is successful.
 Otherwise, Grouper keeps trying to upload these shares.
-The parameter $s$ is different in the following two policies.
+
+We can choose the parameter s based on the following policies.
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item \textbf{Ensure uploading at first.} 
-	If Grouper ensures uploading message successfully at first, the parameter $s$ is close to $k$.
-	In this situation, a device can upload shares successfully with accessing less untrusted servers.
-	For this devices, the probability of uploading successfully becomes higher.
-	\item \textbf{Ensure downloading at first.}
-	If Grouper ensures uploading message successfully at first, the parameter $s$ is close to $n$.
-	In this situation, more untrusted servers hold shares of a message.
-	For a devices, the probability of downloading successfully becomes higher.
+	\item \textbf{Sender first.} 
+	An application sets s closed to k. 
+	A sender gets a successful result earlier.
+	When some servers that have shares are not available, a receiver more likely loses a message.
+	\item \textbf{Receiver first.}
+	An application sets s closed to n. 
+	A sender must keep trying longer to get a successful result.
+	When some servers that have shares are not available, a receiver more likely get a message.
 \end{itemize}
-
-These two polices are opposite.
-If we ensure uploading at first, the probability of uploading successfully becomes higher while the probability of downloading successfully becomes lower.
-On the other hand, id we ensure downloading at first, the probability of downloading successfully becomes higher while the probability of uploading successfully becomes lower.
 
 \subsection{Grouper Message Protocol}
 
@@ -390,12 +382,12 @@ On the other hand, id we ensure downloading at first, the probability of downloa
 		content & A marshalled object or sequence numbers. \\
 		sequence & Sequence number of this message. \\
 		class & Class name of an object. \\
-		objectId & Physical ID of an object. \\
+		objectId & ID of an object. \\
 		receiverId & Node identifier of the receiver. \\
 		senderId & Node identifier of the sender. \\
 		email & Email address of the sender. \\
 		name & Name of the sender. \\
-		sendtime & Unix timestamp of sendtime. \\
+		sentTime & Time the message is sent. \\
 		\hline
 	\end{tabular}
 \end{table}
@@ -420,12 +412,12 @@ There are three important attributes:
 	\item \textbf{Content.} 
 	If this message is an update message, the content value contains the JSON string of a marshalled object.
 	If this message is a delete message, the content value contains the objectId of an object.
-	If this message is a confirm message, the content value contains maximum sequence number of messages created in the device of the sender.
+	If this message is a confirm message, the content value contains the maximum sequence number of messages created in the device of the sender.
 	If this message is a resend message, the content value contains the range of missing messages' sequence numbers.
 	\item \textbf{Sequence.}
 	This attribute means the sequence number of the message.
 	When a sender sends a new normal message, the sender increments the sequence number and includes it to the new message.
-	The sequence number of any control message is 0, because it need not to be resent.
+	The sequence number of any control message is 0.
 	Using both the sequence number and the ID of the sender identify a unique message.
 \end{itemize}
 
@@ -445,8 +437,9 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 		\State $historyMsgs.add(msg)$
 		 
 		\LeftComment Begin basic reliable multicast.
-		\If{$ msg.seq != 0 \ \&\& \ lastMsg.seq + 1 != msg.seq$}
+		\If{$ msg.seq \neq  0 \ \&\& \ lastMsg.seq + 1 \neq  msg.seq$}
 		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, msg.seq)$
+		
 		\Comment Create a resend message by the minimum and maximum sequence number.
 		\State $sendMsg(resendMsg)$
 		\EndIf
@@ -459,10 +452,12 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 		\ElsIf{$msg.type = "confirm"$}
 		\State $maxSeq = getMaxSeqFrom(msg.content)$
 		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, maxSeg)$
-		\State $sendMsg(resendMsg)$
+			\If{$resendMsg \neq null $}
+			\State $sendMsg(resendMsg)$
+			\EndIf
 		\ElsIf{$msg.type = "resend"$}
 		\State $seqs \gets getSeqs(msg.content)$
-		\For{$\forall seq \in seqs$}
+		\For{$ seq \in seqs$}
 		\State $missingMsg \gets getMsg(seq)$
 		\State $sendMsg(missingMsg)$
 		\EndFor
@@ -472,28 +467,29 @@ An address is either a list of device IDs or ``*'' that means multicasting to al
 \end{algorithm}
 
 Applications send update, delete and confirm messages through the Grouper API and send resend messages after receiving messages automatically.
-When the applications invoke the method $grouper.sender.update()$ of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
-When the applications invoke the method $grouper.sender.delete()$ of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
-When the applications invoke the method $grouper.confirm()$, the Grouper API layer sends a confirm message to all devices. 
+When an application invokes the method $grouper.sender.update()$ of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
+When an application invokes the method $grouper.sender.delete()$ of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
+When an application invokes the method $grouper.confirm()$, the Grouper API layer sends a confirm message to all devices. 
 This confirm message includes the sequence numbers of objects that are recently created in this device.
-Generally, the method $grouper.confirm()$ is invoked at the following occasions:
+
+The method $grouper.confirm()$ is invoked at the following occasions:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Periodically.}
-	For example, an application sends a confirm message now, and it will try to send a confirm message after the TTL because the shares of normal messages are deleted in untrusted servers after the TTL.
+	For example, an application sends a confirm message now, and it will send a confirm message after the TTL because the shares of normal messages are deleted in untrusted servers after the TTL.
 	\item \textbf{After the device becomes online.} 
 	Sometimes, a device is offline and cannot send a confirm message after the TTL.
 	Grouper sends a confirm message when this device becomes online.
 \end{itemize}
 
 Algorithm 1 describes the handle process when the Grouper API layer receives a message.
-For an update message or a delete message, Grouper invokes the method $sync.updateRemote()$ or $sync.deleteRemote()$ of the synchronization plugin to put the modification of this object into the persistent store.
-For a confirm message, the Grouper API layer creates the sequence numbers from the message content and removes those sequence numbers which exist in the device.
+For an update message or a delete message, Grouper invokes the method $sync.updateRemote()$ or $sync.deleteRemote()$ of the synchronization plugin to update the persistent store.
+For a confirm message, the Grouper API layer copies the sequence numbers from the message content and removes the sequence numbers that exist in the device.
 Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of this confirm message.
-For a resend messages, the Grouper API layer gets the sequence numbers, finds the corresponding normal messages and send them to the sender of this resend message.
+For a resend messages, the Grouper API layer gets the sequence numbers from this resend message, finds the corresponding normal messages and sends them to the sender of this resend message.
 
 \subsection{Group Management}
 
@@ -504,24 +500,26 @@ To manage a group, Grouper provides the following two functions:
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Group Creation.}
-	A user creates a group, and he becomes the owner of this group.  
+	A user can create a group, and the creator becomes the owner of this group.  
 	Before creating a group, the owner prepares his own user information including his email and name, multiple untrusted servers, a group ID and a group name. 
-	Next, he initializes this group on all untrusted servers by submitting his node identifier, the parameters of scheme $f(k, n, s)$ and the TTL. 
+	Next, he initializes this group on all untrusted servers by submitting his node identifier, the parameters of scheme $f(k, n, s)$ and the TTL to the multiple untrusted servers. 
 	The node identifier, which represents his device, is generated by Grouper randomly when the application is launched at the first time. 
 	In each untrusted server, the Web service initializes this new group and returns a master key including the highest privilege to the owner. 
 	The owner can add other members to an untrusted server by the master key.
 	\item \textbf{Member Invitation.} 
-	After creating a group, the owner can invite a new member to his group. 
+	After creating a group, the owner can invite new members to his group. 
 	To join the group, a new member prepares his user information at first. 
 	The owner invites the new member by a face-to-face way rather than using central servers. 
 	At this time, Grouper establishes connection between their devices using a local safe communication channel like \emph{Multipeer Connectivity}\cite{mc}. 
 	Firstly, the new member sends user information and a node identifier to the owner. 
 	The owner saves the user information and the node identifier to his device. 
-	Secondly, the owner registers the new member to multiple untrusted servers by submitting the node identifier of the new member. 
-	Thirdly, untrusted servers return access keys for the new member to the owner. 
-	Lastly, the owner sends the access keys, server addresses and the list of existing members to the new member. 
+	Secondly, the owner registers the new member to the multiple untrusted servers by submitting the node identifier of the new member. 
+	Thirdly, the untrusted servers return access keys for the new member to the owner. 
+	Lastly, the owner sends the access keys, the addresses of the untrusted servers and the list of existing members to the new member. 
 	After receiving them, the new member can access these untrusted servers with the keys.
 \end{itemize}
+
+\section{Implementation}
 
 \begin{table*}[t]
 	\small
@@ -537,10 +535,35 @@ To manage a group, Grouper provides the following two functions:
 	\end{tabular}
 \end{table*}
 
-\section{Implementation}
+Grouper consists of a client framework for developing mobile applications and a Web service running on multiple untrusted servers .
+We describe the implementation of the client framework (Section 4.1), the implementation of the Web service (Section 4.2) and demo applications (Section 4.3) in this section.
 
-Grouper consists of a Web service running on multiple untrusted servers and a client framework for developing mobile applications.
-We describe the implementation of the Web service (Section 4.1), the implementation of the client framework (Section 4.2) and demo applications (Section 4.3) in this section.
+\subsection{Client Framework}
+
+Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
+It makes use of the following frameworks.   
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item 
+	\emph{Multipeer Connectivity}\cite{mc},  an official Peer-to-Peer communication framework provided by Apple. 
+	Grouper uses it to transfer data between two devices in a face-to-face way.
+	\item 
+	\emph{Core Data}\cite{coredata}, an official ORM framework provided by Apple.
+	\emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
+	Grouper uses it to manage model layer objects. 
+	\item 
+	\emph{Sync}\cite{sync}, a synchronization framework for \emph{Core Data} using JSON. 
+	This framework marshalls objects into JSON strings and vice versa. 
+	Grouper uses it in the synchronization plugin.
+	\item 
+	\emph{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
+	\item 
+	\emph{AFNetworking}\cite{afnetworking}, a networking library in Objective-C. 
+	Grouper uses it to invoke the RESTful API provided by our Web services running on multiple untrusted servers. 
+\end{itemize}
 
 \subsection{Web Service}
 
@@ -555,40 +578,13 @@ We have chosen implementing own Web service rather than using commercial general
 \end{itemize}
 
 Our Web service provides a RESTful API to clients.
-It runs on the Tomcat server that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies\cite{tomcat}. 
-We use the Spring MVC, a  Web model-view-controller framework, to create our RESTful API\cite{spring}, and Hibernate, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service\cite{hibernate}. 
+It runs on the Tomcat server\cite{tomcat} that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. 
+We use the Spring MVC\cite{spring}, a  Web model-view-controller framework, to create our RESTful API, and Hibernate\cite{hibernate}, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service. 
 
 Our Web service includes three kinds of entities: \emph{Group}, \emph{User} and \emph{Share} entities. 
 A \emph{Group} entity saves a group ID, a group name and its owner. 
 A \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
 A \emph{Share} entity saves a share generated with the secret sharing scheme, the time when a client uploads the share. 
-
-\subsection{Client Framework}
-
-Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
-It makes use of the following frameworks.   
-
-\begin{itemize}
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item 
-	\emph{Multipeer Connectivity}\cite{mc},  an official Peer-to-Peer communication framework provided by Apple. 
-	Grouper uses it to transfer data between two devices by a face-to-face way.
-	\item 
-	\emph{Core Data}\cite{coredata}, an official ORM framework provided by Apple.
-	\emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
-	Grouper uses it to manage model layer objects. 
-	\item 
-	\emph{Sync}, a synchronization framework for \emph{Core Data} using JSON. 
-	This framework marshalls objects into JSON strings and vice versa. 
-	Grouper uses it in the synchronization plugin.
-	\item 
-	\emph{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
-	\item 
-	\emph{AFNetworking}\cite{afnetworking}, a networking library in Objective-C. 
-	Grouper uses it to invoke the RESTful API provided by our Web services running on multiple untrusted servers. 
-\end{itemize}
 
 \subsection{Application}
 
@@ -610,10 +606,10 @@ Using the Grouper framework, we have developed the following applications.
 \end{itemize}
 
 Figure 4(a) shows the screenshot of adding a record in Account Book. 
-A user uses Account Book to add income and expenditure records that include classification, account, shop, time and remark of a group. 
+A user uses Account Book to add income and expenditure records that include classifications, accounts, shops, times and remarks of a group. 
 When the user click the save button, Account Book invokes the $grouper.sender.update(object)$ method of Grouper to share this record to other group members.
 Figure 4(b) shows the screenshoot of deleting a record in Account Book. 
-A user can swipe a cell from right to left to delete a record in the record list. 
+A user swipes a cell from right to left to delete a record in the record list. 
 When the user click the delete button, Account Book invokes the $grouper.sender.delete(object)$ method of Grouper to delete this record on the devices of other group members.
 
 \begin{figure*}[t]
