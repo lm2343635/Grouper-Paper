@@ -369,6 +369,14 @@ We can choose the parameter s based on the following policies.
 	When some servers that have shares are not available, a receiver more likely get a message.
 \end{itemize}
 
+Compared with data encryption methods, the secret sharing scheme has following advantages.
+Firstly, using a secret sharing scheme does not require key management including generation and distribution.
+Data encryption systems requires trusted authorities for key management.
+In Grouper, we can assume that all cloud services are untrusted.
+Secondly, the secret sharing scheme ensures the data availability when a number of untrusted servers are not accessible.
+For the $f(k, n, s)$ scheme in Grouper, an object can be recovered after accessing at least $k$ untrusted servers.
+Thirdly, the secret sharing scheme reduces the risk of attack, because the attacker who can access only $k-1$ or less untrusted servers cannot get any information.
+
 \subsection{Grouper Message Protocol}
 
 \begin{table}[t]
@@ -639,18 +647,19 @@ As described in Table 1, Grouper provides the simple client APIs for developers.
 A developer can convert a standalone application to a data sharing application with our client APIs easily.
 
 To know the LoC developer has to add, we have developed the following applications, Account Book and Test using the Grouper framework.
-As described in Table 4, based on the stand alone application without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
+As described in Table 4, based on the stand alone applications without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
 \subsection{Performance}
 
-In this subsection, we show that Grouper mobile applications using the Grouper framework provide sufficient performance for small groups of people.
+In this subsection, we show that mobile applications using the Grouper framework provide sufficient performance for small groups of people.
+Table 5 shows the hardware and software information of our experiment environment.
 In our performance experiments, we used the benchmark application \emph{Test} to transfer data between iPhone 4s and iPod 5 generation on a wireless LAN network (802.11n).
 We installed 30 Web services on three different servers.
 Each server ran a Tomcat server instance which hosted 10 Web services.
-Table 5 shows the hardware and software information of our experiment environment.
-In our benchmark application, the size of an object was about 323 bytes.
+
+In our benchmark application, the size of an object was 323 bytes.
 This object corresponds to a record of benchmark application Test and contains the creation time of this record.
-When this object was updated in a node, the Grouper API generated a normal message which size was about 656 bytes.
+When this object was updated in a node, the Grouper API generated a normal message which size was 656 bytes.
 
 \begin{table}[t]
 	\footnotesize
@@ -668,61 +677,38 @@ When this object was updated in a node, the Grouper API generated a normal messa
 	\end{tabular}
 \end{table}
 
-Through experiments, we measured the following processing times of object synchronization (uploading and downloading).
-
-\begin{itemize}[leftmargin=*]
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{The processing time according to the number of updated objects (the number of update messages)}.
-\end{itemize}
-
-We performed a experiment to measure the processing time of object synchronization according to the number of updated objects.
-In this experiment, we set the secret sharing scheme to ${f(2, 3)}$.
+We performed an experiment to measure the processing time of object synchronization according to the number of updated objects.
+In this experiment, we set the secret sharing scheme to ${f(2, 3, 3)}$.
 We sent multiple messages from a device and received them in another device. 
-Concretely, We sent multiple message from iPod to iPhone for three time and from iPhone to generation for three times.
-We obtained the average value of these experimental results.
+Concretely, we sent multiple message from the iPod to the iPhone for three time and from the iPhone to the iPod for three times.
+We obtained the average value of measured processing times.
 
 Figure 5 shows the processing time of uploading and downloading multiple messages.
-We divide the processing time into three parts: data sync, secret sharing and network.
-As the number of messages increased, the data sync and secret sharing part increased linearly. 
+We divide the processing time into three parts: data synchronization, secret sharing and network.
+As the number of messages increased, the data synchronization and secret sharing part increased linearly. 
 The network part increased slowly and sometimes decreased.
 On the whole, the total processing time increased linearly.
-Compared with uploading messages, downloading messages cost about two times of processing time.
-Note that object synchronization is done in a background task.
-Note that object synchronization is done asynchronously.
+Compared with uploading messages, downloading messages required about two times of processing times.
+Note that object synchronization is done in a background task asynchronously.
 While the Grouper framework is performing object synchronization, user interface of a mobile application never freezes.
 A user is not aware of data synchronization.
 
-The number of messages a device has to handle is independent of the number of devices in a group.
-For example, consider that a group consists of 100 members and their 100 devices.
-When an object is updated in a device, the device has to send a single update message.
-The device divides the message into multiple shares, and uploads them to multiple untrusted servers.
-This process is independent of the number of devices in a group. 
-
-\begin{itemize}[leftmargin=*]
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{The processing time according to the parameters of the secret sharing scheme.}
-\end{itemize}
-
-We performed a experiment to measure the processing time of object synchronization according the parameters of the secret sharing scheme.
+We performed an experiment to measure the processing time of object synchronization according the parameters of the secret sharing scheme.
 Specifically, we changed the parameter ${k}$  and ${n}$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
-Figure 6 shows the relationship between processing time and the parameters, where ${0< k < n, k=3i, n=3j+3, 1 \leq i, j \leq 5}$.
+
+Figure 6 shows the relationship between processing time and the parameters, where $s$ is equals to $n$ and ${0< k < n, k=3i, n=3j+3, 1 \leq i, j \leq 5}$.
 For uploading a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
-However, for downloading a single message, as the parameter ${k}$ increased, processing time  changed a little, sometimes decreased.
+However, for downloading a single message, as the parameter ${k}$ increased, processing time  changed a little, and sometimes decreased.
 
 Figure 7(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$ and ${n = 2, 4, 6, ... , 10}$. 
 Figure 7(b) shows the relationship between processing time and the threshold ${k}$, where ${n=30}$ and ${k = 3, 6, 9, ... , 27}$. 
-Here, we can answer the third question.
 As n increased, the processing time of uploading and downloading increase linearly. 
 As k increased, the processing time of uploading increased linearly and that of downloading did not change. 
 
 \subsection{Discussion About the Numbers of Messages}
 
-In this subsection, we discuss the relationship between TTL and the number of messages. 
-As describe in Table 6, we define the following parameters.
+In this subsection, we discuss and the number of messages. 
+We use the parameters in Table 6.
 
 \begin{table*}[t]
 	\centering
@@ -733,13 +719,11 @@ As describe in Table 6, we define the following parameters.
 		$D$ & Number of devices. \\
 		$T$ & Time to live (TTL). \\
 		$F$ & Average number of offline devices during TTL. \\
-		$L$ & Average online time. \\
-		$Ui$ & Number of updated/deleted objects created in the device $i$ during the TTL. \\ 
-		$URi$ &  \begin{tabular}{@{}l@{}}
-			Number of updated/deleted objects sent from the device $i$ after downloading resend messages \\ during the TTL. \\
-		\end{tabular}\\ 
+		$L$ & Average offline time. \\
+		$Ui$ & Average number of updated/deleted messages in the device $i$ during the TTL. \\ 
+		$URi$ &  Average number of updated/deleted messages by resend messages in the device $i$ during the TTL.\\ 
+		$C$ & Average number of confirm messages in the device $i$ during the TTL. \\ 
 		$U$ & Total number of updated and deleted objects during the TTL. \\ 
-		$C$ & Total number of confirm messages during the TTL. \\ 
 		$NUi$ & Number of uploading for device $i$. \\
 		$NU$ & Total number of uploading. \\
 		$NDi$ & Number of downloading for device $i$. \\
@@ -760,30 +744,37 @@ Total number of uploading is the sum $NU$ of $NUi$.
 NU = \sum_{i=1}^{D} NUi = U + C \cdot D
 \end{equation}
 
-A device should not download those messages uploaded by itself.
-To simplify the question, we suppose the device downloads those messages uploaded by itself.
-Thus, the number of downloading for device $i$ $NDi$ is equal to total number of uploading $NU$.
+A device does not download the messages the have been uploaded by itself.
+To simplify questions, we suppose the device downloads those messages.
+Thus, the number of downloading for device $i$, $NDi$, is equal to total number of uploading $NU$.
+
+\begin{equation}
+NDi = NU = U + C \cdot D
+\end{equation}
+
 Total number of downloading $ND$ is the sum of $NDi$.
 
 \begin{equation}
 ND = \sum_{i=1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
 \end{equation}
 
-Equation 1 to 3 shows that for the device $i$ during the TTL, the order of uploading  is $O(U)$, and the order of downloading is $O(U+D)$.
-As the number of updated and deleted objects increased, total number of uploading and downloading increased linearly.
+Because current cloud servers scale well according to the number of devices and and messages, we discusse NUi and UDi in this subsection.
+Equation 1 shows that for the device $i$ during the TTL, the order of uploading  is $O(U)$.
+Euqation 3 shows that the order of downloading is $O(U+D)$.
+As the number of updated and deleted objects increases, total number of uploading and downloading increases linearly.
+As the number of devices increases, the number of confirm messages increases linearly.
 
 Next, we consider the situation that there are offline devices in a group ($F \neq 0$).
-In this situation, offline devices send the resend messages when they are online and those devices which saved the updated objects will send update messages to offline devices.
-To simplify the question, we suppose that all offline devices should receive the updated messages after they sent the resend message.
-It means that any device will not send a same updated object for more than two times.
-For the device $i$, the number of those update messages which are sent after downloading the resend message $URi$ is
+In this situation, offline devices send the resend messages when they become online and the devices the have the updated objects will resend update messages to the offline devices.
+To simplify questions, we suppose that all offline devices receive the updated messages after they sent resend messages.
+For the device $i$, the number of those update messages by the resend message, $URi$, is
 
 \begin{equation}
 URi = Ui \cdot \frac{L}{T} \cdot F
 \end{equation}
 
 Compared to the situation that $F=0$, in this situation, the number of uploading for the device $i$ includes $URi$.
-Thus, we get $NUi$, $NU$ and $ND$ where $F \neq 0$.
+Thus, we get $NUi$, $NU$, $NDi$ and $ND$ where $F \neq 0$.
 
 \begin{equation}
 NUi = Ui + C + Ui \cdot \frac{L}{T} \cdot F = Ui \cdot (1 + Ui \cdot \frac{L}{T} \cdot F) + C
@@ -794,39 +785,60 @@ NU = \sum_{i=1}^{D} NUi = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
 \end{equation}
 
 \begin{equation}
-ND = NU \cdot D = \sum_{i=1}^{D} NUi = U \cdot D \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D^{2}
+NDi = NU = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
 \end{equation}
 
-Equation 4 to 7 shows that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C)$.
-As the number of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increased, total number of uploading and downloading increased linearly.
+\begin{equation}
+\begin{aligned}
+ND &= \sum_{i=1}^{D - F} NDi = NU \cdot (D - F) \\&= U \cdot (D - F) \cdot (1 + \frac{L}{T} \cdot F) + C \cdot (D - F) ^{2}
+\end{aligned}
+\end{equation}
 
-From the discussion above, we get the conclusion that as the TTL increased, the number of resend and update messages decreased, it becomes more convenient for group members to sharing information.
+Equations 4 to 7 show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C)$.
+As the number of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increases, the number of uploading and downloading for a single device increases linearly.
+
+If we use a longer T, the numbers of messages, NUi and NDi, become smaller.
+However, this makes it easier for attackers to crack untrusted servers.
+
+At last, we consider the following two cases with concrete parameters.
+
+ \begin{itemize}
+ 	\setlength{\itemsep}{1pt}
+ 	\setlength{\parskip}{0pt}
+ 	\setlength{\parsep}{0pt}
+ 	\item \textbf{Case 1: $D = 100, T = 1 \ day, U = 1000, F = 0$.}
+
+ 	\item \textbf{Case 2: $D = 100, T = 1 \ day, L = 7 \  days, U = 1000, F = 10$.} 
+
+\end{itemize}
+
+\subsection{Data Synchronization Libraries}
 
 \section{Related Work}
 
 Vanish is a self-destruction system\cite{geambasu2009vanish}. 
 Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
-Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares to a public DHT and eliminate the key from the local storage.
+Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares to a public DHT and eliminate a key from the local storage.
 The key in Vanish is removed after a period of time, and the encrypted message is permanently unreadable.
 Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
 Thus, it not strongly secure due to some Sybil attacks\cite{wolchok2010defeating}. 
 In addition, the surviving time of the key in Vanish cannot be controlled by applications. 
 
 To address these issues in Vanish, Zeng et al., propose SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
-SafeVanish is designed to prevent hopping attacks by extending the length range of the key shares while SeDas extends the idea of Vanish by exploiting the potentials of active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group proposes CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
+SafeVanish preventa hopping attacks by extending the length range of the key shares while SeDas exploits active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group proposes CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
 In CloudSky, a user can control the surviving time of a message.
-Taking advantage of ABE, a user can also define the access control policy.
+Taking advantage of Attribute Bases Encryption (ABE), a user can also define the access control policy.
 
-However, these proposals are not suitable for developing information sharing applications introduced above. 
-They are suitable for exchanging immutable messages, while our target applications need to modify a object repeatedly after other devices received the object. 
+However, these proposals are not suitable for developing information sharing applications. 
+They are suitable for exchanging immutable messages, while our target applications need to modify objects repeatedly after other devices received the object. 
 Although, CloudSky solves the problems about user controllability in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
 In Grouper, offline devices can download such messages by using confirm and resend messages.
 A trusted authority is necessary in CloudSky to manage user profiles, while Grouper does not rely on any trusted authority.
 
-Mylar\cite{popa2014building} stores encrypted data on servers, and decrypts this data only in the browsers of users. 
-Developers of Mylar use its API to encrypt a regular (non-encrypted) Web application. 
+Mylar\cite{popa2014building} stores encrypted data on a untrusted server, and decrypts this data only in the browsers of users. 
+Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
 Mylar uses its browser extension to decrypt data on clients. 
-Compared to Mylar which is using a single server, Grouper takes advantages of data redundancy provided by the secret sharing scheme.
+Compared to Mylar using a single untrusted server, Grouper takes advantages of data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
 
 Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
 Sweets performs data synchronization not only between two online nodes directly but also via common friends' nodes indirectly for offline nodes.
@@ -834,35 +846,27 @@ This indirect synchronization uses ABE to realize access control.
 Direct synchronization can only be finished during two devices are online at the same time. 
 In Grouper, on the other hand, users can synchronize data from multiple untrusted servers anytime.
 
-DepSky\cite{bessani2013depsky} is a system that stores encrypted data on servers and runs application logic on clients.
-\emph{Cloud-of-Clouds} is the core concept in DepSky. 
-It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
-DepSky keeps encrypted data in commercial storage services and do application logic in individual servers.
-In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery with server-side computation.
-
-Compared with data encryption methods, the secret sharing scheme has following advantages.
-Firstly, using a secret sharing scheme does not require key management including generation and distribution.
-Data encryption systems like CloudSky always use trusted authorities for key management.
-In Grouper, we require all cloud services are untrusted.
-Secondly, the secret sharing scheme ensures the data availability in the situation that a small number of untrusted servers are not accessible.
-For the $f(k, n, s)$ scheme in Grouper, the original object can be recovered after accessing at least $k$ untrusted servers.
-Thirdly, the secret sharing scheme reduces the risk of attack, because the attacker who can access only $k-1$ or less untrusted servers cannot get any information.
+DepSky\cite{bessani2013depsky} realizes the concept of \emph{Cloud-of-Clouds}.  
+DepSky keeps encrypted data in commercial storage services and do application logic in other individual servers.
+In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery.
+Mobile devices do application logic.
 
 \section{Conclusion}
 
 This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop light-weight information sharing for mobile applications.
 In such an application, users can create a group and exchange the information safely via multiple untrusted servers.
-Grouper provides two main functions: reliable data synchronization and group management for developing such applications.
-Compared to conventional systems, Grouper provides the reliable synchronization and ensures that a member of a group can synchronize data from others after untrusted severs remove data.
-Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended scheme $f(k, n, s)$.
+Grouper provides two main functions: reliable data synchronization and group management.
+Compared to conventional systems, Grouper provides the reliable synchronization and allows mobile devices to synchronize data from others after untrusted severs remove data.
+Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended secret sharing scheme $f(k, n, s)$.
 
-We implement Grouper's Web service in Java EE and client's framework in Objective-C. 
-To evaluate Grouper's design, we have developed applications, \emph{Account Book} and \emph{Test} on the top of Grouper.
-Developing these applications shows that Grouper requires little development efforts to convert an stand alone application to data sharing application.
+We have implemented Grouper's client's framework in Objective-C and Web service in Java EE. 
+We have developed applications, \emph{Account Book} and \emph{Test} on the top of Grouper.
+Developing these applications shows that Grouper requires little development effort to convert an stand alone application to data sharing application.
 We also evaluated the performance of Groper using our benchmark application.
 The results shows that using Grouper in an application does not influence the user experience.
 
 In the future, we would like to support more platforms including Android.
+We have a plan to use file-oriented APIs for exchanging messages among devices.
 
 \bibliographystyle{unsrt}
 {
