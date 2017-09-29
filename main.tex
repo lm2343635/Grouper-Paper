@@ -753,6 +753,8 @@ NDi = NU = U + C \cdot D
 \end{equation}
 
 Total number of downloading $ND$ is the sum of $NDi$.
+Meanwhile, the parameter $ND$ also represents the maximum number of shares sent from an untrusted server.
+Note that some untrusted servers received shares failed if the group owner set a sharing scheme where $s < n$.
 
 \begin{equation}
 ND = \sum_{i=1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
@@ -801,18 +803,29 @@ If we use a longer T, the numbers of messages, NUi and NDi, become smaller.
 However, this makes it easier for attackers to crack untrusted servers.
 
 At last, we consider the following two cases with concrete parameters.
+In the two cases, there are ten users in a small group and everyone has a device.
+We set the TTL to one day and there are one hundred of normal messages created by the ten users in the group during the TTL.
+In addition, a device send only one confirm message during the TTL
 
  \begin{itemize}
  	\setlength{\itemsep}{1pt}
  	\setlength{\parskip}{0pt}
  	\setlength{\parsep}{0pt}
- 	\item \textbf{Case 1: $D = 100, T = 1 \ day, U = 1000, F = 0$.}
-
- 	\item \textbf{Case 2: $D = 100, T = 1 \ day, L = 7 \  days, U = 1000, F = 10$.} 
-
+ 	\item \textbf{Case 1: $D = 10, T = 1 \ day, U = 100, C = 1, F = 0$.}
+ 	
+	In the case, there is no offline users in the group.
+	Each device sends and receives 110 messages during the TTL.
+	All devices receive 1100 messages during the TTL.
+ 	\item \textbf{Case 2: $D = 10, T = 1 \ day, L = 1 \  days, U = 100, C = 1, F = 2$.} 
+ 	
+	In this case, there are two offline users in the group and the average offline time is one days.
+	Each device sends and receives 310 messages during the TTL.
+	All devices receive 2480 messages during the TTL.
 \end{itemize}
 
 \subsection{Data Synchronization Libraries}
+
+The Grouper framework makes the synchronization module pluggable.
 
 \section{Related Work}
 
