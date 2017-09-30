@@ -1,5 +1,5 @@
 \documentclass[twocolumn,10pt]{article}
-\usepackage[a4paper, top=0.5in, bottom=0.6in, left=0.5in, right=0.5in]{geometry}
+\usepackage[a4paper, top=0.5in, bottom=0.6in, left=0.41in, right=0.41in]{geometry}
 
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -311,7 +311,7 @@ The sender uploads next three update messages from No.3 and No.5  using a multic
 The receiver becomes online, but the receiver does not notice that the receiver has missing messages soon.
 At this time, the sender sends a confirm message that includes the newest active sequence number, 5.
 The receiver receives this sequence number and compares it with the newest sequence number in the persistent store.
-In Figure 3, the receiver notices that update messages No.3, No.4 and No.5 are missing.
+In Figure 2, the receiver notices that update messages No.3, No.4 and No.5 are missing.
 The receiver asks the sender to resend update messages No.3, No.4 and No.5.
 The sender will send update messages No.3 and No.4 to the receiver again using a unicast address.
 
@@ -324,25 +324,7 @@ Ckeckgroups messages supplement these basic messages.
 A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
 A checkgroups message is distributed periodically or after some time after basic messages are distributed.
 
-\subsection{Unreliable Messaging Using Untrusted Servers}
-
-This subsection describes the design of unreliable messaging in the layers of Messaging, Data Protection, and Untrusted Servers.
-
-In these layers, we use a secret sharing scheme and multiple untrusted servers as shown in Figure 3.
-In this figure, the messaging layer in the sender is sending a message to that in the receiver.
-
-At first, this layer calls the data protection layer and creates three shares by a secret sharing scheme.
-Next, this layer uploads those shares to three untrusted servers.
-Each untrusted server receives one of these shares and stores it into a database.
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.42]{sync_flow}
-	\caption{Implementing unreliable messaging with a secret sharing scheme and multiple untrusted servers.}
-\end{figure}
-
-
-\subsection{Parameters of Secret Sharing Scheme}
+\subsection{Data Protection}
 
 The data protection layer uses the Shamir's secret sharing scheme $f(k, n)$ introduced in Section 3.1.
 In Grouper, we extend this scheme $f(k, n)$ and design our new scheme $ f(k, n, s)$.
@@ -360,11 +342,11 @@ We can choose the parameter s based on the following policies.
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Sender first.} 
-	An application sets s closed to k. 
+	An application sets s closed to $k$. 
 	A sender gets a successful result earlier.
 	When some servers that have shares are not available, a receiver more likely loses a message.
 	\item \textbf{Receiver first.}
-	An application sets s closed to n. 
+	An application sets s closed to $n$. 
 	A sender must keep trying longer to get a successful result.
 	When some servers that have shares are not available, a receiver more likely get a message.
 \end{itemize}
@@ -377,28 +359,21 @@ Secondly, the secret sharing scheme ensures the data availability when a number 
 For the $f(k, n, s)$ scheme in Grouper, an object can be recovered after accessing at least $k$ untrusted servers.
 Thirdly, the secret sharing scheme reduces the risk of attack, because the attacker who can access only $k-1$ or less untrusted servers cannot get any information.
 
-\subsection{Grouper Message Protocol}
+Bases on reliable message delivery and data protection policy, Figure 3 shows the message transportation from a device to another device using the extended secret sharing scheme $f(2, 4, 3)$.
+In this figure, the message layer in the sender is sending a message to that in the receiver.
+At first, this layer calls the data protection layer and creates four shares by a secret sharing scheme.
+Next, this layer uploads those shares to four untrusted servers.
+If three or more untrusted servers receives one of these shares and stores it into a database successfully, we regard this uploading successful.
+In Figure 3, although only the left three untrusted servers receives shares successfully, we also regard this uploading successful.
+At last, the message layer in the receiver download two or more shared from the four untrusted servers and recover the message by calling the data protection layer.
 
-\begin{table}[t]
+\begin{figure}[t]
 	\centering
-	\caption{Attributes of Grouper message.}
-	\label{my-label}
-	\begin{tabular}{lll}
-		\hline
-		\textbf{Attribute} & \textbf{Explanation} \\ \hline
-		type & Type of this message. \\
-		content & A marshalled object or sequence numbers. \\
-		sequence & Sequence number of this message. \\
-		class & Class name of an object. \\
-		objectId & ID of an object. \\
-		receiverId & Node identifier of the receiver. \\
-		senderId & Node identifier of the sender. \\
-		email & Email address of the sender. \\
-		name & Name of the sender. \\
-		sentTime & Time the message is sent. \\
-		\hline
-	\end{tabular}
-\end{table}
+	\includegraphics[scale=0.42]{transportation}
+	\caption{Message transportation using the extended secret sharing scheme  $f(2, 4, 3)$.}
+\end{figure}
+
+\subsection{Grouper Message Protocol}
 
 The Grouper API layer sends and receives messages using our own protocol, Grouper Message Protocol.
 In this protocol, a message is a JSON string that contains a marshalled object and attributes.
@@ -431,6 +406,27 @@ There are three important attributes:
 
 The attribute receiverId contains the addresses of destination devices.
 An address is either a list of device IDs or ``*'' that means multicasting to all devices.
+
+\begin{table}[t]
+	\centering
+	\caption{Attributes of Grouper message.}
+	\label{my-label}
+	\begin{tabular}{lll}
+		\hline
+		\textbf{Attribute} & \textbf{Explanation} \\ \hline
+		type & Type of this message. \\
+		content & A marshalled object or sequence numbers. \\
+		sequence & Sequence number of this message. \\
+		class & Class name of an object. \\
+		objectId & ID of an object. \\
+		receiverId & Node identifier of the receiver. \\
+		senderId & Node identifier of the sender. \\
+		email & Email address of the sender. \\
+		name & Name of the sender. \\
+		sentTime & Time the message is sent. \\
+		\hline
+	\end{tabular}
+\end{table}
 
 \begin{algorithm}[t]
 	\caption{Handle message algorithm}\label{alg:euclid}
@@ -826,6 +822,19 @@ In addition, a device send only one confirm message during the TTL
 \subsection{Data Synchronization Libraries}
 
 The Grouper framework makes the synchronization module pluggable.
+Developers can choose synchronization frameworks as the sync plugin of Grouper.
+We use Sync\cite{sync} framework, which provides a consistency model that the newest object wins, as as the synchronization plugin now.
+For example, if a record in Account Book app has been modified by two users, the modification of one user will lost.
+Account Book app keeps the newest modification and put it into persistent store.
+
+If an application needs other consistency model, the developer has to implement such synchronization plugin.
+For example, if a developer wants to use eventual consistency, he can choose such synchronization frameworks for Core Data like Ensembles\cite{ensembles}.
+
+Note that the synchronization frameworks must provide the interfaces as described in Table 2.
+For this reason, Grouper does not support such iOS synchronization frameworks for iCloud or Dropbox like Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} now.
+Such frameworks provides APIs for files while Grouper needs APIs for sending multicast messages.
+If a developer want to use them, he may add an additional layer which provide the interfaces in Table 2.
+This additional layer invoker such third-party synchronization frameworks.
 
 \section{Related Work}
 
@@ -863,6 +872,9 @@ DepSky\cite{bessani2013depsky} realizes the concept of \emph{Cloud-of-Clouds}.
 DepSky keeps encrypted data in commercial storage services and do application logic in other individual servers.
 In Grouper, untrusted servers undertake responsibility of temporarily data storage and message delivery.
 Mobile devices do application logic.
+
+SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
+To keep clients in synchronization, SPORC uses operational transformation (OT) which allows each client to apply local updates optimistically.
 
 \section{Conclusion}
 
