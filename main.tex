@@ -1,5 +1,5 @@
 \documentclass[twocolumn,10pt]{article}
-\usepackage[a4paper, top=0.5in, bottom=0.6in, left=0.41in, right=0.41in]{geometry}
+\usepackage[a4paper, top=0.5in, bottom=0.6in, left=0.45in, right=0.45in]{geometry}
 
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -79,7 +79,7 @@ In addition, data can be recovered even untrusted servers shut down because all 
 Grouper consists of a client framework and a Web service.
 We have implemented the client framework for iOS, macOS, tvOS and watchOS in the Objective-C language.
 We have implemented the Web service running on the multiple untrusted servers in the Java language.
-We used a Sync framework in Grouper to synchronize objects among mobile nodes.
+We used a Sync\cite{sync} framework in Grouper to synchronize objects among mobile nodes.
 We have implemented two applications using Grouper: an iOS application Account Book and a benchmark application Test.
 These implementations show that Grouper makes it easy to develop mobile applications with data synchronization.
 Experimental results show that the performance of Grouper is feasible for mobile applications that are used in a small group of people.
@@ -148,7 +148,7 @@ Anyone can edit and delete existing records in his device.
 
 Grouper uses untrusted servers to exchange messages among mobile devices.
 Untrusted servers construct a self-destruction system, and delete messages after a period of time.
-We call it a Time To Live(TTL).
+We call it a Time To Live (TTL).
 
 Grouper uses Shamir's secret sharing scheme to protect messages from the providers of untrusted servers.
 In this scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
@@ -170,31 +170,31 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Method} & \textbf{Description} \\ \hline
-		grouper.\textbf{setup}(appId, dataStack) & 
+		$grouper.\textbf{setup}(appId, dataStack)$ & 
 		\begin{tabular}{@{}l@{}}
 			An application invokes this method to initialize Grouper with appId and dataStack.\\
 			AppId is a unique ID of an application. Datastack is used by the synchronization\\
 			plugin.
 		\end{tabular}  \\ \hline
-		grouper.sender.\textbf{update}(object) & 
+		$grouper.sender.\textbf{update}(object)$ & 
 		\begin{tabular}{@{}l@{}}
 			An application invokes this method after creating a new object or modifying an\\ 
 			existing object. Grouper performs updating asynchronously and sends an update\\ 
 			message to other devices.
 		\end{tabular} \\ \hline
-		grouper.sender.\textbf{delete}(object) & 
+		$grouper.sender.\textbf{delete}(object)$ & 
 		\begin{tabular}{@{}l@{}}
 			An application invokes this method when the application wants to delete an existing\\ 
 			object. Grouper will delete the object and remove it in the persistent store of a\\ 
 			device automatically after sending a message to other devices.
 		\end{tabular} \\ \hline
-		grouper.receiver.\textbf{receive}(callback) & 
+		$grouper.receiver.\textbf{receive}(callback)$ & 
 		\begin{tabular}{@{}l@{}}
 			An applications invokes this method to register the callback function that is called\\ 
 			after Grouper processes received messages and update objects according to the\\ 
 			messages. The application can use this callback function to update the user screen. 
 		\end{tabular} \\ \hline
-		grouper.sender.\textbf{confirm}() & 
+		$grouper.sender.\textbf{confirm}()$ & 
 		\begin{tabular}{@{}l@{}}
 			An application needs to invoke this method periodically or occasionally to send\\ 
 			a confirm message to other devices.
@@ -209,9 +209,9 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Method} & \textbf{Description} \\ \hline
-		marshall(o) & Marshalls the object o and returns the marshalled byte array. \\
-		updateRemote(b) & Unmarshalls the byte array b to the object and puts the object into the persistent store. \\ 
-		deleteRemote(b) & Deletes the object in the byte array of object IDs.\\ \hline
+		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\
+		$updateRemote(b)$ & Unmarshalls the byte array $b$ to the object and puts the object into the persistent store. \\ 
+		$deleteRemote(b)$ & Deletes the object in the byte array $b$ of object IDs.\\ \hline
 	\end{tabular}
 \end{table*}
 
@@ -236,7 +236,7 @@ Grouper consists of the following four layers and a plugin:
 	This plugin marshalls an updated object in a local persistent store and the Grouper API layer passes the marshalled message to the lower message layer.
 	When the Grouper API layer receives a message, this layer unmarshalls the message using the plugin, reconstructs an message, and puts object included in the message into the persistent store.
 	\item \textbf{Message.}
-	This layer provides a message transportation service with multicasting capability among devices.
+	This layer provides a messaging transportation service with multicasting capability among devices.
 	The destination of a massage is not only the node identifier (ID) of a single device but also "*", which means delivering to all the other nodes.
 	This layer does not ensure the message delivery to other devices.
 	\item \textbf{Data Protection.}
@@ -443,9 +443,9 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 		 
 		\LeftComment Basic reliable multicast.
 		\If{$ msg.seq \neq  0 \ \&\& \ lastMsg.seq + 1 \neq  msg.seq$}
-		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, msg.seq)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq + $ \\\hspace{3.3cm} $1, msg.seq)$
 		
-		\Comment Create a resend message with the minimum and maximum sequence number.
+		\Comment Create a resend message with the minimum and \\\hspace{1.2cm} maximum sequence number.
 		\State $sendMsg(resendMsg, sender)$
 		\EndIf
 		
@@ -456,7 +456,7 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 		\State $sync.deleteRemote(msg)$
 		\ElsIf{$msg.type = "confirm"$}
 		\State $maxSeq = getMaxSeqFrom(msg.content)$
-		\State $resendMsg \gets createResendMsg(lastMsg.seq + 1, maxSeq)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq + $ \\\hspace{3.2cm}  $1, maxSeq)$
 			\If{$resendMsg \neq null $}
 			\State $sendMsg(resendMsg, sender)$
 			\EndIf
@@ -555,15 +555,14 @@ It makes use of the following frameworks.
 	\setlength{\parsep}{0pt}
 	\item 
 	\emph{Multipeer Connectivity}\cite{mc},  an official Peer-to-Peer communication framework provided by Apple. 
-	Grouper uses it to transfer data between two devices in a face-to-face way.
+	Grouper uses it to transfer data between two devices in a face-to-face way using a wireless LAN or bluetooth network.
 	\item 
-	\emph{Core Data}\cite{coredata}, an official ORM framework provided by Apple.
+	\emph{Core Data}\cite{coredata}, an official (Object-Relational Mapping) ORM framework provided by Apple.
 	\emph{Core Data} provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to manage model layer objects. 
 	\item 
-	\emph{Sync}\cite{sync}, a synchronization framework for \emph{Core Data} using JSON. 
-	This framework marshalls objects into JSON strings and vice versa. 
-	Grouper uses it in the synchronization plugin.
+	\emph{Sync}\cite{sync}, a synchronization framework for \emph{Core Data} using JSON.
+	Grouper uses it in the synchronization plugin now.
 	\item 
 	\emph{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
 	\item 
@@ -573,7 +572,7 @@ It makes use of the following frameworks.
 
 \subsection{Web Service}
 
-We have chosen implementing own Web service rather than using commercial general cloud services like Amazon Simple Storage Service (S3), Google Cloud Storage, and Microsoft Azure Storage for the following reasons:
+We have chosen implementing own Web service rather than using commercial general cloud storage services like Amazon Simple Storage Service (S3), Google Cloud Storage, and Microsoft Azure Storage for the following reasons:
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
@@ -585,7 +584,7 @@ We have chosen implementing own Web service rather than using commercial general
 
 Our Web service provides a RESTful API to clients.
 It runs on the Tomcat server\cite{tomcat} that is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies. 
-We use the Spring MVC\cite{spring}, a  Web model-view-controller framework, to create our RESTful API, and Hibernate\cite{hibernate}, an open source Java Object-Relational Mapping (ORM) framework, to save and operate objects in the Web service. 
+We use the Spring MVC\cite{spring}, a  Web model-view-controller framework, to create our RESTful API, and Hibernate\cite{hibernate}, an open source Java ORM framework, to save and operate objects in the Web service. 
 
 Our Web service includes three kinds of entities: \emph{Group}, \emph{User} and \emph{Share} entities. 
 A \emph{Group} entity saves a group ID, a group name and its owner. 
@@ -645,8 +644,8 @@ We see development efforts through two factors: the usability of the client API 
 As described in Table 1, Grouper provides the simple client APIs for developers.
 A developer can convert a standalone application to a data sharing application with our client APIs easily.
 
-To know the LoC developer has to add, we have developed the following applications, Account Book and Test using the Grouper framework.
-As described in Table 4, based on the stand alone applications without data synchronization, developers can add data synchronization to these applications with Grouper by adding a small number of code. 
+Section 4.3 shows the implementation of two applications.
+Table 4 shows that developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
 \subsection{Performance}
 
@@ -657,14 +656,13 @@ We installed 30 Web services on three different servers.
 Each server ran a Tomcat server instance which hosted 10 Web services.
 
 In our benchmark application, the size of an object was 323 bytes.
-This object corresponds to a record of benchmark application Test and contains the creation time of this record.
+This object corresponds to a income or expenditure record of the application Account Book.
 When this object was updated in a node, the Grouper API generated a normal message which size was 656 bytes.
 
 \begin{table}[t]
 	\footnotesize
 	\centering  
 	\caption{Devices in the performance experiment.}
-	\label{my-label}
 	\begin{tabular}{llll}
 		\hline
 		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ \hline
@@ -689,20 +687,20 @@ The network part increased slowly and sometimes decreased.
 On the whole, the total processing time increased linearly.
 Compared with uploading messages, downloading messages required about two times of processing times.
 Note that object synchronization is done in a background task asynchronously.
-While the Grouper framework is performing object synchronization, user interface of a mobile application never freezes.
+While the Grouper framework is performing object synchronization, the user interface of a mobile application never freezes.
 A user is not aware of data synchronization.
 
 We performed an experiment to measure the processing time of object synchronization according the parameters of the secret sharing scheme.
 Specifically, we changed the parameter ${k}$  and ${n}$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
 
-Figure 6 shows the relationship between processing time and the parameters, where $s$ is equals to $n$ and ${0< k < n, k=3i, n=3j+3, 1 \leq i, j \leq 5}$.
+Figure 6 shows the relationship between processing time and the parameters, where $s=n,\ 0< k < n,\ k=3i,\ n=3j+3$ and $ 1 \leq i, j \leq 5$.
 For uploading a single message, as the parameter ${k}$ or ${n}$ increased, processing increased linearly.
 However, for downloading a single message, as the parameter ${k}$ increased, processing time  changed a little, and sometimes decreased.
 
-Figure 7(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$ and ${n = 2, 4, 6, ... , 10}$. 
-Figure 7(b) shows the relationship between processing time and the threshold ${k}$, where ${n=30}$ and ${k = 3, 6, 9, ... , 27}$. 
-As n increased, the processing time of uploading and downloading increase linearly. 
-As k increased, the processing time of uploading increased linearly and that of downloading did not change. 
+Figure 7(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$ and ${n = 2, 4, 6, ... , 10}$.
+As $n$ increased, the processing time of uploading and downloading increase linearly. 
+Figure 7(b) shows the relationship between processing time and the threshold ${k}$, where ${n=30}$ and ${k = 3, 6, 9, ... , 27}$.
+As $k$ increased, the processing time of uploading increased linearly and that of downloading did not change.
 
 \subsection{Discussion About the Numbers of Messages}
 
@@ -711,22 +709,23 @@ We use the parameters in Table 6.
 
 \begin{table*}[t]
 	\centering
-	\caption{The parameters for discussing the relationship between TTL and the number of messages.}
+	\footnotesize
+	\caption{The parameters for discussing the relationship between the TTL and the number of messages.}
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Parameter} & \textbf{Explanation} \\ \hline
 		$D$ & Number of devices. \\
 		$T$ & Time to live (TTL). \\
-		$F$ & Average number of offline devices during TTL. \\
+		$F$ & Average number of offline devices during the TTL. \\
 		$L$ & Average offline time. \\
 		$Ui$ & Average number of updated/deleted messages in the device $i$ during the TTL. \\ 
 		$URi$ &  Average number of updated/deleted messages by resend messages in the device $i$ during the TTL.\\ 
 		$C$ & Average number of confirm messages in the device $i$ during the TTL. \\ 
 		$U$ & Total number of updated and deleted objects during the TTL. \\ 
-		$NUi$ & Number of uploading for device $i$. \\
-		$NU$ & Total number of uploading. \\
-		$NDi$ & Number of downloading for device $i$. \\
-		$ND$ & Total number of downloading. \\ \hline
+		$NUi$ & Number of uploading for device $i$ during the TTL. \\
+		$NU$ & Total number of uploading during the TTL. \\
+		$NDi$ & Number of downloading for device $i$ during the TTL. \\
+		$ND$ & Total number of downloading during the TTL. \\ \hline
 	\end{tabular}
 \end{table*}
 
@@ -743,31 +742,29 @@ Total number of uploading is the sum $NU$ of $NUi$.
 NU = \sum_{i=1}^{D} NUi = U + C \cdot D
 \end{equation}
 
-A device does not download the messages the have been uploaded by itself.
-To simplify questions, we suppose the device downloads those messages.
-Thus, the number of downloading for device $i$, $NDi$, is equal to total number of uploading $NU$.
+A device does not download the messages that have been uploaded by itself.
+To simplify equations, we suppose the device downloads those messages.
+Thus, the number of downloading for device $i$, $NDi$, is the equal to total number of uploading $NU$.
 
 \begin{equation}
 NDi = NU = U + C \cdot D
 \end{equation}
 
-Total number of downloading $ND$ is the sum of $NDi$.
-Meanwhile, the parameter $ND$ also represents the maximum number of shares sent from an untrusted server.
-Note that some untrusted servers received shares failed if the group owner set a sharing scheme where $s < n$.
+The total number of downloading $ND$ is the sum of $NDi$.
 
 \begin{equation}
 ND = \sum_{i=1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
 \end{equation}
 
-Because current cloud servers scale well according to the number of devices and and messages, we discusse NUi and UDi in this subsection.
+Because current cloud servers scale well according to the number of devices and and messages, we discuss $NUi$ and $UDi$ in this subsection.
 Equation 1 shows that for the device $i$ during the TTL, the order of uploading  is $O(U)$.
 Euqation 3 shows that the order of downloading is $O(U+D)$.
-As the number of updated and deleted objects increases, total number of uploading and downloading increases linearly.
+As the number of updated and deleted objects increases, the total numbers of uploading and downloading increase linearly.
 As the number of devices increases, the number of confirm messages increases linearly.
 
 Next, we consider the situation that there are offline devices in a group ($F \neq 0$).
-In this situation, offline devices send the resend messages when they become online and the devices the have the updated objects will resend update messages to the offline devices.
-To simplify questions, we suppose that all offline devices receive the updated messages after they sent resend messages.
+In this situation, offline devices send the resend messages when they become online and the devices that have the updated objects will resend update messages to the offline devices.
+To simplify equations, we suppose that all offline devices receive the updated messages after they sent resend messages.
 For the device $i$, the number of those update messages by the resend message, $URi$, is
 
 \begin{equation}
@@ -778,7 +775,7 @@ Compared to the situation that $F=0$, in this situation, the number of uploading
 Thus, we get $NUi$, $NU$, $NDi$ and $ND$ where $F \neq 0$.
 
 \begin{equation}
-NUi = Ui + C + Ui \cdot \frac{L}{T} \cdot F = Ui \cdot (1 + Ui \cdot \frac{L}{T} \cdot F) + C
+NUi = Ui + C + Ui \cdot \frac{L}{T} \cdot F = Ui \cdot (1 + \frac{L}{T} \cdot F) + C
 \end{equation}
 
 \begin{equation}
@@ -789,14 +786,8 @@ NU = \sum_{i=1}^{D} NUi = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
 NDi = NU = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
 \end{equation}
 
-\begin{equation}
-\begin{aligned}
-ND &= \sum_{i=1}^{D - F} NDi = NU \cdot (D - F) \\&= U \cdot (D - F) \cdot (1 + \frac{L}{T} \cdot F) + C \cdot (D - F) ^{2}
-\end{aligned}
-\end{equation}
-
-Equations 4 to 7 show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C)$.
-As the number of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increases, the number of uploading and downloading for a single device increases linearly.
+Equations 6 to 8 show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F + C)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C \cdot D)$.
+As the numbers of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increase, the number of uploading and downloading for a single device increases linearly.
 
 If we use a longer T, the numbers of messages, NUi and NDi, become smaller.
 However, this makes it easier for attackers to crack untrusted servers.
@@ -804,63 +795,59 @@ However, this makes it easier for attackers to crack untrusted servers.
 At last, we consider the following two cases with concrete parameters.
 In the two cases, there are ten users in a small group and everyone has a device.
 We set the TTL to one day and there are one hundred of normal messages created by the ten users in the group during the TTL.
-In addition, a device send only one confirm message during the TTL
+In addition, a device send only one confirm message during the TTL.
 
  \begin{itemize}
  	\setlength{\itemsep}{1pt}
  	\setlength{\parskip}{0pt}
  	\setlength{\parsep}{0pt}
- 	\item \textbf{Case 1: $D = 10, T = 1 \ day, U = 100, C = 1, F = 0$.}
+ 	\item \textbf{Case 1: $D = 10,\ T = 1 \ day,\ Ui = 100,\ C = 1,\ F = 0$.}
  	
 	In the case, there is no offline users in the group.
-	Each device sends and receives 110 messages during the TTL.
-	All devices receive 1100 messages during the TTL.
- 	\item \textbf{Case 2: $D = 10, T = 1 \ day, L = 1 \  days, U = 100, C = 1, F = 2$.} 
+	Each device uploads 101 messages and downloads 1010 messages during the TTL.
+ 	\item \textbf{Case 2: $D = 10,\ T = 1 \ day,\ L = 1 \  day,\ Ui = 100,\ C = 1,\ F = 2$.} 
  	
 	In this case, there are two offline users in the group and the average offline time is one days.
-	Each device sends and receives 310 messages during the TTL.
-	All devices receive 2480 messages during the TTL.
+	Each device uploads 301 messages and downloads 3010 messages during the TTL.
 \end{itemize}
 
 \subsection{Data Synchronization Libraries}
 
 The Grouper framework makes the synchronization module pluggable.
-Developers can choose synchronization frameworks as the sync plugin of Grouper.
-We use Sync\cite{sync} framework, which provides a consistency model that the newest object wins, as as the synchronization plugin now.
-For example, if a record in Account Book app has been modified by two users, the modification of one user will lost.
-Account Book app keeps the newest modification and put it into persistent store.
+We use Sync\cite{sync} framework, which provides a consistency model that the newest object wins in the synchronization plugin now.
+For example, if a record in the Account Book application has been modified by two users, the modification of one user will be lost.
+The Account Book application keeps the newest modification and put it into persistent store.
 
 If an application needs other consistency model, the developer has to implement such synchronization plugin.
-For example, if a developer wants to use eventual consistency, he can choose such synchronization frameworks for Core Data like Ensembles\cite{ensembles}.
+For example, if a developer wants to use eventual consistency, he can choose Ensembles\cite{ensembles}.
 
 Note that the synchronization frameworks must provide the interfaces as described in Table 2.
-For this reason, Grouper does not support such iOS synchronization frameworks for iCloud or Dropbox like Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} now.
-Such frameworks provides APIs for files while Grouper needs APIs for sending multicast messages.
-If a developer want to use them, he may add an additional layer which provide the interfaces in Table 2.
-This additional layer invoker such third-party synchronization frameworks.
+For this reason, Grouper does not support iOS synchronization frameworks for iCloud or Dropbox.
+For example, Grouper does not support Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} now.
+These frameworks provide APIs for files while Grouper needs APIs for sending multicast messages.
+If a developer want to use them, he has to add an additional layer that provides the methods in Table 2.
 
 \section{Related Work}
 
-Vanish is a self-destruction system\cite{geambasu2009vanish}. 
-Vanish uses Distribute Hash Tables(DHTs) as the back-end storage.
-Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares to a public DHT and eliminate a key from the local storage.
-The key in Vanish is removed after a period of time, and the encrypted message is permanently unreadable.
+Vanish is a self-destruction system\cite{geambasu2009vanish} and uses Distribute Hash Tables(DHTs) as the back-end storage.
+Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares to a public DHT and eliminates the key from the local storage.
+The key in Vanish is removed after a period of time, and the encrypted message becomes permanently unreadable.
 Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
-Thus, it not strongly secure due to some Sybil attacks\cite{wolchok2010defeating}. 
+Thus, it is not strongly secure against some Sybil attacks\cite{wolchok2010defeating}. 
 In addition, the surviving time of the key in Vanish cannot be controlled by applications. 
 
-To address these issues in Vanish, Zeng et al., propose SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
-SafeVanish preventa hopping attacks by extending the length range of the key shares while SeDas exploits active storage networks, instead of the nodes in P2P, to maintain the divided secret key. By extending SeDas, Zeng's group proposes CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
+To address these issues in Vanish, Zeng et al. propose SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
+SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain divided secret key. By extending SeDas, Zeng's group proposes CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
 In CloudSky, a user can control the surviving time of a message.
-Taking advantage of Attribute Bases Encryption (ABE), a user can also define the access control policy.
+CloudSky uses Attribute Bases Encryption (ABE) and allows user to define access control policies.
 
 However, these proposals are not suitable for developing information sharing applications. 
-They are suitable for exchanging immutable messages, while our target applications need to modify objects repeatedly after other devices received the object. 
-Although, CloudSky solves the problems about user controllability in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
+They are suitable for exchanging immutable messages, while our target applications need to modify objects repeatedly after other devices receive the object. 
+Although CloudSky solves the problems about user controllability in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
 In Grouper, offline devices can download such messages by using confirm and resend messages.
 A trusted authority is necessary in CloudSky to manage user profiles, while Grouper does not rely on any trusted authority.
 
-Mylar\cite{popa2014building} stores encrypted data on a untrusted server, and decrypts this data only in the browsers of users. 
+Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
 Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
 Mylar uses its browser extension to decrypt data on clients. 
 Compared to Mylar using a single untrusted server, Grouper takes advantages of data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
@@ -868,7 +855,7 @@ Compared to Mylar using a single untrusted server, Grouper takes advantages of d
 Sweets\cite{sweets} is a decentralized social networking service (SNS) application using data synchronization with P2P connections among mobile devices. 
 Sweets performs data synchronization not only between two online nodes directly but also via common friends' nodes indirectly for offline nodes.
 This indirect synchronization uses ABE to realize access control.
-Direct synchronization can only be finished during two devices are online at the same time. 
+Direct synchronization can only be done during two devices are online at the same time. 
 In Grouper, on the other hand, users can synchronize data from multiple untrusted servers anytime.
 
 DepSky\cite{bessani2013depsky} realizes the concept of \emph{Cloud-of-Clouds}.  
@@ -878,16 +865,17 @@ Mobile devices do application logic.
 
 SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
 To keep clients in synchronization, SPORC uses operational transformation (OT) which allows each client to apply local updates optimistically.
+In SPORC, synchronizing nodes should be online, while Grouper allows offline synchronizing nodes.
 
 \section{Conclusion}
 
-This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to develop light-weight information sharing for mobile applications.
-In such an application, users can create a group and exchange the information safely via multiple untrusted servers.
+This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to implement light-weight information sharing in mobile applications.
+In an application using Grouper, users can create a group and share objects safely via multiple untrusted servers.
 Grouper provides two main functions: reliable data synchronization and group management.
-Compared to conventional systems, Grouper provides the reliable synchronization and allows mobile devices to synchronize data from others after untrusted severs remove data.
+Compared to conventional self-destruction systems, Grouper provides the reliable synchronization and allows mobile devices to synchronize data with other devices after untrusted severs remove data.
 Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and our extended secret sharing scheme $f(k, n, s)$.
 
-We have implemented Grouper's client's framework in Objective-C and Web service in Java EE. 
+We have implemented Grouper's client's framework in Objective-C and Web service in Java. 
 We have developed applications, \emph{Account Book} and \emph{Test} on the top of Grouper.
 Developing these applications shows that Grouper requires little development effort to convert an stand alone application to data sharing application.
 We also evaluated the performance of Groper using our benchmark application.
