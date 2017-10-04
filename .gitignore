@@ -6,3 +6,5 @@
 *.blg
 *.xml
 *.gz
+*.cut
+*.out
