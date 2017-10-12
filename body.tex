@@ -292,7 +292,7 @@ Next, this layer uploads those shares to four untrusted servers.
 In Figure 3, although only the left three untrusted servers receives shares successfully, we regard this uploading successful.
 At last, the message layer in the receiver device downloads two shares from the four untrusted servers and recovers the message by calling the data protection layer.
 
-We can choose the parameter s based on the following policies.
+We can choose the parameter $s$ based on the following policies.
 
 \begin{itemize}
 	\setlength{\itemsep}{1pt}
@@ -380,7 +380,7 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 \begin{algorithm}[t]
 	\caption{Handle message algorithm}\label{alg:euclid}
 	\begin{algorithmic}[1]		
-		\Procedure{onMessageReceived}{$msg, sender$}
+		\Procedure{onMessageReceived}{$msg,\ sender$}
 		\LeftComment Check duplicate message.
 		\State  $historyMsgs \gets getMsgsBySender(msg.sender)$
 		\If{$msg \in historyMsgs$}
@@ -391,10 +391,10 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 		
 		\LeftComment Basic reliable multicast.
 		\If{$ msg.seq \neq  0 \ \&\& \ lastMsg.seq + 1 \neq  msg.seq$}
-		\State $resendMsg \gets createResendMsg(lastMsg.seq + $ \\\hspace{2.7cm} $1, msg.seq)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ $ \\\hspace{2.7cm} $1,\ msg.seq)$
 		
 		\Comment Create a resend message with the minimum and \\\hspace{1.7cm} maximum sequence number.
-		\State $sendMsg(resendMsg, sender)$
+		\State $sendMsg(resendMsg,\ sender)$
 		\EndIf
 		
 		\LeftComment Handle the message by its type.
@@ -404,15 +404,15 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 		\State $sync.deleteRemote(msg)$
 		\ElsIf{$msg.type = "confirm"$}
 		\State $maxSeq = getMaxSeqFrom(msg.content)$
-		\State $resendMsg \gets createResendMsg(lastMsg.seq + $ \\\hspace{2.7cm}  $1, maxSeq)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ $ \\\hspace{2.7cm}  $1,\ maxSeq)$
 		\If{$resendMsg \neq null $}
-		\State $sendMsg(resendMsg, sender)$
+		\State $sendMsg(resendMsg,\ sender)$
 		\EndIf
 		\ElsIf{$msg.type = "resend"$}
 		\State $seqs \gets getSeqs(msg.content)$
 		\For{$ seq \in seqs$}
 		\State $missingMsg \gets getMsg(seq)$
-		\State $sendMsg(missingMsg, sender)$
+		\State $sendMsg(missingMsg,\ sender)$
 		\EndFor
 		\EndIf
 		\EndProcedure
@@ -420,8 +420,8 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 \end{algorithm}
 
 Applications send update, delete and confirm messages through the Grouper API and send resend messages after receiving messages automatically.
-When an application invokes the method $grouper.sender.update()$ of the Grouper API, the Grouper API layer sends an update message that contains the marshalled object to all devices.
-When an application invokes the method $grouper.sender.delete()$ of the Grouper API, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
+When an application invokes the method $grouper.sender.update()$ the Grouper API layer sends an update message that contains the marshalled object to all devices.
+When an application invokes the method $grouper.sender.delete()$, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
 When an application invokes the method $grouper.confirm()$, the Grouper API layer sends a confirm message to all devices. 
 This confirm message includes the sequence numbers of objects that are recently created in this device.
 
@@ -737,7 +737,7 @@ NDi = NU = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
 Equations 6 to 8 show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F + C)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C \cdot D)$.
 As the numbers of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increase, the number of uploading and downloading for a single device increases linearly.
 
-If we use a longer T, the numbers of messages, NUi and NDi, become smaller.
+If we use a longer $T$, the numbers of messages, $NUi$ and $NDi$, become smaller.
 However, this makes it easier for attackers to crack untrusted servers.
 
 At last, we consider the following two cases with concrete parameters.
