@@ -113,47 +113,38 @@ Secondly, it is easy for a group owner to invite other members using a safe comm
 
 \begin{table*}[t]
 	\centering
+	\small
 	\caption{Client API of Grouper.}
-	\label{my-label}
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Method} & \textbf{Description} \\ \hline
 		$grouper.\textbf{setup}(appId, dataStack)$ & 
 		\begin{tabular}{@{}l@{}}
-			An application invokes this method to initialize Grouper with appId and dataStack.\\
-			AppId is a unique ID of an application. Datastack is used by the synchronization\\
-			plugin.
+			An application invokes this method to initialize Grouper with appId and dataStack. AppId is a unique ID\\ of an application. Datastack is used by the synchronization plugin.
 		\end{tabular}  \\ \hline
 		$grouper.sender.\textbf{update}(object)$ & 
 		\begin{tabular}{@{}l@{}}
-			An application invokes this method after creating a new object or modifying an\\ 
-			existing object. Grouper performs updating asynchronously and sends an update\\ 
-			message to other devices.
+			An application invokes this method after creating a new object or modifying an existing object. Grouper\\ performs updating asynchronously and sends an update message to other devices.
 		\end{tabular} \\ \hline
 		$grouper.sender.\textbf{delete}(object)$ & 
 		\begin{tabular}{@{}l@{}}
-			An application invokes this method when the application wants to delete an existing\\ 
-			object. Grouper will delete the object and remove it in the persistent store of a\\ 
-			device automatically after sending a message to other devices.
+			An application invokes this method when the application wants to delete an existing object. Grouper will\\ delete the object and remove it in the persistent store of a device automatically after sending a message to\\ other devices.
 		\end{tabular} \\ \hline
 		$grouper.receiver.\textbf{receive}(callback)$ & 
 		\begin{tabular}{@{}l@{}}
-			An applications invokes this method to register the callback function that is called\\ 
-			after Grouper processes received messages and update objects according to the\\ 
-			messages. The application can use this callback function to update the user screen. 
+			An applications invokes this method to register the callback function that is called after Grouper processes\\ received messages and update objects according to the messages. The application can use this\\ callback function to update the user screen. 
 		\end{tabular} \\ \hline
 		$grouper.sender.\textbf{confirm}()$ & 
 		\begin{tabular}{@{}l@{}}
-			An application needs to invoke this method periodically or occasionally to send\\ 
-			a confirm message to other devices.
+			An application needs to invoke this method periodically or occasionally to send a confirm message to other\\ devices.
 		\end{tabular} \\ \hline
 	\end{tabular}
 \end{table*}
 
 \begin{table*}[t]
 	\centering
+	\small
 	\caption{The API of the synchronization plugin.}
-	\label{my-label}
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Method} & \textbf{Description} \\ \hline
@@ -358,8 +349,8 @@ An address is either a list of device IDs or "*" that means multicasting to all 
 
 \begin{table}[t]
 	\centering
+	\small
 	\caption{Attributes of Grouper message.}
-	\label{my-label}
 	\begin{tabular}{lll}
 		\hline
 		\textbf{Attribute} & \textbf{Explanation} \\ \hline
@@ -595,6 +586,20 @@ A developer can convert a standalone application to a data sharing application w
 Section 4.3 shows the implementation of two applications.
 Table 4 shows that developers can add data synchronization to these applications with Grouper by adding a small number of code. 
 
+The Grouper framework makes the synchronization module pluggable.
+We use Sync\cite{sync} framework, which provides a consistency model that the newest object wins in the synchronization plugin now.
+For example, if a record in the Account Book application has been modified by two users, the modification of one user will be lost.
+The Account Book application keeps the newest modification and put it into persistent store.
+
+If an application needs other consistency model, the developer has to implement such synchronization plugin.
+For example, if a developer wants to use eventual consistency, he can choose Ensembles\cite{ensembles}.
+
+Note that the synchronization frameworks must provide the interfaces as described in Table 2.
+For this reason, Grouper does not support iOS synchronization frameworks for iCloud or Dropbox.
+For example, Grouper does not support Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} now.
+These frameworks provide APIs for files while Grouper needs APIs for sending multicast messages.
+If a developer want to use them, he has to add an additional layer that provides the methods in Table 2.
+
 \subsection{Performance}
 
 In this subsection, we show that mobile applications using the Grouper framework provide sufficient performance for small groups of people.
@@ -608,7 +613,7 @@ This object corresponds to a income or expenditure record of the application Acc
 When this object was updated in a node, the Grouper API generated a normal message which size was 656 bytes.
 
 \begin{table}[t]
-	\footnotesize
+	\small
 	\centering  
 	\caption{Devices in the performance experiment.}
 	\begin{tabular}{llll}
@@ -657,7 +662,7 @@ We use the parameters in Table 6.
 
 \begin{table*}[t]
 	\centering
-	\footnotesize
+	\small
 	\caption{The parameters for discussing the relationship between the TTL and the number of messages.}
 	\begin{tabular}{ll}
 		\hline
@@ -758,22 +763,6 @@ In addition, a device send only one confirm message during the TTL.
 	In this case, there are two offline users in the group and the average offline time is one days.
 	Each device uploads 301 messages and downloads 3010 messages during the TTL.
 \end{itemize}
-
-\subsection{Data Synchronization Libraries}
-
-The Grouper framework makes the synchronization module pluggable.
-We use Sync\cite{sync} framework, which provides a consistency model that the newest object wins in the synchronization plugin now.
-For example, if a record in the Account Book application has been modified by two users, the modification of one user will be lost.
-The Account Book application keeps the newest modification and put it into persistent store.
-
-If an application needs other consistency model, the developer has to implement such synchronization plugin.
-For example, if a developer wants to use eventual consistency, he can choose Ensembles\cite{ensembles}.
-
-Note that the synchronization frameworks must provide the interfaces as described in Table 2.
-For this reason, Grouper does not support iOS synchronization frameworks for iCloud or Dropbox.
-For example, Grouper does not support Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} now.
-These frameworks provide APIs for files while Grouper needs APIs for sending multicast messages.
-If a developer want to use them, he has to add an additional layer that provides the methods in Table 2.
 
 \section{Related Work}
 
