@@ -64,16 +64,10 @@
 Conventional mobile applications are built based on a client-server modal and require central servers for storing shared data and processing confidential information.
 If the central servers are accessed by an attacker, a curious administrator or a government, private information will be revealed because data is often stored on the central servers in the form of cleartext.
 This paper presents Grouper, a framework for developing mobile applications without trusted central servers.
-Grouper provides object synchronization among mobile devices.
-It also uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
-These untrusted servers construct a self-destruction system.
-Uploaded shares will be deleted after a certain period of time.
-Mobile devices exchange messages via untrusted servers based on the Grouper Message Protocol.
-Grouper consists of a client framework and a Web service.
-We have implemented client framework for iOS, macOS, tvOS and watchOS in Objective-C.
-The Web service is implemented in Java and runs on multiple untrusted servers.
-We have implemented two applications using Grouper: an iOS application named Account Book, and a benchmark application named Test.
-We have evaluated the development efforts of applications using Grouper as well as the performance. 
+To provide object synchronization among mobile devices, Grouper uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
+These untrusted servers construct a self-destruction system and delete shares after a certain period of time.
+Grouper consists of a client framework in Objective-C and a Web service in Java.
+We have implemented two applications using Grouper and evaluated the development efforts them as well as the performance. 
 Developing these applications demonstrates that Grouper requires little development effort to convert a standalone application to a data sharing application.
 Experimental results prove that the performance of Grouper is satisfactory for mobile applications that are used among a small group of people.
 
@@ -86,8 +80,7 @@ Experimental results prove that the performance of Grouper is satisfactory for m
 \section{Introduction}
 
 People use mobile applications every day. 
-Conventional mobile applications are built based on a client-server mode and require central servers for storing shared data and processing confidential information.
-When users use mobile applications, users fully trust the central servers.
+When users use conventional mobile applications based on a client-server mode, users fully trust the central servers.
 In fact, they are often unaware of their existence and simply rely on the functionality to be provided.
 If the central servers are accessed by an attacker, a curious administrator or a government, private information will be revealed because data is often stored on the central servers in the form of cleartext.
 In addition, users may lose their data when service providers shut their servers down.
@@ -123,6 +116,46 @@ First, we provide support for data recovery when some nodes are unable to obtain
 Grouper provides reliable data synchronization among nodes using a reliable multicast technique.
 Second, we make it easier to develop mobile applications.
 In fact, a developer can add data synchronization functions to stand alone applications with a few lines of code.
+
+\section{Related Work}
+
+Vanish is a self-destruction system\cite{geambasu2009vanish} that uses Distributed Hash Tables(DHTs) as the back-end storage.
+Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
+The key in Vanish is removed after a certain period of time, and the encrypted message becomes permanently unreadable.
+Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
+Thus, it is not very secure against some Sybil attacks\cite{wolchok2010defeating}. 
+In addition, the surviving time of the key in Vanish cannot be controlled by the applications. 
+
+To address these issues in Vanish system, Zeng et al. proposed SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
+SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain a divided secret key. By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
+In CloudSky, a user can control the surviving time of a message.
+CloudSky uses Attribute Bases Encryption (ABE) and allows users to define access control policies.
+
+However, these systems are not suitable for developing information sharing applications. 
+They are suitable for exchanging immutable messages, whereas our target applications need to modify objects repeatedly after other devices receive the object. 
+Although CloudSky solves the problems regarding user controllability that exist in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
+In Grouper, offline devices can download such messages by using confirm and resend messages.
+A trusted authority is necessary in CloudSky to manage user profiles, whereas Grouper does not rely on any trusted authority.
+
+Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
+Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
+Mylar uses its browser extension to decrypt data on the client-side. 
+Compared to Mylar, which uses a single untrusted server, Grouper takes advantages of the data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
+
+Sweets\cite{sweets} is a decentralized social networking service (SNS) application that uses data synchronization with P2P connections among mobile devices. 
+Sweets performs data synchronization not only between two online nodes directly but also via common friend nodes indirectly for offline nodes.
+This indirect synchronization uses ABE to provide access control.
+Direct synchronization can only be done when two devices are online at the same time. 
+On the other hand, in Grouper, users can synchronize data from multiple untrusted servers, anytime.
+
+DepSky\cite{bessani2013depsky} implements the concept of \emph{Cloud-of-Clouds}.  
+DepSky keeps encrypted data in commercial storage services and performs application logic in other individual servers.
+In Grouper, untrusted servers undertake the responsibility of temporary data storage and message delivery.
+Mobile devices perform application logic.
+
+SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
+To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
+In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
 \section{Threat Model}
 
@@ -310,9 +343,9 @@ Each member keeps the newest sequence numbers for senders and detects missing me
 If a member notices a missing message from a sender, the member asks the sender to resend the update message.
 For example, consider that a sender sends update message No.3 to all other members using a multicast address.
 When a member receives update message No.3, the member compares the sequence number 3 with the newest sequence number of the sender.
-If the the newest sequence number of the sender is 1, this means the member missed update message No.2.
+If the newest sequence number of the sender is 1, this means the member missed update message No.2.
 The member asks the sender to resend update message No.2 using a control message.
-The sender will send update message No.2 to the the member who request it using a unicast address.
+The sender will send update message No.2 to the member who request it using a unicast address.
 
 This basic reliable multicasting technique works well for continuous media, such as video streaming in Internet communication.
 However, it does not work well if receivers go offline often or for a long time, as servers delete messages within a short time.
@@ -841,46 +874,6 @@ In addition, a device send only one confirm message during the TTL.
 	In this case, there are two offline users in the group and the average offline time is one day.
 	Each device uploads 301 messages and downloads 3010 messages during the TTL.
 \end{itemize}
-
-\section{Related Work}
-
-Vanish is a self-destruction system\cite{geambasu2009vanish} that uses Distributed Hash Tables(DHTs) as the back-end storage.
-Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
-The key in Vanish is removed after a certain period of time, and the encrypted message becomes permanently unreadable.
-Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
-Thus, it is not very secure against some Sybil attacks\cite{wolchok2010defeating}. 
-In addition, the surviving time of the key in Vanish cannot be controlled by the applications. 
-
-To address these issues in Vanish system, Zeng et al. proposed SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
-SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain a divided secret key. By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
-In CloudSky, a user can control the surviving time of a message.
-CloudSky uses Attribute Bases Encryption (ABE) and allows users to define access control policies.
-
-However, these systems are not suitable for developing information sharing applications. 
-They are suitable for exchanging immutable messages, whereas our target applications need to modify objects repeatedly after other devices receive the object. 
-Although CloudSky solves the problems regarding user controllability that exist in Vanish, offline devices cannot download messages after they have been removed from untrusted servers.
-In Grouper, offline devices can download such messages by using confirm and resend messages.
-A trusted authority is necessary in CloudSky to manage user profiles, whereas Grouper does not rely on any trusted authority.
-
-Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
-Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
-Mylar uses its browser extension to decrypt data on the client-side. 
-Compared to Mylar, which uses a single untrusted server, Grouper takes advantages of the data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
-
-Sweets\cite{sweets} is a decentralized social networking service (SNS) application that uses data synchronization with P2P connections among mobile devices. 
-Sweets performs data synchronization not only between two online nodes directly but also via common friend nodes indirectly for offline nodes.
-This indirect synchronization uses ABE to provide access control.
-Direct synchronization can only be done when two devices are online at the same time. 
-On the other hand, in Grouper, users can synchronize data from multiple untrusted servers, anytime.
-
-DepSky\cite{bessani2013depsky} implements the concept of \emph{Cloud-of-Clouds}.  
-DepSky keeps encrypted data in commercial storage services and performs application logic in other individual servers.
-In Grouper, untrusted servers undertake the responsibility of temporary data storage and message delivery.
-Mobile devices perform application logic.
-
-SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
-To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
-In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
 \section{Conclusion}
 
