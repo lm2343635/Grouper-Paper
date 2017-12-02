@@ -160,7 +160,7 @@ This paper presents Grouper, a framework for developing mobile applications with
 To provide object synchronization among mobile devices, Grouper uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
 These untrusted servers construct a self-destruction system and delete shares after a certain period of time.
 Grouper consists of a client framework in Objective-C and a Web service in Java.
-We have implemented two applications using Grouper and evaluated the development efforts them as well as the performance. 
+We have implemented two applications using Grouper and evaluated the development efforts of them as well as the performance. 
 Developing these applications demonstrates that Grouper requires little development effort to convert a standalone application to a data sharing application.
 Experimental results prove that the performance of Grouper is satisfactory for mobile applications that are used among a small group of people.
 
@@ -173,22 +173,40 @@ Experimental results prove that the performance of Grouper is satisfactory for m
 % Please copy and paste the code instead of the example below. 
 %
 \begin{CCSXML}
-<ccs2012>
- <concept>
-  <concept_id>10002978.10003022</concept_id>
-  <concept_desc>Security and privacy~Software and application security</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10002978.10003006.10003013</concept_id>
-  <concept_desc>Security and privacy~Distributed systems security</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
-</ccs2012>  
+	<ccs2012>
+	<concept>
+	<concept_id>10002978.10003022</concept_id>
+	<concept_desc>Security and privacy~Software and application security</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10002978.10003006.10003013</concept_id>
+	<concept_desc>Security and privacy~Distributed systems security</concept_desc>
+	<concept_significance>300</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10003033.10003106.10003114.10011730</concept_id>
+	<concept_desc>Networks~Online social networks</concept_desc>
+	<concept_significance>300</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10010520.10010521.10010537.10010538</concept_id>
+	<concept_desc>Computer systems organization~Client-server architectures</concept_desc>
+	<concept_significance>300</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10010520.10010521.10010537.10010540</concept_id>
+	<concept_desc>Computer systems organization~Peer-to-peer architectures</concept_desc>
+	<concept_significance>100</concept_significance>
+	</concept>
+	</ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Security and privacy~Software and application security}
-\ccsdesc[100]{Security and privacy~Distributed systems security}
+\ccsdesc[300]{Security and privacy~Distributed systems security}
+\ccsdesc[300]{Networks~Online social networks}
+\ccsdesc[300]{Computer systems organization~Client-server architectures}
+\ccsdesc[100]{Computer systems organization~Peer-to-peer architectures}
 
 
 %
@@ -203,7 +221,7 @@ Experimental results prove that the performance of Grouper is satisfactory for m
 % We no longer use \terms command
 %\terms{Theory}
 
-\keywords{Mobile application security; secret sharing; untrusted servers}
+\keywords{Mobile application security; secret sharing; untrusted servers.}
 
 \section{Introduction}
 
@@ -246,6 +264,9 @@ Second, we make it easier to develop mobile applications.
 In fact, a developer can add data synchronization functions to stand alone applications with a few lines of code.
 
 \section{Related Work}
+
+In this section, we introduce the following related works. 
+Most of them use data encryption that requires private key generation and distribution to protect user data, and do not support data recovery.
 
 Vanish\cite{geambasu2009vanish} is a self-destruction system that uses Distributed Hash Tables(DHTs) as the back-end storage.
 Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
@@ -315,6 +336,35 @@ For example, a group owner can leverage the servers of Amazon, Google, and Micro
 
 \section{Design}
 
+\begin{table*}[t]
+	\centering
+	\caption{Client API of Grouper.}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Method} & \textbf{Description} \\ \hline
+		$grouper.\textbf{setup}(appId, dataStack)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method to initialize Grouper with appId and dataStack. AppId is\\ the unique ID of an application. Datastack is used by the synchronization plugin.
+		\end{tabular}  \\ \hline
+		$grouper.sender.\textbf{update}(object)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method after creating a new object or modifying an existing object.\\ Grouper performs updates asynchronously and sends an update message to other devices.
+		\end{tabular} \\ \hline
+		$grouper.sender.\textbf{delete}(object)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method when it wants to delete an existing object. Grouper deletes\\ the object and removes it from the persistent store of a device automatically, after sending a\\ delete message to other devices.
+		\end{tabular} \\ \hline
+		$grouper.receiver.\textbf{receive}(callback)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method to register the callback function that is called after Grouper\\ processes the received messages and updates objects according to the messages. The application\\ can use this callback function to update the user screen. 
+		\end{tabular} \\ \hline
+		$grouper.sender.\textbf{confirm}()$ & 
+		\begin{tabular}{@{}l@{}}
+			An application needs to invoke this method periodically or occasionally to send a confirm\\ message to other devices.
+		\end{tabular} \\ \hline
+	\end{tabular}
+\end{table*}
+
 This section describes the design of the Grouper framework.
 
 \subsection{Overview}
@@ -355,13 +405,13 @@ Grouper performs retransmission when some mobile devices miss getting messages f
 Developers of mobile applications do not have to specify the lifetimes of messages.
 Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in Section 3.7.
 
-\subsection{Architecture}
-
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.48]{architecture}
+	\includegraphics[scale=0.47]{architecture}
 	\caption{Architecture of Grouper.}
 \end{figure}
+
+\subsection{Architecture}
 
 Figure 1 describes the architecture of the Grouper framework. 
 Grouper consists of the following four layers and a plugin:
@@ -394,35 +444,6 @@ Grouper consists of the following four layers and a plugin:
 The following subsections describe the details of these layers from the top layer to the bottom layer.
 
 \subsection{Grouper API}
-
-\begin{table*}[t]
-	\centering
-	\caption{Client API of Grouper.}
-	\begin{tabular}{ll}
-		\hline
-		\textbf{Method} & \textbf{Description} \\ \hline
-		$grouper.\textbf{setup}(appId, dataStack)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method to initialize Grouper with appId and dataStack. AppId is the\\ unique ID of an application. Datastack is used by the synchronization plugin.
-		\end{tabular}  \\ \hline
-		$grouper.sender.\textbf{update}(object)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method after creating a new object or modifying an existing object.\\ Grouper performs updates asynchronously and sends an update message to other devices.
-		\end{tabular} \\ \hline
-		$grouper.sender.\textbf{delete}(object)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method when it wants to delete an existing object. Grouper deletes\\ the object and removes it from the persistent store of a device automatically, after sending a\\ delete message to other devices.
-		\end{tabular} \\ \hline
-		$grouper.receiver.\textbf{receive}(callback)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method to register the callback function that is called after Grouper\\ processes the received messages and updates objects according to the messages. The application\\ can use this callback function to update the user screen. 
-		\end{tabular} \\ \hline
-		$grouper.sender.\textbf{confirm}()$ & 
-		\begin{tabular}{@{}l@{}}
-			An application needs to invoke this method periodically or occasionally to send a confirm message\\ to other devices.
-		\end{tabular} \\ \hline
-	\end{tabular}
-\end{table*}
 
 The Grouper framework provides object synchronization among mobile devices through a simple client API.
 Table 1 shows the client API of Grouper that is used to develop mobile applications.
@@ -792,13 +813,13 @@ When the user click the delete button, Account Book invokes the $grouper.sender.
 
 \begin{figure*}[t]
 	\centering
-	\includegraphics[scale=0.13]{multiple_messages}
+	\includegraphics[scale=0.133]{multiple_messages}
 	\caption{Processing time of uploading and downloading multiple messages.}
 \end{figure*}
 
 \begin{figure*}[t]
 	\centering
-	\includegraphics[scale=0.13]{constant_k_n}
+	\includegraphics[scale=0.133]{constant_k_n}
 	\caption{Processing time of uploading and downloading a single message with a constant ${k}$ or ${n}$.}
 \end{figure*}
 
@@ -1013,7 +1034,7 @@ The authors would like to thank Elvis Nun{\~e}z for helping us to fix some Objec
 
 This work was partially supported by JSPS KAKENHI Grant Number 16H02805.
 
-\bibliographystyle{abbrv}
+\bibliographystyle{unsrt}
 \bibliography{ref} 
 
 
