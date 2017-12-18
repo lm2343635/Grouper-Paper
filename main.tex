@@ -1,52 +1,15 @@
-% This is "sig-alternate.tex" V2.1 April 2013
-% This file should be compiled with V2.5 of "sig-alternate.cls" May 2012
-%
-% This example file demonstrates the use of the 'sig-alternate.cls'
-% V2.5 LaTeX2e document class file. It is for those submitting
-% articles to ACM Conference Proceedings WHO DO NOT WISH TO
-% STRICTLY ADHERE TO THE SIGS (PUBS-BOARD-ENDORSED) STYLE.
-% The 'sig-alternate.cls' file will produce a similar-looking,
-% albeit, 'tighter' paper resulting in, invariably, fewer pages.
-%
-% ----------------------------------------------------------------------------------------------------------------
-% This .tex file (and associated .cls V2.5) produces:
-%       1) The Permission Statement
-%       2) The Conference (location) Info information
-%       3) The Copyright Line with ACM data
-%       4) NO page numbers
-%
-% as against the acm_proc_article-sp.cls file which
-% DOES NOT produce 1) thru' 3) above.
-%
-% Using 'sig-alternate.cls' you have control, however, from within
-% the source .tex file, over both the CopyrightYear
-% (defaulted to 200X) and the ACM Copyright Data
-% (defaulted to X-XXXXX-XX-X/XX/XX).
-% e.g.
-% \CopyrightYear{2007} will cause 2007 to appear in the copyright line.
-% \crdata{0-12345-67-8/90/12} will cause 0-12345-67-8/90/12 to appear in the copyright line.
-%
-% ---------------------------------------------------------------------------------------------------------------
-% This .tex source is an example which *does* use
-% the .bib file (from which the .bbl file % is produced).
-% REMEMBER HOWEVER: After having produced the .bbl file,
-% and prior to final submission, you *NEED* to 'insert'
-% your .bbl file into your source .tex file so as to provide
-% ONE 'self-contained' source file.
-%
-% ================= IF YOU HAVE QUESTIONS =======================
-% Questions regarding the SIGS styles, SIGS policies and
-% procedures, Conferences etc. should be sent to
-% Adrienne Griscti (griscti@acm.org)
-%
-% Technical questions _only_ to
-% Gerald Murray (murray@hq.acm.org)
-% ===============================================================
-%
-% For tracking purposes - this is V2.0 - May 2012
+%%
+% This is a sample document for writing a thesis which will be submitted
+% to the Graduate School of Systems and Information Engineering.  The main
+% purpose of this document is to reduce the author's trouble in making
+% title.  Of course you can create your title page from scratch.  But your
+% style must fulfill the requirements such as margins.
+% 
+%%
+\documentclass[a4paper,11pt]{report}
 
-\documentclass{sig-alternate-05-2015}
-
+%% [IMPORTANT] package for title generation (english version)
+\usepackage{sie-en}
 \usepackage{booktabs} % For formal tables
 \usepackage{graphicx}
 \usepackage{algorithm}  
@@ -57,7 +20,6 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{enumitem}
-\usepackage{times}
 
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
 
@@ -65,91 +27,51 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}  
 \graphicspath{{figure/}}
 
+\setcounter{tocdepth}{3}
+\setcounter{page}{-1}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\evensidemargin}{0.1in} 
+\setlength{\topmargin}{0in}
+\setlength{\textwidth}{6in} 
+%\setlength{\textheight}{10.1in}
+\setlength{\parskip}{0em}
+\setlength{\topsep}{0em}
+
+%\newcommand{\fig}[1]{{\bf Fig.\ref{#1}}}
+
+
+
+%% title of thesis
+%% DON'T PUT \\ AT THE END OF THE TITLE. IT CAUSES ERROR!!
+\title{Developing Mobile Applications on Top of a Self-destruction System with Data Recovery}
+%% name of author
+\author{Meng Li}
+%% name of advisor
+\advisor{Yasushi Shinjo}
+
+%% major and degree and date (chooose one)
+%% [NOTICE] Month varies with majors.
+
+\majorfield{ Department of Computer Science  } \degree{   } \yearandmonth{Month 2018}
+
+
 \begin{document}
-
-% Copyright
-\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\setcopyright{usgov}
-%\setcopyright{usgovmixed}
-%\setcopyright{cagov}
-%\setcopyright{cagovmixed}
-
-
-% DOI
-\doi{10.1145/3171592.3171628}
-
-% ISBN
-\isbn{978-1-4503-5366-3/17/12}
-
-%Conference
-\conferenceinfo{ICNCC 2017}{2017 VI International Conference on Network, Communication and Computing, December 8--10, 2017, Kunming, China}
-
-\acmPrice{\$15.00}
-
-
-
-\title{Grouper: A Framework for Developing Mobile Applications using a Secret Sharing Scheme and Untrusted Servers}
-
-%
-% You need the command \numberofauthors to handle the 'placement
-% and alignment' of the authors beneath the title.
-%
-% For aesthetic reasons, we recommend 'three authors at a time'
-% i.e. three 'name/affiliation blocks' be placed beneath the title.
-%
-% NOTE: You are NOT restricted in how many 'rows' of
-% "name/affiliations" may appear. We just ask that you restrict
-% the number of 'columns' to three.
-%
-% Because of the available 'opening page real-estate'
-% we ask you to refrain from putting more than six authors
-% (two rows with three columns) beneath the article title.
-% More than six makes the first-page appear very cluttered indeed.
-%
-% Use the \alignauthor commands to handle the names
-% and affiliations for an 'aesthetic maximum' of six authors.
-% Add names, affiliations, addresses for
-% the seventh etc. author(s) as the argument for the
-% \additionalauthors command.
-% These 'additional authors' will be output/set for you
-% without further effort on your part as the last section in
-% the body of your article BEFORE References or any Appendices.
-
-\numberofauthors{2} %  in this sample file, there are a *total*
-% of EIGHT authors. SIX appear on the 'first-page' (for formatting
-% reasons) and the remaining two appear in the \additionalauthors section.
-%
-\author{
-% You can go ahead and credit any number of authors here,
-% e.g. one 'row of three' or two rows (consisting of one row of three
-% and a second row of one, two or three).
-%
-% The command \alignauthor (no curly braces needed) should
-% precede each author name, affiliation/snail-mail address and
-% e-mail address. Additionally, tag each line of
-% affiliation/address with \affaddr, and tag the
-% e-mail address with \email.
-%
-% 1st. author
-\alignauthor Meng Li\\
-       \affaddr{Softlab, Department of Computer Secience}\\
-       \affaddr{University of Tsukuba}\\
-       \affaddr{Tsukuba, Ibaraki, Japan}\\
-       \email{limeng@softlab.cs.tsukuba.ac.jp}
-% 2nd. author
-\alignauthor Yasushi Shinjo\\
-       \affaddr{Softlab, Department of Computer Secience}\\
-       \affaddr{University of Tsukuba}\\
-       \affaddr{Tsukuba, Ibaraki, Japan}\\
-       \email{yas@cs.tsukuba.ac.jp}
-}
-
 \maketitle
+\thispagestyle{empty}
+\newpage
 
-\begin{abstract}
-	
+\thispagestyle{empty}
+\vspace*{20pt plus 1fil}
+%\parindent=1zw
+\noindent
+%%
+%% Abstract
+%%
+\begin{center}
+{\bf Abstract}
+\vspace{5mm}
+\end{center}
 Conventional mobile applications are built based on a client-server modal and require central servers for storing shared data and processing confidential information.
 If the central servers are accessed by an attacker, a curious administrator or a government, private information will be revealed because data is often stored on the central servers in the form of cleartext.
 This paper presents Grouper, a framework for developing mobile applications without trusted central servers.
@@ -160,53 +82,20 @@ We have implemented two applications using Grouper and evaluated the development
 Developing these applications demonstrates that Grouper requires little development effort to convert a standalone application to a data sharing application.
 Experimental results prove that the performance of Grouper is satisfactory for mobile applications that are used among a small group of people.
 
-\end{abstract}
+%%%%%
+\par
+\vspace{0pt plus 1fil}
+\newpage
 
+\pagenumbering{roman} % I, II, III, IV 
+\tableofcontents
+\listoffigures
+%\listoftables
 
-%
-% The code below should be generated by the tool at
-% http://dl.acm.org/ccs.cfm
-% Please copy and paste the code instead of the example below. 
-%
-\begin{CCSXML}
-	<ccs2012>
-	<concept>
-	<concept_id>10002978.10003022</concept_id>
-	<concept_desc>Security and privacy~Software and application security</concept_desc>
-	<concept_significance>500</concept_significance>
-	</concept>
-	<concept>
-	<concept_id>10002978.10003006.10003013</concept_id>
-	<concept_desc>Security and privacy~Distributed systems security</concept_desc>
-	<concept_significance>300</concept_significance>
-	</concept>
-	<concept>
-	<concept_id>10010520.10010521.10010537.10010538</concept_id>
-	<concept_desc>Computer systems organization~Client-server architectures</concept_desc>
-	<concept_significance>300</concept_significance>
-	</concept>
-	</ccs2012>
-\end{CCSXML}
+\pagebreak \setcounter{page}{1}
+\pagenumbering{arabic} % 1,2,3
 
-\ccsdesc[500]{Security and privacy~Software and application security}
-\ccsdesc[300]{Security and privacy~Distributed systems security}
-\ccsdesc[300]{Computer systems organization~Client-server architectures}
-
-%
-% End generated code
-%
-
-%
-%  Use this command to print the description
-%
-\printccsdesc
-
-% We no longer use \terms command
-%\terms{Theory}
-
-\keywords{Mobile application security; secret sharing; untrusted servers.}
-
-\section{Introduction}
+\chapter{Introduction}
 
 People use mobile applications every day. 
 When users use conventional mobile applications based on a client-server mode, users fully trust the central servers.
@@ -246,9 +135,9 @@ Grouper provides reliable data synchronization among nodes using a reliable mult
 Second, we make it easier to develop mobile applications.
 In fact, a developer can add data synchronization functions to stand alone applications with a few lines of code.
 
-\section{Related Work}
+\chapter{Related Work}
 
-In this section, we introduce the following related works. 
+In this chapter, we introduce the following related works. 
 Most of them use data encryption that requires private key generation and distribution to protect user data, and do not support data recovery.
 
 Vanish\cite{geambasu2009vanish} is a self-destruction system that uses Distributed Hash Tables(DHTs) as the back-end storage.
@@ -289,9 +178,9 @@ SPORC\cite{feldman2010sporc} is designed for developing group collaboration appl
 To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
 In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
-\section{Threat Model}
+\chapter{Threat Model}
 
-In this section, we introduce the assumptions and the threat model underlying the Grouper framework.
+In this chapter, we introduce the assumptions and the threat model underlying the Grouper framework.
 We target mobile applications that are used among a small group of people.
 A group consists of a special member called the owner and other members.
 Each member has a mobile device.
@@ -317,40 +206,11 @@ Last, servers are isolated from one another and managed by independent providers
 We assume that providers of untrusted servers do not expose user data to other providers.
 For example, a group owner can leverage the servers of Amazon, Google, and Microsoft, which are not supposed to expose user data to other cloud providers.
 
-\section{Design}
+\chapter{Design}
 
-\begin{table*}[t]
-	\centering
-	\caption{Client API of Grouper.}
-	\begin{tabular}{ll}
-		\hline
-		\textbf{Method} & \textbf{Description} \\ \hline
-		$grouper.\textbf{setup}(appId, dataStack)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method to initialize Grouper with appId and dataStack. AppId is\\ the unique ID of an application. Datastack is used by the synchronization plugin.
-		\end{tabular}  \\ \hline
-		$grouper.sender.\textbf{update}(object)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method after creating a new object or modifying an existing object.\\ Grouper performs updates asynchronously and sends an update message to other devices.
-		\end{tabular} \\ \hline
-		$grouper.sender.\textbf{delete}(object)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method when it wants to delete an existing object. Grouper deletes\\ the object and removes it from the persistent store of a device automatically, after sending a\\ delete message to other devices.
-		\end{tabular} \\ \hline
-		$grouper.receiver.\textbf{receive}(callback)$ & 
-		\begin{tabular}{@{}l@{}}
-			An application invokes this method to register the callback function that is called after Grouper\\ processes the received messages and updates objects according to the messages. The application\\ can use this callback function to update the user screen. 
-		\end{tabular} \\ \hline
-		$grouper.sender.\textbf{confirm}()$ & 
-		\begin{tabular}{@{}l@{}}
-			An application needs to invoke this method periodically or occasionally to send a confirm\\ message to other devices.
-		\end{tabular} \\ \hline
-	\end{tabular}
-\end{table*}
+This chapter describes the design of the Grouper framework.
 
-This section describes the design of the Grouper framework.
-
-\subsection{Overview}
+\section{Overview}
 
 Our goal is to support the development of mobile applications that do not rely on trusted central servers.
 
@@ -383,18 +243,18 @@ At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer share
 We describe this scheme as a function ${f(k, n)}$, where $n$ is the number of shares, and $k$ is the threshold to combine shares. 
 
 Grouper has the following advantages over conventional approaches using a self-destruction system.
-First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in Section 3.4.
+First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in chapter 3.4.
 Grouper performs retransmission when some mobile devices miss getting messages from untrusted servers.
 Developers of mobile applications do not have to specify the lifetimes of messages.
-Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in Section 3.7.
+Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in chapter 3.7.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.47]{architecture}
+	\includegraphics[scale=0.8]{architecture}
 	\caption{Architecture of Grouper.}
 \end{figure}
 
-\subsection{Architecture}
+\section{Architecture}
 
 Figure 1 describes the architecture of the Grouper framework. 
 Grouper consists of the following four layers and a plugin:
@@ -424,9 +284,38 @@ Grouper consists of the following four layers and a plugin:
 	An untrusted server performs device authentication using device keys.
 \end{itemize}
 
-The following subsections describe the details of these layers from the top layer to the bottom layer.
+The following sections describe the details of these layers from the top layer to the bottom layer.
 
-\subsection{Grouper API}
+\section{Grouper API}
+
+\begin{table}[t]
+	\centering
+	\caption{Client API of Grouper.}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Method} & \textbf{Description} \\ \hline
+		$grouper.\textbf{setup}(appId, dataStack)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method to initialize\\ Grouper with appId and dataStack. AppId is the\\ unique ID of an application. Datastack is used by\\ the synchronization plugin.
+		\end{tabular}  \\ \hline
+		$grouper.sender.\textbf{update}(object)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method after creating\\ a new object or modifying an existing object.\\ Grouper performs updates asynchronously\\ and sends an update message to other devices.
+		\end{tabular} \\ \hline
+		$grouper.sender.\textbf{delete}(object)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method when it wants\\ to delete an existing object. Grouper deletes the\\ object and removes it from the persistent store of\\ a device automatically, after sending a delete message\\ to other devices.
+		\end{tabular} \\ \hline
+		$grouper.receiver.\textbf{receive}(callback)$ & 
+		\begin{tabular}{@{}l@{}}
+			An application invokes this method to register the\\ callback function that is called after Grouper\\ processes the received messages and updates objects\\ according to the messages. The application\\ can use this callback function to update the user\\ screen. 
+		\end{tabular} \\ \hline
+		$grouper.sender.\textbf{confirm}()$ & 
+		\begin{tabular}{@{}l@{}}
+			An application needs to invoke this method\\ periodically or occasionally to send a confirm\\ message to other devices.
+		\end{tabular} \\ \hline
+	\end{tabular}
+\end{table}
 
 The Grouper framework provides object synchronization among mobile devices through a simple client API.
 Table 1 shows the client API of Grouper that is used to develop mobile applications.
@@ -437,19 +326,22 @@ When the application needs to receive update notifications, it invokes the metho
 This callback function is called when another node updates an object and its local mirror has been updated.
 The application can use this callback function to change the values that are shown on the user interface screen.
 The method $grouper.confirm()$ is used for realizing reliable messaging.
-We will describe reliable messaging in Section 3.4.
+We will describe reliable messaging in chapter 3.4.
 
-\begin{table*}[t]
+\begin{table}[t]
 	\centering
 	\caption{API of the synchronization plugin.}
 	\begin{tabular}{ll}
 		\hline
 		\textbf{Method} & \textbf{Description} \\ \hline
-		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\
-		$updateRemote(b)$ & Unmarshalls the byte array $b$ to the object and puts the object into the persistent store. \\ 
+		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\ \hline
+		$updateRemote(b)$ & 
+		\begin{tabular}{@{}l@{}}
+			Unmarshalls the byte array $b$ to the object and puts the object into\\ the persistent store.
+		\end{tabular} \\ \hline
 		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ \hline
 	\end{tabular}
-\end{table*}
+\end{table}
 
 The Grouper API layer relies on the synchronization plugin.
 As described in Table 2, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
@@ -460,10 +352,11 @@ This is because there are many such synchronization modules that provide various
 Additionally, application requirements may also vary.
 Each application developer should choose a suitable module based on a consistency model and other requirements.
 
+
 Because we implement our client framework in Objective-C, we currently user the Sync framework\cite{sync} to implement the data synchronization plugin.
 The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest version wins.
 
-\subsection{Reliable Message Delivery}
+\section{Reliable Message Delivery}
 
 Grouper implements reliable message delivery in the Grouper API layer over the self-destruction system.
 
@@ -487,7 +380,7 @@ We call these type of messages confirm messages.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.36]{reliable_sync}
+	\includegraphics[scale=0.6]{reliable_sync}
 	\caption{Implementing reliable messaging with continuous sequence numbers.}
 \end{figure}
 
@@ -514,9 +407,9 @@ Checkgroups messages supplement these basic messages.
 A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
 A checkgroups message is distributed periodically or after some time after the basic messages are distributed.
 
-\subsection{Data Protection}
+\section{Data Protection}
 
-The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as introduced in Section 3.1.
+The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as introduced in chapter 3.1.
 In Grouper, we extend this scheme and design a new scheme $ f(k, n, s)$.
 In our scheme, the parameters $k$ and $n$ are same as those in the scheme $f(k, n)$. 
 The parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
@@ -556,11 +449,11 @@ Third, the secret sharing scheme reduces the risk of an attack because an attack
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.4]{transportation}
+	\includegraphics[scale=0.65]{transportation}
 	\caption{Message transportation using the extended secret sharing scheme $f(2, 4, 3)$.}
 \end{figure}
 
-\subsection{Grouper Message Protocol}
+\section{Grouper Message Protocol}
 
 The Grouper API layer sends and receives messages using our own protocol, the Grouper Message Protocol.
 In this protocol, a message is a JSON string that contains a marshalled object and its attributes.
@@ -682,7 +575,7 @@ For a confirm message, the Grouper API layer copies the sequence numbers from th
 Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of the confirm message.
 For resend messages, the Grouper API layer retrieves the sequence numbers from the resend message, finds the corresponding normal messages, and sends them to the sender of the resend message.
 
-\subsection{Group Management}
+\section{Group Management}
 
 To manage a group, Grouper provides the following two functions: group creation and member invitation.
 
@@ -704,7 +597,7 @@ Third, the untrusted servers return access keys for the new member to the owner.
 Last, the owner sends the access keys, the addresses of the untrusted servers and the list of existing members to the new member. 
 After receiving them, the new member can access the untrusted servers with the keys.
 
-\section{Implementation}
+\chapter{Implementation}
 
 \begin{table*}[t]
 	\centering
@@ -719,9 +612,9 @@ After receiving them, the new member can access the untrusted servers with the k
 \end{table*}
 
 Grouper consists of a client framework for developing mobile applications and a Web service running on multiple untrusted servers.
-We describe the implementation of the client framework in Section 4.1, the implementation of the Web service in Section 4.2, and the demo applications in Section 4.3.
+We describe the implementation of the client framework in chapter 4.1, the implementation of the Web service in chapter 4.2, and the demo applications in chapter 4.3.
 
-\subsection{Client Framework}
+\section{Client Framework}
 
 Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
 It makes use of the following frameworks.   
@@ -747,7 +640,7 @@ It makes use of the following frameworks.
 	Grouper uses it to invoke the RESTful API provided by our several Web services running on multiple untrusted servers. 
 \end{itemize}
 
-\subsection{Web Service}
+\section{Web Service}
 
 We have chosen to implement our own Web service rather than using commercial general cloud storage services like Amazon Simple Storage Service (S3), Google Cloud Storage, or Microsoft Azure Storage for the following reasons:
 
@@ -768,11 +661,11 @@ The \emph{Group} entity saves the group ID, group name, and its owner.
 The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
 The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
 
-\subsection{Application}
+\section{Application}
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.48]{account_book}
+	\includegraphics[scale=0.8]{account_book}
 	\caption{Screenshots of the Account Book demo application.}
 \end{figure}
 
@@ -796,27 +689,27 @@ When the user click the delete button, Account Book invokes the $grouper.sender.
 
 \begin{figure*}[t]
 	\centering
-	\includegraphics[scale=0.133]{multiple_messages}
+	\includegraphics[scale=0.13]{multiple_messages}
 	\caption{Processing time of uploading and downloading multiple messages.}
 \end{figure*}
 
 \begin{figure*}[t]
 	\centering
-	\includegraphics[scale=0.133]{constant_k_n}
+	\includegraphics[scale=0.13]{constant_k_n}
 	\caption{Processing time of uploading and downloading a single message with a constant ${k}$ or ${n}$.}
 \end{figure*}
 
-\section{Evaluation}
+\chapter{Evaluation}
 
-This section discusses the development efforts of applications using Grouper for developing mobile applications, as well as its performance.
+This chapter discusses the development efforts of applications using Grouper for developing mobile applications, as well as its performance.
 
-\subsection{Development Efforts}
+\section{Development Efforts}
 
 We view the development efforts through two factors: the usability of the client API and the code size, in terms of the lines of code (LoC) the developer has to add after using Grouper. 
 As described in Table 1, Grouper provides a simple client APIs for developers.
 A developer can easily convert a standalone application to a data sharing application with our client APIs.
 
-Section 4.3 demonstrates the implementation of two applications.
+chapter 4.3 demonstrates the implementation of two applications.
 Table 4 shows that developers can add data synchronization to these applications with Grouper by adding a small amount of code. 
 
 The Grouper framework provides the synchronization as a pluggable module.
@@ -835,9 +728,9 @@ For example, Grouper does not support Core Data with iCloud\cite{coredata} and T
 These frameworks provide APIs for files whereas Grouper requires APIs for sending multicast messages.
 If a developer want to use them, he/she has to add an additional layer that provides the methods in Table 2.
 
-\subsection{Performance}
+\section{Performance}
 
-In this subsection, we show that mobile applications using the Grouper framework provide satisfactory performance for small groups of people.
+In this section, we show that mobile applications using the Grouper framework provide satisfactory performance for small groups of people.
 Table 5 lists the hardware and software configuration of our experiment environment.
 In our performance experiments, we used the benchmark application \emph{Test} to transfer data between the iPhone 4s and iPod touch 5th generation on a wireless LAN network (802.11n).
 We installed 30 Web services on three different servers.
@@ -886,9 +779,9 @@ As $n$ increased, the processing time of uploading and downloading increased lin
 Figure 6(b) shows the relationship between processing time and the threshold ${k}$, where ${n = s =30}$ and ${k = 3, 6, 9, ... , 27}$.
 As $k$ increased, the processing time of uploading increased linearly and that of downloading did not change.
 
-\subsection{Discussion on the Number of Messages}
+\section{Discussion on the Number of Messages}
 
-In this subsection, we discuss and the number of messages. 
+In this section, we discuss and the number of messages. 
 We use the parameters in Table 6.
 
 \begin{table*}[t]
@@ -939,7 +832,7 @@ The total number of downloads $ND$ is the sum of $NDi$.
 ND = \sum_{i = 1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
 \end{equation}
 
-Since the current cloud servers scale well according to the number of devices and and messages, we discuss $NUi$ and $UDi$ in this subsection.
+Since the current cloud servers scale well according to the number of devices and and messages, we discuss $NUi$ and $UDi$ in this section.
 Equation 1 shows that for the device $i$ during the TTL, the order of uploading is $O(U)$.
 Euqation 3 shows that the order of downloading is $O(U+D)$.
 As the number of updated and deleted objects increases, the total numbers of uploads and downloads increases linearly.
@@ -994,7 +887,7 @@ In addition, a device send only one confirm message during the TTL.
 	Each device uploads 301 messages and downloads 3010 messages during the TTL.
 \end{itemize}
 
-\section{Conclusion}
+\chapter{Conclusion}
 
 This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to implement light-weight information sharing in mobile applications.
 In an application using Grouper, users can create a group and share objects safely via multiple untrusted servers.
@@ -1011,14 +904,42 @@ The results shows that using Grouper in an application does not influence user e
 In the future, we would like to support additional platforms, including Android.
 We also have a plan to use file-oriented APIs for exchanging messages among devices.
 
-\section{Acknowledgments}
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{\numberline{}Acknowledgements}
 
 The authors would like to thank Elvis Nun{\~e}z for helping us to fix some Objective-C related issues of the Sync framework, and Bernard Paulus for fixing a bug of c-SSS, an implementation of the secret sharing scheme.
 
 This work was partially supported by JSPS KAKENHI Grant Number 16H02805.
 
-\bibliographystyle{unsrt}
-\bibliography{ref} 
+\newpage
+
+%% Bibliography
+\addcontentsline{toc}{chapter}{\numberline{}Bibliography}
+\renewcommand{\bibname}{Bibliography}
+% use bibtex
+%\bibliographystyle{unsrt}
+%\bibliography{samplebib}
+%% [compile] bibtex sample-en; platex sample-en; platex sample-en;
+
+% describe bib entries in the file
+\begin{thebibliography}{1}
+\bibitem{Texbook}
+Donald~E. Knuth.
+\newblock The \TeX book.
+\newblock Reading, Massachusetts: Addison-Wesley, 1984.
+
+\bibitem{Usersguide}
+Lessie Lamport.
+\newblock A Document Preparation System \LaTeX\ User's Guide \& Reference Manual (second edition).
+\newblock Reading, Massachusetts: Addison-Wesley, 1994.
+
+\bibitem{bryant-ieeetc86}
+Randal~E. Bryant.
+\newblock Graph-based algorithms for {B}oolean function manipulation.
+\newblock {\em IEEE Transactions on Computers}, Vol. C-35, No.~8, pp. 677--691,
+  August 1986.
+\end{thebibliography}
 
 
 \end{document}
+

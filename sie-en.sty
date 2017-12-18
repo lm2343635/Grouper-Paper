@@ -1,0 +1,72 @@
+%% definition of title
+\newdimen\vspacetitle \newdimen\vspaceabstract
+\vspacetitle=0.5\textheight
+\vspaceabstract=0.5\textheight
+
+%\def\etitle#1{\gdef\@etitle{#1}}
+\def\advisor#1{\gdef\@advisor{#1}}
+\def\majorfield#1{\gdef\@majorfield{#1}}
+\def\degree#1{\gdef\@degree{#1}}
+\def\yearandmonth#1{\gdef\@yearandmonth{#1}}
+
+%
+
+\def\maketitle{\par
+\begingroup
+\def\@makefnmark{\hbox
+     to\z@{$\m@th^{\@thefnmark}$\hss}}%
+\if@twocolumn
+\twocolumn[\@maketitle]
+\else
+%\newpage
+\global\@topnum\z@
+\@maketitle \fi\thispagestyle{plain}\@thanks
+\endgroup
+
+\let\maketitle\relax
+\let\@maketitle\relax
+\gdef\@abstract{}\gdef\@keywords{}
+\let\abstract\relax \let\keywords\relax
+\let\etitle\relax\gdef\@etitle{}
+\let\majorfield\relax\gdef\@majorfield{}
+\let\degree\relax\gdef\@degree{}
+\gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
+
+\def\@maketitle{
+\newpage\null
+\vbox to \vspacetitle{
+\thispagestyle{empty}
+%\fbox{
+\begin{minipage}{6in}
+\begin{center}
+\vspace*{2cm}
+{\huge \baselineskip 0.5in \@title\\} \vfill
+
+\vspace{2.4cm}
+
+{\huge \@author}
+
+\vspace{5mm}
+
+{\LARGE (Master's Program in \@majorfield) } 
+
+\vspace{1cm}
+
+{\LARGE Advised by \@advisor}
+
+\vspace{2.5cm plus 1fil}
+
+{\Large Submitted to the Graduate School of\\
+Systems and Information Engineering\\
+in Partial Fulfillment of the Requirements\\
+for the Degree of Master of \@degree\\
+at the\\
+University of Tsukuba\\} 
+
+\vspace*{1cm}
+
+{\LARGE \@yearandmonth}
+%\vspace{2cm}
+\end{center}
+\end{minipage}
+}}
