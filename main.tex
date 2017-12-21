@@ -21,7 +21,7 @@
 \usepackage{enumitem}
 \usepackage{listings}
 
-\lstset{language=[Objective]C, breakindent=40pt, breaklines}
+\lstset{language=[Objective]C, breakindent=40pt, breaklines, basicstyle=\scriptsize\ttfamily, numbers=left}
 
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
 
@@ -78,12 +78,19 @@
 Conventional mobile applications are built based on a client-server modal and require central servers for storing shared data and processing confidential information.
 If the central servers are accessed by an attacker, a curious administrator or a government, private information will be revealed because data is often stored on the central servers in the form of cleartext.
 This paper presents Grouper, a framework for developing mobile applications without trusted central servers.
-To provide object synchronization among mobile devices, Grouper uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
-These untrusted servers construct a self-destruction system and delete shares after a certain period of time.
-Grouper consists of a client framework in Objective-C and a Web service in Java.
-We have implemented two applications using Grouper and evaluated the development efforts of them as well as the performance. 
+Grouper provides object synchronization among mobile devices.
+It also uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
+These untrusted servers construct a self-destruction system.
+Uploaded shares will be deleted after a certain period of time.
+Mobile devices exchange messages via untrusted servers based on the Grouper Message Protocol.
+Grouper consists of a client framework and a Web service.
+We have implemented client framework for iOS, macOS, tvOS and watchOS in Objective-C.
+The Web service is implemented in Java and runs on multiple untrusted servers.
+We have implemented two applications using Grouper: an iOS application named Account Book, and a benchmark application named Test.
+We have evaluated the development efforts of applications using Grouper as well as the performance. 
 Developing these applications demonstrates that Grouper requires little development effort to convert a standalone application to a data sharing application.
 Experimental results prove that the performance of Grouper is satisfactory for mobile applications that are used among a small group of people.
+
 
 %%%%%
 \par
@@ -139,11 +146,20 @@ Grouper provides reliable data synchronization among nodes using a reliable mult
 Second, we make it easier to develop mobile applications.
 In fact, a developer can add data synchronization functions to stand alone applications with a few lines of code.
 
+The rest of the paper is organized as follows.
+We present related works in Chapter 2.
+In Chapter 3, we describe the threat model and some assumption in our framework Grouper.
+Then, we describe the design of Grouper by introducing its layers, and the way to send or receive among devices using our Grouper Message protocol in Chapter 4.
+Next, we describe the three parts of implementation of Grouper: client framework, Web service and application detailedly in Chapter 5.
+In Chapter 6, we give the evaluation of Grouper from developer efforts and performance.
+Finally, we conclude the paper and introduce the future works in Chapter 7.
+
 \chapter{Related Work}
 
 In this chapter, we introduce the following related works. 
 Most of them use data encryption that requires private key generation and distribution to protect user data, and do not support data recovery.
 
+\section{Self-destruction Systems}
 Vanish\cite{geambasu2009vanish} is a self-destruction system that uses Distributed Hash Tables(DHTs) as the back-end storage.
 Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
 The key in Vanish is removed after a certain period of time, and the encrypted message becomes permanently unreadable.
@@ -162,6 +178,7 @@ Although CloudSky solves the problems regarding user controllability that exist 
 In Grouper, offline devices can download such messages by using confirm and resend messages.
 A trusted authority is necessary in CloudSky to manage user profiles, whereas Grouper does not rely on any trusted authority.
 
+\section{Data Encryption Systems}
 Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
 Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
 Mylar uses its browser extension to decrypt data on the client-side. 
@@ -256,11 +273,12 @@ Second, it is easy for a group owner to invite other members using a safe commun
 	\centering
 	\includegraphics[scale=0.8]{architecture}
 	\caption{Architecture of Grouper.}
+	\label{fig:architecture}
 \end{figure}
 
 \section{Architecture}
 
-Figure 1 describes the architecture of the Grouper framework. 
+Figure \ref{fig:architecture} describes the architecture of the Grouper framework. 
 Grouper consists of the following four layers and a plugin:
 
 \begin{itemize}[leftmargin=7mm]
@@ -292,7 +310,7 @@ The following sections describe the details of these layers from the top layer t
 
 \section{Grouper API}
 
-\begin{table}
+\begin{table}[t]
 	\centering
 	\caption{Client API of Grouper.}
 	\begin{tabular}{ll}
@@ -322,10 +340,11 @@ The following sections describe the details of these layers from the top layer t
 			An application needs to invoke this method\\ periodically or occasionally to send a confirm\\ message to other devices.
 		\end{tabular} \\ \hline
 	\end{tabular}
+	\label{table:grouper_api}
 \end{table}
 
 The Grouper framework provides object synchronization among mobile devices through a simple client API.
-Table 1 shows the client API of Grouper that is used to develop mobile applications.
+Table \ref{table:grouper_api} shows the client API of Grouper that is used to develop mobile applications.
 An application initializes the framework by invoking the method $setup()$.
 When the application needs to update an object in all devices, it invokes the method $sender.update()$.
 When the application needs to delete an object in all devices, it invokes the method $sender.delete()$.
@@ -333,7 +352,7 @@ When the application needs to receive update notifications, it invokes the metho
 This callback function is called when another node updates an object and its local mirror has been updated.
 The application can use this callback function to change the values that are shown on the user interface screen.
 The method $sender.confirm()$ is used for realizing reliable messaging.
-We will describe reliable messaging in chapter 3.4.
+We will describe reliable messaging in Section 3.4.
 
 \begin{table}[t]
 	\centering
@@ -348,10 +367,11 @@ We will describe reliable messaging in chapter 3.4.
 		\end{tabular} \\ \hline
 		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ \hline
 	\end{tabular}
+	\label{sync_plugin}
 \end{table}
 
 The Grouper API layer relies on the synchronization plugin.
-As described in Table 2, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
+As described in Table \ref{sync_plugin}, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
 Grouper invokes these functions to obtain marshalled data from the persistent store, save unmarshalled data in the persistent store, and delete objects in the persistent store.
 
 We have not implemented the synchronization plugin on our own, but we provide it as a pluggable module.
@@ -460,7 +480,7 @@ Second, the secret sharing scheme ensures the data availability when a number of
 For the $f(k, n, s)$ scheme in Grouper, a sender can complete uploading when at least $s$ untrusted servers are available, and a receiver can recover the object when at least $k$ untrusted servers are available.
 Third, the secret sharing scheme reduces the risk of an attack because an attacker who can only access only $k-1$ or less untrusted servers cannot obtain any information.
 
-\section{Grouper Message Protocol}
+\section{Grouper Message Protocol} \label{section:grouper_message_protocol}
 
 \begin{algorithm}[t]
 	\caption{Message handling algorithm}\label{alg:euclid}
@@ -679,9 +699,17 @@ In this section, we will show how we use Grouper to develop the demo application
 We have introduced the basic functions of Account Book in Section 4.1.
 The standalone application of Account Book can record the income and expenditure of a small group by group members.
 Without data sharing, records by a group member cannot be shared with other members.
-To extend the application, we invoke the $grouper.setup()$ method introduced in Table 4.1 to initialize Grouper in the method $- (BOOL)application: didFinishLaunchingWithOptions:$ of the AppDelegate at first.
+To extend the stand alone application, we need follow the five steps as the following.
 
-\begin{lstlisting}
+\subsection{Initialization of Grouper}
+
+At first, we invoke the $grouper.setup()$ method introduced in Table 4.1 to initialize Grouper in the method $- (BOOL)application: didFinishLaunchingWithOptions:$ of the AppDelegate at first.
+We invoke the class method $Grouper.sharedInstance$ to get the singleton of the Grouper framework in line 1.
+Because our framework supports the GUI if iOS, we can provide the storyboard instance to Grouper to use the GUI for creating a new group or joining an existing group provided by Grouper.
+For this reason, we get the storyboard instance in line 2.
+In line 3, we invoke the initialization method to initialize Grouper.
+
+\begin{lstlisting}[frame=none language=Objective-C] 
 grouper = [Grouper sharedInstance];
 UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
 [grouper setupWithAppId:@"accountbook"
@@ -707,12 +735,14 @@ We can see the array in the code above following the principle introduced in Tab
 For each entity, if it is referenced by an other entity, it is in front of the entity.
 After initializing the Grouper framework in the Account Book application, we can invoke other methods in Table 4.1.
 
-Figure 4(a) shows the screenshot of adding a record in Account Book. 
+\subsection{Object Creation and Updating}
+Figure \ref{fig:add_delete_record}(a) shows the screenshot of adding a record in Account Book. 
 A user uses Account Book to add income and expenditure records that include the classifications, accounts, shops, times and remarks. 
 When the user click the save button, Account Book saves the record into the local persistent store at first.
-To share this record with other group members, Account Book invokes the $sender.update()$ method of Grouper to share this record with other group members.
+The stand alone application contains the line 2 to line 8.
+To share this record with other group members, we invokes the $sender.update()$ method of Grouper to share this record with other group members after saving in the local persistent store in line 11.
 
-\begin{lstlisting}
+\begin{lstlisting}[frame=none language=Objective-C] 
 // Save record to app local persistent store.
 Record *record = [dao.recordDao saveWithMoney:money
                        remark:_remarkTextView.text
@@ -728,16 +758,93 @@ Record *record = [dao.recordDao saveWithMoney:money
 
 After invoking the method $sender.updated()$, this record will be divided to several shares and uploaded to multiple untrusted servers.
 This method is also suitable for record updating.
+Note that after invoking this method, data of the object has only been uploaded to multiple untrusted servers.
+Grouper does not ensure that other grouper members can synchronize this object successfully.
 
-Figure 4(b) shows the screenshoot of deleting a record in Account Book. 
-A user swipes a cell from right to left to delete a record from the record list. 
-When the user click the delete button, Account Book invokes the $grouper.sender.delete(object)$ method of Grouper to delete this record on the devices of other group members.
+\subsection{Object Deletion}
+
+Figure \ref{fig:add_delete_record}(b) shows the screenshoot of deleting a record in Account Book. 
+A user swipes a cell from right to left to delete a record from the record list.
+In the stand alone application, we only delete this record in the local persistent store when the user click the delete button.
+To delete this record on the devices of other group members, we invoke the $sender.delete(object)$ method of Grouper in line 4.
+
+\begin{lstlisting}[frame=none language=Objective-C] 
+Record *record = [records objectAtIndex:indexPath.row];
+if (editingStyle == UITableViewCellEditingStyleDelete) {
+    // Delete the record in the local persistent store and other devies.
+    [grouper.sender delete:record];
+    // Update user interface.
+    [records removeObjectAtIndex:indexPath.row];
+    [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:YES];
+}
+\end{lstlisting}
+
+By invoking the method $sender.delete()$, the record in the local persistent store will be deleted at first, so we need not to delete it on the local device before invoking this method like the method $sender.update()$.
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.8]{account_book}
-	\caption{Screenshots of the Account Book demo application.}
+	\caption{Add and delete a record in the Account Book demo application.}
+	\label{fig:add_delete_record}
 \end{figure}
+
+\subsection{Synchronization from Untrusted Servers}
+
+Grouper provide the method $grouper.receiver.receive()$ to synchronize messages from untrusted servers.
+Developers can decide when and how to synchronize messages that contains the updated or deleted objects by themselves.
+For example, we provide the following two ways in Account Book for users to synchronize messages.
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Manually.}
+	User can pull down the view as shown in Figure 5.2(a) to synchronize messages.
+	\item \textbf{Automatically when the application is launched.} 
+	Account Book tries to synchronize messages automatically when it is launched.
+\end{itemize}
+
+We invoke the method $grouper.receiver.receive()$ to receive and synchronize messages, and update user interface or do other things in the callback block.
+The parameter success in the block indicates the state of synchronization.
+If the number of servers that a device can access is less than the threshold $k$ in the extend secret sharing scheme $f(k, n, s)$, the synchronization will be failed and parameter success will be false.
+
+\begin{figure}
+\begin{lstlisting}[frame=none language=Objective-C] 
+[grouper.receiver receiveWithCompletion:^(int success, Processing *processing) {
+    long now = (long)[[NSDate date] timeIntervalSince1970];
+    if (now - grouper.group.defaults.controlMessageSendTime > grouper.group.defaults.interval * 60) {
+        [grouper.sender confirm];
+        // Update the last time to send a confirm message.
+        grouper.group.defaults.controlMessageSendTime = now;
+    }
+}];
+\end{lstlisting}
+\caption{Receive messages from untrusted server and send a confirm message.}
+\label{fig:receive_msg_send_confirm}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.8]{receive_confirm}
+	\caption{Receive messages and send a confirm message in the Account Book demo application.}
+\end{figure}
+
+\subsection{Sending Confirm Message}
+
+We have introduced that method $grouper.confirm()$ is invoked periodically or when the device becomes online in Section \ref{section:grouper_message_protocol}.
+In the Account Book application, we provide the following two ways to send a confirm message.
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Manually.}
+	User can send a confirm message manually in the Setting table view as shown in Figure 5.2(b).
+	\item \textbf{After receiving messages.}
+	As described from line 2 to line 7 in Figure \ref{fig:receive_msg_send_confirm}, if Account Book receives messages from untrusted servers successfully, Account Book will check the last time to send the confirm message.
+	If the time difference between now and the last time is longer than the TTL defined by user, Account Book will send a confirm message.
+
+\end{itemize}
 
 \chapter{Evaluation}
 
@@ -999,23 +1106,8 @@ This work was partially supported by JSPS KAKENHI Grant Number 16H02805.
 %% [compile] bibtex sample-en; platex sample-en; platex sample-en;
 
 % describe bib entries in the file
-\begin{thebibliography}{1}
-\bibitem{Texbook}
-Donald~E. Knuth.
-\newblock The \TeX book.
-\newblock Reading, Massachusetts: Addison-Wesley, 1984.
-
-\bibitem{Usersguide}
-Lessie Lamport.
-\newblock A Document Preparation System \LaTeX\ User's Guide \& Reference Manual (second edition).
-\newblock Reading, Massachusetts: Addison-Wesley, 1994.
-
-\bibitem{bryant-ieeetc86}
-Randal~E. Bryant.
-\newblock Graph-based algorithms for {B}oolean function manipulation.
-\newblock {\em IEEE Transactions on Computers}, Vol. C-35, No.~8, pp. 677--691,
-  August 1986.
-\end{thebibliography}
+\bibliographystyle{unsrt}
+\bibliography{ref} 
 
 
 \end{document}
