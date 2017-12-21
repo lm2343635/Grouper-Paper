@@ -58,12 +58,16 @@
 \usepackage{listings}
 \usepackage{enumitem}
 \usepackage{times}
+\usepackage{flushend}
 
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
 
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}  
 \renewcommand{\algorithmicensure}{\textbf{Output:}}  
 \graphicspath{{figure/}}
+
+\tolerance=1
+\emergencystretch=\maxdimen
 
 \begin{document}
 
@@ -90,7 +94,7 @@
 
 
 
-\title{Grouper: A Framework for Developing Mobile Applications using a Secret Sharing Scheme and Untrusted Servers}
+\title{Grouper: A Framework for Developing Mobile Applications using a Secret Sharing Scheme and Untrusted Servers\vspace{-0.9em}}
 
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -383,7 +387,7 @@ At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer share
 We describe this scheme as a function ${f(k, n)}$, where $n$ is the number of shares, and $k$ is the threshold to combine shares. 
 
 Grouper has the following advantages over conventional approaches using a self-destruction system.
-First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in Section 3.4.
+First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in Section 4.4.
 Grouper performs retransmission when some mobile devices miss getting messages from untrusted servers.
 Developers of mobile applications do not have to specify the lifetimes of messages.
 Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in Section 3.7.
@@ -437,7 +441,7 @@ When the application needs to receive update notifications, it invokes the metho
 This callback function is called when another node updates an object and its local mirror has been updated.
 The application can use this callback function to change the values that are shown on the user interface screen.
 The method $grouper.confirm()$ is used for realizing reliable messaging.
-We will describe reliable messaging in Section 3.4.
+We will describe reliable messaging in Section 4.4.
 
 \begin{table*}[t]
 	\centering
