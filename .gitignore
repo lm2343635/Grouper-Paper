@@ -8,3 +8,5 @@
 *.gz
 *.cut
 *.out
+*.lof
+*.toc
