@@ -105,7 +105,7 @@ Experimental results prove that the performance of Grouper is satisfactory for m
 \pagebreak \setcounter{page}{1}
 \pagenumbering{arabic} % 1,2,3
 
-\chapter{Introduction}
+\chapter{Introduction} \label{chapter:introduction}
 
 People use mobile applications every day. 
 When users use conventional mobile applications based on a client-server mode, users fully trust the central servers.
@@ -147,14 +147,14 @@ Second, we make it easier to develop mobile applications.
 In fact, a developer can add data synchronization functions to stand alone applications with a few lines of code.
 
 The rest of the paper is organized as follows.
-We present related works in Chapter 2.
-In Chapter 3, we describe the threat model and some assumption in our framework Grouper.
-Then, we describe the design of Grouper by introducing its layers, and the way to send or receive among devices using our Grouper Message protocol in Chapter 4.
-Next, we describe the three parts of implementation of Grouper: client framework, Web service and application detailedly in Chapter 5.
-In Chapter 6, we give the evaluation of Grouper from developer efforts and performance.
-Finally, we conclude the paper and introduce the future works in Chapter 7.
+We present related works in Chapter \ref{chapter:related_work}.
+In Chapter \ref{chapter:threat_model}, we describe the threat model and some assumption in our framework Grouper.
+Then, we describe the design of Grouper by introducing its layers, and the way to send or receive among devices using our Grouper Message protocol in Chapter \ref{chapter:design}.
+Next, we describe the three parts of implementation of Grouper: client framework, Web service and application detailedly in Chapter \ref{chapter:implementation}.
+In Chapter \ref{chapter:evaluation}, we give the evaluation of Grouper from developer efforts and performance.
+Finally, we conclude the paper and introduce the future works in Chapter \ref{chapter:conclusion}.
 
-\chapter{Related Work}
+\chapter{Related Work} \label{chapter:related_work}
 
 In this chapter, we introduce the following related works. 
 Most of them use data encryption that requires private key generation and distribution to protect user data, and do not support data recovery.
@@ -199,7 +199,7 @@ SPORC\cite{feldman2010sporc} is designed for developing group collaboration appl
 To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
 In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
-\chapter{Threat Model}
+\chapter{Threat Model} \label{chapter:threat_model}
 
 In this chapter, we introduce the assumptions and the threat model underlying the Grouper framework.
 We target mobile applications that are used among a small group of people.
@@ -227,11 +227,11 @@ Last, servers are isolated from one another and managed by independent providers
 We assume that providers of untrusted servers do not expose user data to other providers.
 For example, a group owner can leverage the servers of Amazon, Google, and Microsoft, which are not supposed to expose user data to other cloud providers.
 
-\chapter{Design}
+\chapter{Design} \label{chapter:design}
 
 This chapter describes the design of the Grouper framework.
 
-\section{Overview}
+\section{Overview} \label{section:overview}
 
 Our goal is to support the development of mobile applications that do not rely on trusted central servers.
 
@@ -264,10 +264,10 @@ At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer share
 We describe this scheme as a function ${f(k, n)}$, where $n$ is the number of shares, and $k$ is the threshold to combine shares. 
 
 Grouper has the following advantages over conventional approaches using a self-destruction system.
-First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in chapter 3.4.
+First, it is easy for a developer to recover from message losses in untrusted servers, as demonstrated in Section \ref{section:reliable_message_delivery}.
 Grouper performs retransmission when some mobile devices miss getting messages from untrusted servers.
 Developers of mobile applications do not have to specify the lifetimes of messages.
-Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in chapter 3.7.
+Second, it is easy for a group owner to invite other members using a safe communication channel at a face-to-face distance, as discussed in Section \ref{section:group_management}.
 
 \begin{figure}[t]
 	\centering
@@ -276,7 +276,7 @@ Second, it is easy for a group owner to invite other members using a safe commun
 	\label{fig:architecture}
 \end{figure}
 
-\section{Architecture}
+\section{Architecture} \label{section:architecture}
 
 Figure \ref{fig:architecture} describes the architecture of the Grouper framework. 
 Grouper consists of the following four layers and a plugin:
@@ -308,7 +308,7 @@ Grouper consists of the following four layers and a plugin:
 
 The following sections describe the details of these layers from the top layer to the bottom layer.
 
-\section{Grouper API}
+\section{Grouper API} \label{section:grouper_api}
 
 \begin{table}[t]
 	\centering
@@ -367,11 +367,11 @@ We will describe reliable messaging in Section 3.4.
 		\end{tabular} \\ \hline
 		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ \hline
 	\end{tabular}
-	\label{sync_plugin}
+	\label{table:sync_plugin}
 \end{table}
 
 The Grouper API layer relies on the synchronization plugin.
-As described in Table \ref{sync_plugin}, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
+As described in Table \ref{table:sync_plugin}, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
 Grouper invokes these functions to obtain marshalled data from the persistent store, save unmarshalled data in the persistent store, and delete objects in the persistent store.
 
 We have not implemented the synchronization plugin on our own, but we provide it as a pluggable module.
@@ -383,7 +383,7 @@ Each application developer should choose a suitable module based on a consistenc
 Because we implement our client framework in Objective-C, we currently user the Sync framework\cite{sync} to implement the data synchronization plugin.
 The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest version wins.
 
-\section{Reliable Message Delivery}
+\section{Reliable Message Delivery}  \label{section:reliable_message_delivery}
 
 Grouper implements reliable message delivery in the Grouper API layer over the self-destruction system.
 
@@ -409,9 +409,10 @@ We call these type of messages confirm messages.
 	\centering
 	\includegraphics[scale=0.6]{reliable_sync}
 	\caption{Implementing reliable messaging with continuous sequence numbers.}
+	\label{fig:reliable_messaging}
 \end{figure}
 
-Figure 2 shows that the sender is sending five update messages, from No.1 to No.5, to the receiver.
+Figure \ref{fig:reliable_messaging} shows that the sender is sending five update messages, from No.1 to No.5, to the receiver.
 The sender uploads two messages, No.1 and No.2, using a multicast address.
 The receiver downloads these two messages and goes offline.
 The servers delete these two messages.
@@ -419,9 +420,9 @@ The sender uploads the next three update messages, from No.3 to No.5, using a mu
 Then, the servers delete these three messages again.
 The receiver comes online, but the receiver does not notice that these three messages are missing.
 
-At this time, the sender sends a confirm message that includes the newest active sequence number, 5, as shown in Figure 2.
+At this time, the sender sends a confirm message that includes the newest active sequence number, 5, as shown in Figure \ref{fig:reliable_messaging}.
 The receiver receives this sequence number and compares it with the newest sequence number in the persistent store.
-In Figure 2, the receiver notices that update messages No.3, No.4, and No.5 are missing.
+In Figure \ref{fig:reliable_messaging}, the receiver notices that update messages No.3, No.4, and No.5 are missing.
 The receiver asks the sender to resend update messages No.3, No.4, and No.5 using a resend message.
 The sender will again send update messages No.3, No. 4, and No.5 to the receiver using a unicast address.
 
@@ -434,15 +435,16 @@ Checkgroups messages supplement these basic messages.
 A checkgroups message includes the list of all newsgroups in a newsgroup hierarchy.
 A checkgroups message is distributed periodically or after some time after the basic messages are distributed.
 
-\section{Data Protection}
+\section{Data Protection}  \label{section:data_protection}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.65]{transportation}
 	\caption{Message transportation using the extended secret sharing scheme $f(2, 4, 3)$.}
+	\label{fig:transportation}
 \end{figure}
 
-The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as introduced in chapter 3.1.
+The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as introduced in Section \ref{section:overview}.
 In Grouper, we extend this scheme and design a new scheme $ f(k, n, s)$.
 In our scheme, the parameters $k$ and $n$ are same as those in the scheme $f(k, n)$. 
 The parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
@@ -451,11 +453,11 @@ When a sender has $n$ shares, Grouper tries to upload these $n$ shares to all $n
 If the shares are uploaded to $s$ or more untrusted servers, we consider that this upload to be successful.
 Otherwise, Grouper continues trying to upload these shares.
 
-Figure 3 shows the message transportation from a device to another device using the extended secret sharing scheme $f(2, 4, 3)$.
+Figure \ref{fig:transportation} shows the message transportation from a device to another device using the extended secret sharing scheme $f(2, 4, 3)$.
 In this figure, the message layer in a sender device is sending a message to the message layer in a receiver device.
 At first, this layer calls the data protection layer and creates four shares, according to the secret sharing scheme.
 Next, this layer uploads those shares to four untrusted servers.
-In Figure 3, although only the three untrusted servers on the left receives shares successfully, we regard this upload as successful.
+In Figure \ref{fig:transportation}, although only the three untrusted servers on the left receives shares successfully, we regard this upload as successful.
 Finally, the message layer in the receiver device downloads two shares from the four untrusted servers and recovers the message by calling the data protection layer.
 
 We can choose the parameter $s$ based on the following policies.
@@ -526,7 +528,7 @@ Third, the secret sharing scheme reduces the risk of an attack because an attack
 
 The Grouper API layer sends and receives messages using our own protocol, the Grouper Message Protocol.
 In this protocol, a message is a JSON string that contains a marshalled object and its attributes.
-Table 3 shows the attributes in a Grouper message.
+Table \ref{table:grouper_message_attributes} shows the attributes in a Grouper message.
 There are three important attributes:
 
 \begin{itemize}[leftmargin=7mm]
@@ -575,6 +577,7 @@ An address is either a list of device IDs or "*", which signifies multicasting t
 		sentTime & Time the message is sent. \\
 		\hline
 	\end{tabular}
+	\label{table:grouper_message_attributes}
 \end{table}
 
 Applications send update, delete and confirm messages through the Grouper API, and send resend messages after receiving confirm messages automatically.
@@ -602,7 +605,7 @@ For a confirm message, the Grouper API layer copies the sequence numbers from th
 Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of the confirm message.
 For resend messages, the Grouper API layer retrieves the sequence numbers from the resend message, finds the corresponding normal messages, and sends them to the sender of the resend message.
 
-\section{Group Management}
+\section{Group Management}  \label{section:group_management}
 
 To manage a group, Grouper provides the following two functions: group creation and member invitation.
 
@@ -617,9 +620,10 @@ The owner can add other members to an untrusted server using the master key.
 	\centering
 	\includegraphics[scale=0.55]{add_member}
 	\caption{Member invitation.}
+	\label{fig:add_member}
 \end{figure}
 
-After creating a group, the owner can invite new members to his/her group. 
+After creating a group, the owner can invite new members to his/her group as shown in Figure \ref{fig:add_member}. 
 To join the group, a new member first prepares his/her user information at first. 
 The owner invites the new member in a face-to-face manner, rather than using central servers. 
 At this time, Grouper establishes a connection between the devices using a local safe communication channel like \emph{Multipeer Connectivity}\cite{mc}. 
@@ -630,12 +634,12 @@ Third, the untrusted servers return access keys for the new member to the owner.
 Last, the owner sends the access keys, the addresses of the untrusted servers and the list of existing members to the new member. 
 After receiving them, the new member can access the untrusted servers with the keys.
 
-\chapter{Implementation}
+\chapter{Implementation} \label{chapter:implementation}
 
 Grouper consists of a client framework for developing mobile applications and a Web service running on multiple untrusted servers.
-We describe the implementation of the client framework in chapter 4.1, the implementation of the Web service in chapter 4.2, and the demo applications in chapter 4.3.
+We describe the implementation of the client framework in Section \ref{section:client_framework}, the implementation of the Web service in Section \ref{section:web_service}, and the demo applications in Section \ref{section:application}.
 
-\section{Client Framework}
+\section{Client Framework} \label{section:client_framework}
 
 Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
 It makes use of the following frameworks.   
@@ -661,7 +665,7 @@ It makes use of the following frameworks.
 	Grouper uses it to invoke the RESTful API provided by our several Web services running on multiple untrusted servers. 
 \end{itemize}
 
-\section{Web Service}
+\section{Web Service} \label{section:web_service}
 
 We have chosen to implement our own Web service rather than using commercial general cloud storage services like Amazon Simple Storage Service (S3), Google Cloud Storage, or Microsoft Azure Storage for the following reasons:
 
@@ -682,7 +686,7 @@ The \emph{Group} entity saves the group ID, group name, and its owner.
 The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
 The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
 
-\section{Application}
+\section{Application} \label{section:application}
 
 Using the Grouper framework, we have developed the following applications. 
 
@@ -703,12 +707,14 @@ To extend the stand alone application, we need follow the five steps as the foll
 
 \subsection{Initialization of Grouper}
 
-At first, we invoke the $grouper.setup()$ method introduced in Table 4.1 to initialize Grouper in the method $- (BOOL)application: didFinishLaunchingWithOptions:$ of the AppDelegate at first.
+At first, we invoke the $grouper.setup()$ method introduced in Table \ref{table:grouper_api} to initialize Grouper in the method $- (BOOL)application: didFinishLaunchingWithOptions:$ of the AppDelegate at first.
+Figure \ref{fig:initialize_grouper} shows how we initialize our Grouper framework in the Account Book application.
 We invoke the class method $Grouper.sharedInstance$ to get the singleton of the Grouper framework in line 1.
 Because our framework supports the GUI if iOS, we can provide the storyboard instance to Grouper to use the GUI for creating a new group or joining an existing group provided by Grouper.
 For this reason, we get the storyboard instance in line 2.
 In line 3, we invoke the initialization method to initialize Grouper.
 
+\begin{figure}
 \begin{lstlisting}[frame=none language=Objective-C] 
 grouper = [Grouper sharedInstance];
 UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
@@ -717,8 +723,11 @@ entities:[NSArray arrayWithObjects:@"Classification", @"Account", @"Shop", @"Pho
 dataStack:[self dataStack]
 mainStoryboard:storyboard];
 \end{lstlisting}
+\caption{Initialize Grouper in the Account Book application.}
+\label{fig:initialize_grouper}
+\end{figure}
 
-We have emphasized the order of the parameter entities in Table 4.1.
+We have emphasized the order of the parameter entities in Table \ref{table:grouper_api}.
 The reference relationships among entities Classification, Account, Shop, Photo, Template and Record are as following.
 
 \begin{itemize}[leftmargin=7mm]
@@ -731,17 +740,26 @@ The reference relationships among entities Classification, Account, Shop, Photo,
 	$Classification \gets Template, Account \gets Template, Shop \gets Template$
 \end{itemize}
 
-We can see the array in the code above following the principle introduced in Table 4.1.
+We can see the array in the code above following the principle introduced in Table \ref{table:grouper_api}.
 For each entity, if it is referenced by an other entity, it is in front of the entity.
-After initializing the Grouper framework in the Account Book application, we can invoke other methods in Table 4.1.
+After initializing the Grouper framework in the Account Book application, we can invoke other methods in Table \ref{table:grouper_api}.
 
 \subsection{Object Creation and Updating}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.8]{account_book}
+	\caption{Add and delete a record in the Account Book demo application.}
+	\label{fig:add_delete_record}
+\end{figure}
+
 Figure \ref{fig:add_delete_record}(a) shows the screenshot of adding a record in Account Book. 
 A user uses Account Book to add income and expenditure records that include the classifications, accounts, shops, times and remarks. 
 When the user click the save button, Account Book saves the record into the local persistent store at first.
 The stand alone application contains the line 2 to line 8.
-To share this record with other group members, we invokes the $sender.update()$ method of Grouper to share this record with other group members after saving in the local persistent store in line 11.
+To share this record with other group members, we invokes the $grouper.sender.update()$ method of Grouper to share this record with other group members after saving in the local persistent store in line 11.
 
+\begin{figure}
 \begin{lstlisting}[frame=none language=Objective-C] 
 // Save record to app local persistent store.
 Record *record = [dao.recordDao saveWithMoney:money
@@ -755,8 +773,11 @@ Record *record = [dao.recordDao saveWithMoney:money
 // Invoke update method in sender to send an update message.
 [grouper.sender update:record];
 \end{lstlisting}
+\caption{Create a new record and send an update message.}
+\label{fig:create_record}
+\end{figure}
 
-After invoking the method $sender.updated()$, this record will be divided to several shares and uploaded to multiple untrusted servers.
+After invoking the method $grouper.sender.updated()$, this record will be divided to several shares and uploaded to multiple untrusted servers.
 This method is also suitable for record updating.
 Note that after invoking this method, data of the object has only been uploaded to multiple untrusted servers.
 Grouper does not ensure that other grouper members can synchronize this object successfully.
@@ -766,8 +787,9 @@ Grouper does not ensure that other grouper members can synchronize this object s
 Figure \ref{fig:add_delete_record}(b) shows the screenshoot of deleting a record in Account Book. 
 A user swipes a cell from right to left to delete a record from the record list.
 In the stand alone application, we only delete this record in the local persistent store when the user click the delete button.
-To delete this record on the devices of other group members, we invoke the $sender.delete(object)$ method of Grouper in line 4.
+To delete this record on the devices of other group members, we invoke the $grouper.sender.delete(object)$ method of Grouper in line 4.
 
+\begin{figure}
 \begin{lstlisting}[frame=none language=Objective-C] 
 Record *record = [records objectAtIndex:indexPath.row];
 if (editingStyle == UITableViewCellEditingStyleDelete) {
@@ -778,15 +800,11 @@ if (editingStyle == UITableViewCellEditingStyleDelete) {
     [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:YES];
 }
 \end{lstlisting}
+\caption{Delete a record and send a delete message.}
+\label{fig:delete_record}
+\end{figure}
 
 By invoking the method $sender.delete()$, the record in the local persistent store will be deleted at first, so we need not to delete it on the local device before invoking this method like the method $sender.update()$.
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.8]{account_book}
-	\caption{Add and delete a record in the Account Book demo application.}
-	\label{fig:add_delete_record}
-\end{figure}
 
 \subsection{Synchronization from Untrusted Servers}
 
@@ -799,7 +817,7 @@ For example, we provide the following two ways in Account Book for users to sync
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Manually.}
-	User can pull down the view as shown in Figure 5.2(a) to synchronize messages.
+	User can pull down the view as shown in Figure \ref{fig:receive_messages_send_confirm}(a) to synchronize messages.
 	\item \textbf{Automatically when the application is launched.} 
 	Account Book tries to synchronize messages automatically when it is launched.
 \end{itemize}
@@ -820,13 +838,14 @@ If the number of servers that a device can access is less than the threshold $k$
 }];
 \end{lstlisting}
 \caption{Receive messages from untrusted server and send a confirm message.}
-\label{fig:receive_msg_send_confirm}
+\label{fig:receive_with_completion}
 \end{figure}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.8]{receive_confirm}
 	\caption{Receive messages and send a confirm message in the Account Book demo application.}
+	\label{fig:receive_messages_send_confirm}
 \end{figure}
 
 \subsection{Sending Confirm Message}
@@ -839,18 +858,18 @@ In the Account Book application, we provide the following two ways to send a con
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item \textbf{Manually.}
-	User can send a confirm message manually in the Setting table view as shown in Figure 5.2(b).
+	User can send a confirm message manually in the Setting table view as shown in Figure \ref{fig:receive_messages_send_confirm}(b).
 	\item \textbf{After receiving messages.}
 	As described from line 2 to line 7 in Figure \ref{fig:receive_msg_send_confirm}, if Account Book receives messages from untrusted servers successfully, Account Book will check the last time to send the confirm message.
 	If the time difference between now and the last time is longer than the TTL defined by user, Account Book will send a confirm message.
 
 \end{itemize}
 
-\chapter{Evaluation}
+\chapter{Evaluation} \label{chapter:evaluation}
 
 This chapter discusses the development efforts of applications using Grouper for developing mobile applications, as well as its performance.
 
-\section{Development Efforts}
+\section{Development Efforts} \label{section:development_efforts}
 
 \begin{table}[t]
 	\centering
@@ -865,14 +884,15 @@ This chapter discusses the development efforts of applications using Grouper for
 		Standalone Application LoC & \multicolumn{1}{r}{8076} & \multicolumn{1}{r}{621} \\ 
 		Increased LoC &  \multicolumn{1}{r}{190} &  \multicolumn{1}{r}{18} \\ \hline
 	\end{tabular}
+	\label{table:loc}
 \end{table}
 
 We view the development efforts through two factors: the usability of the client API and the code size, in terms of the lines of code (LoC) the developer has to add after using Grouper. 
-As described in Table 1, Grouper provides a simple client APIs for developers.
+As described in Table \ref{table:grouper_api}, Grouper provides a simple client APIs for developers.
 A developer can easily convert a standalone application to a data sharing application with our client APIs.
 
-chapter 4.3 demonstrates the implementation of two applications.
-Table 4 shows that developers can add data synchronization to these applications with Grouper by adding a small amount of code. 
+Section \ref{section:application} demonstrates the implementation of two applications.
+Table \ref{table:loc} shows that developers can add data synchronization to these applications with Grouper by adding a small amount of code. 
 
 The Grouper framework provides the synchronization as a pluggable module.
 We use the Sync\cite{sync} framework.
@@ -882,30 +902,32 @@ Account Book maintains the newest modification and put it into persistent store.
 
 If an application requires another consistency model, the developer has to implement the related synchronization plugin.
 For example, if a developer wants to use eventual consistency, he/she can choose Ensembles\cite{ensembles}.
-For this reason, if a developer wants to use another consistency model, he/she must add more lines of code to those in Table 4.
+For this reason, if a developer wants to use another consistency model, he/she must add more lines of code to those in Table \ref{table:loc}.
 
-Note that the synchronization frameworks must provide the interfaces as described in Table 2.
+Note that the synchronization frameworks must provide the interfaces as described in Table \ref{table:sync_plugin}.
 For this reason, Grouper does not support iOS synchronization frameworks for iCloud or Dropbox.
 For example, Grouper does not support Core Data with iCloud\cite{coredata} and TICoreDataSync\cite{ticoredatasyn} at this point.
 These frameworks provide APIs for files whereas Grouper requires APIs for sending multicast messages.
-If a developer want to use them, he/she has to add an additional layer that provides the methods in Table 2.
+If a developer want to use them, he/she has to add an additional layer that provides the methods in Table \ref{table:sync_plugin}.
 
-\section{Performance}
+\section{Performance} \label{section:performance}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.15]{multiple_messages}
 	\caption{Processing time of uploading and downloading multiple messages.}
+	\label{fig:processing_time_multiple_message}
 \end{figure}
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.15]{constant_k_n}
 	\caption{Processing time of uploading and downloading a single message with a constant ${k}$ or ${n}$.}
+	\label{fig:processing_time_constant_k_n}
 \end{figure}
 
 In this section, we show that mobile applications using the Grouper framework provide satisfactory performance for small groups of people.
-Table 5 lists the hardware and software configuration of our experiment environment.
+Table \ref{table:experiment_devices} lists the hardware and software configuration of our experiment environment.
 In our performance experiments, we used the benchmark application \emph{Test} to transfer data between the iPhone 4s and iPod touch 5th generation on a wireless LAN network (802.11n).
 We installed 30 Web services on three different servers.
 Each server ran a Tomcat server instance which hosted 10 Web services.
@@ -926,6 +948,7 @@ When the object was updated in a node, the Grouper API generated a normal messag
 		Server 2 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\
 		Server 3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\ \hline
 	\end{tabular}
+	\label{table:experiment_devices}
 \end{table}
 
 We performed an experiment to measure the processing time of object synchronization according to the number of updated objects.
@@ -934,7 +957,7 @@ We sent multiple messages from a device and received them in another device.
 Concretely, we sent multiple messages from the iPod to the iPhone for three times, and from the iPhone to the iPod for three times.
 Then, we obtained the average value of the measured processing times.
 
-Figure 6.1 shows the processing time of uploading and downloading multiple messages.
+Figure \ref{fig:processing_time_multiple_message} shows the processing time of uploading and downloading multiple messages.
 We divide the processing time into three parts: data synchronization, secret sharing, and networking.
 As the number of messages increased, the data synchronization and secret sharing time increased linearly. 
 The networking time increased slowly and sometimes decreased.
@@ -948,15 +971,15 @@ Therefore, a user is not aware of the activity of data synchronization.
 We performed an experiment to measure the processing time of object synchronization according to the parameters of the secret sharing scheme.
 Specifically, we changed the parameter ${k}$ and ${n}$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
 
-Figure 6.2(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$,  ${n = 6, 9, ... , 30}$ and $s = n$.
+Figure \ref{fig:processing_time_constant_k_n}(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$,  ${n = 6, 9, ... , 30}$ and $s = n$.
 As $n$ increased, the processing time of uploading and downloading increased linearly. 
-Figure 6.2(b) shows the relationship between processing time and the threshold ${k}$, where ${n = s =30}$ and ${k = 3, 6, 9, ... , 27}$.
+Figure \ref{fig:processing_time_constant_k_n}(b) shows the relationship between processing time and the threshold ${k}$, where ${n = s =30}$ and ${k = 3, 6, 9, ... , 27}$.
 As $k$ increased, the processing time of uploading increased linearly and that of downloading did not change.
 
-\section{Discussion on the Number of Messages}
+\section{Discussion on the Number of Messages} \label{section:discussion}
 
 In this section, we discuss and the number of messages. 
-We use the parameters in Table 6.
+We use the parameters in Table \ref{table:discussion_parameters}.
 
 \begin{table*}[t]
 	\centering
@@ -983,6 +1006,7 @@ We use the parameters in Table 6.
 		$NDi$ & Number of downloads for device $i$ during the TTL. \\
 		$ND$ & Total number of downloads during the TTL. \\ \hline
 	\end{tabular}
+	\label{table:discussion_parameters}
 \end{table*}
 
 First, we consider the situation in which all devices are online ($F=0$).
@@ -990,12 +1014,14 @@ In this situation, the number of uploads for the device $i$ are:
 
 \begin{equation}
 NUi = Ui + C
+\label{equation:nui0}
 \end{equation}
 
 Total number of uploads $NU$ is the sum of $NUi$.
 
 \begin{equation}
 NU = \sum_{i = 1}^{D} NUi = U + C \cdot D
+\label{equation:nu0}
 \end{equation}
 
 A device does not download the messages that is has uploaded.
@@ -1004,17 +1030,19 @@ Thus, the number of downloads for device $i$, $NDi$, is the equal to the total n
 
 \begin{equation}
 NDi = NU = U + C \cdot D
+\label{equation:ndi0}
 \end{equation}
 
 The total number of downloads $ND$ is the sum of $NDi$.
 
 \begin{equation}
 ND = \sum_{i = 1}^{D} NDi = NU \cdot D =  (U + C \cdot D) \cdot D
+\label{equation:nd0}
 \end{equation}
 
 Since the current cloud servers scale well according to the number of devices and and messages, we discuss $NUi$ and $UDi$ in this section.
-Equation 1 shows that for the device $i$ during the TTL, the order of uploading is $O(U)$.
-Euqation 3 shows that the order of downloading is $O(U+D)$.
+Equation \ref{equation:nui0} shows that for the device $i$ during the TTL, the order of uploading is $O(U)$.
+Euqation \ref{equation:ndi0} shows that the order of downloading is $O(U+D)$.
 As the number of updated and deleted objects increases, the total numbers of uploads and downloads increases linearly.
 As the number of devices increases, the number of confirm messages increases linearly.
 
@@ -1025,6 +1053,7 @@ For the device $i$, the number of those update messages by the resend message, $
 
 \begin{equation}
 URi = Ui \cdot \frac{L}{T} \cdot F
+\label{equation:uri}
 \end{equation}
 
 Compared to the situation that $F=0$, in this situation, the number of uploads for the device $i$ includes $URi$.
@@ -1032,17 +1061,20 @@ Thus, we obtain $NUi$, $NU$, $NDi$ and $ND$ where $F \neq 0$.
 
 \begin{equation}
 NUi = Ui + C + Ui \cdot \frac{L}{T} \cdot F = Ui \cdot (1 + \frac{L}{T} \cdot F) + C
+\label{equation:nui}
 \end{equation}
 
 \begin{equation}
 NU = \sum_{i = 1}^{D} NUi = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
+\label{equation:nu}
 \end{equation}
 
 \begin{equation}
 NDi = NU = U \cdot (1 + \frac{L}{T} \cdot F) + C \cdot D
+\label{equation:ndi}
 \end{equation}
 
-Equations 6 and 8 show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F + C)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C \cdot D)$.
+Equations \ref{equation:nui} and \ref{equation:ndi} show that for the device $i$ during the TTL, the order of uploading is $O(U \cdot \frac{L}{T} \cdot F + C)$, and the order of downloading is $O(U \cdot \frac{L}{T} \cdot F + C \cdot D)$.
 As the numbers of updated and deleted objects, the average number of offline devices during the TTL, and the average online time increase, the number of uploads and downloads for a single device increases linearly.
 
 If we use a longer $T$, the numbers of messages, $NUi$ and $NDi$, become smaller.
@@ -1067,11 +1099,11 @@ In addition, a device send only one confirm message during the TTL.
 	Each device uploads 301 messages and downloads 3010 messages during the TTL.
 \end{itemize}
 
-\section{Scalability of Grouper}
+\section{Scalability of Grouper} \label{section:grouper_scalability}
 
-From section 6.1 to 6.3, we can conclude that Grouper is able to support a group with a hundred of members, and does not influence user experience of an application.
+From section \ref{section:development_efforts} to \ref{section:discussion}, we can conclude that Grouper is able to support a group with a hundred of members, and does not influence user experience of an application.
 
-\chapter{Conclusion}
+\chapter{Conclusion} \label{chapter:conclusion}
 
 This paper describes Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to implement light-weight information sharing in mobile applications.
 In an application using Grouper, users can create a group and share objects safely via multiple untrusted servers.
