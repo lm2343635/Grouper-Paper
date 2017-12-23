@@ -160,6 +160,8 @@ In this chapter, we introduce the following related works.
 Most of them use data encryption that requires private key generation and distribution to protect user data, and do not support data recovery.
 
 \section{Self-destruction Systems}
+
+\subsection{Vanish}
 Vanish\cite{geambasu2009vanish} is a self-destruction system that uses Distributed Hash Tables(DHTs) as the back-end storage.
 Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
 The key in Vanish is removed after a certain period of time, and the encrypted message becomes permanently unreadable.
@@ -167,8 +169,12 @@ Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht
 Thus, it is not very secure against some Sybil attacks\cite{wolchok2010defeating}. 
 In addition, the surviving time of the key in Vanish cannot be controlled by the applications. 
 
+\subsection{SafeVanish and SeDas}
 To address these issues in Vanish system, Zeng et al. proposed SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
-SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain a divided secret key. By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
+SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain a divided secret key. 
+
+\subsection{CloudSky}
+By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
 In CloudSky, a user can control the surviving time of a message.
 CloudSky uses Attribute Bases Encryption (ABE) and allows users to define access control policies.
 
@@ -179,21 +185,36 @@ In Grouper, offline devices can download such messages by using confirm and rese
 A trusted authority is necessary in CloudSky to manage user profiles, whereas Grouper does not rely on any trusted authority.
 
 \section{Data Encryption Systems}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{depsky}
+	\caption{Architecture of DepSky.}
+	\label{fig:depsky}
+\end{figure}
+
+\subsection{Mylar}
 Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
 Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
+
 Mylar uses its browser extension to decrypt data on the client-side. 
 Compared to Mylar, which uses a single untrusted server, Grouper takes advantages of the data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
 
+\subsection{Sweets}
 Sweets\cite{sweets} is a decentralized social networking service (SNS) application that uses data synchronization with P2P connections among mobile devices. 
 Sweets performs data synchronization not only between two online nodes directly but also via common friend nodes indirectly for offline nodes.
 This indirect synchronization uses ABE to provide access control.
 Direct synchronization can only be done when two devices are online at the same time. 
 On the other hand, in Grouper, users can synchronize data from multiple untrusted servers, anytime.
 
+\subsection{DepSky}
+
 DepSky\cite{bessani2013depsky} implements the concept of \emph{Cloud-of-Clouds}.  
 DepSky keeps encrypted data in commercial storage services and performs application logic in other individual servers.
 In Grouper, untrusted servers undertake the responsibility of temporary data storage and message delivery.
 Mobile devices perform application logic.
+
+\subsection{SPORC}
 
 SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
 To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
@@ -202,10 +223,23 @@ In SPORC, synchronization should be done among online nodes, while Grouper allow
 \chapter{Threat Model} \label{chapter:threat_model}
 
 In this chapter, we introduce the assumptions and the threat model underlying the Grouper framework.
+
+\section{Target Application}
+
 We target mobile applications that are used among a small group of people.
 A group consists of a special member called the owner and other members.
 Each member has a mobile device.
-The owner invites other members in a face-to-face manner.
+Only the group owner can invite other members in a face-to-face manner.
+In this group, each user create a new object and share it with other grouper members.
+If an other user synchronized the new object, he / she can edit the content of the object or delete the object.
+The modification or deletion by this user is able to synchronized to the devices of other group members.
+
+Our target applications are suitable for those groups which are sensitive for their shared data.
+Those groups requires their shared data cannot be accessed by the server manager.
+
+\section{Assumptions}
+
+To implement our target mobile applications, there are following assumptions which is necessary in Grouper.
 
 First, because we use servers, they are passive adversaries and can read all of the data but they do not actively attack.
 Servers host Web services and perform device authentication.
@@ -386,8 +420,19 @@ The Sync framework marshalls objects into JavaScript Object Notation (JSON) stri
 \section{Reliable Message Delivery}  \label{section:reliable_message_delivery}
 
 Grouper implements reliable message delivery in the Grouper API layer over the self-destruction system.
+In this section, we introduce an existing technique to solve the reliable message delivery problem called reliable multicasting at first.
+Then we reference the reliable multicasting technique to design our own solution which is more suitable for Grouper.
 
-To design this, we use a reliable multicasting technique in distributed systems\cite{tanenbaum2007distributed}.
+\subsection{Basic Reliable Multicasting}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.6]{reliable_multicasting}
+	\caption{Basic reliable multicasting.}
+	\label{fig:reliable_multicasting}
+\end{figure}
+
+Figure \ref{fig:reliable_multicasting} shows the basic reliable multicasting technique introduced in Distributed Systems\cite{tanenbaum2007distributed}.
 In this reliable multicasting technique, each message has a sequence number for each sender.
 Each member keeps the newest sequence numbers for senders and detects missing messages.
 If a member notices a missing message from a sender, the member asks the sender to resend the update message.
@@ -397,8 +442,10 @@ If the newest sequence number of the sender is 1, this means the member missed u
 The member asks the sender to resend update message No.2 using a control message.
 The sender will send update message No.2 to the member who request it using a unicast address.
 
+\subsection{Data Recovery on Self-destruction System}
 This basic reliable multicasting technique works well for continuous media, such as video streaming in Internet communication.
 However, it does not work well if receivers go offline often or for a long time, as servers delete messages within a short time.
+In a word, the basic reliable multicasting technique is not suitable for data recovery on our self-destruction system.
 
 To address this problem, we extend the basic reliable multicasting technique.
 We use a special type of message that includes active sequence numbers.
@@ -524,6 +571,7 @@ Third, the secret sharing scheme reduces the risk of an attack because an attack
 		\EndIf
 		\EndProcedure
 	\end{algorithmic}
+	\label{algorithm:receive_message}
 \end{algorithm}
 
 The Grouper API layer sends and receives messages using our own protocol, the Grouper Message Protocol.
@@ -599,7 +647,8 @@ The method, $grouper.confirm()$, is invoked in the following situations:
 	Grouper therefore sends a confirm message when the device becomes online.
 \end{itemize}
 
-Algorithm 1 describes the handle process when the Grouper API layer receives a message.
+Developers should send and receive Grouper messages in their applications by invoking the client API of Grouper.
+Algorithm \ref{algorithm:receive_message} describes the handle process when the Grouper API layer receives a message.
 For an update or delete message, Grouper invokes the method $sync.updateRemote()$ or $sync.deleteRemote()$ of the synchronization plugin to update the persistent store.
 For a confirm message, the Grouper API layer copies the sequence numbers from the message content and removes the sequence numbers that exist in the device.
 Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of the confirm message.
@@ -609,12 +658,16 @@ For resend messages, the Grouper API layer retrieves the sequence numbers from t
 
 To manage a group, Grouper provides the following two functions: group creation and member invitation.
 
+\subsection{Group Creation}
+
 A user can create a group, and the creator becomes the owner of the group.  
 Before creating a group, the owner prepares his/her own user information (including his email address and name), multiple untrusted servers, a group ID, and a group name. 
 Next, the owner initializes the group on all untrusted servers by submitting his/her node identifier and the TTL to multiple untrusted servers. 
 The node identifier, which represents his/her device, is generated by Grouper randomly when the application is launched for the first time. 
 On each untrusted server, the Web service initializes this new group and returns a master key including the highest privilege to the owner. 
 The owner can add other members to an untrusted server using the master key.
+
+\subsection{Member Invitation}
 
 \begin{figure}
 	\centering
@@ -641,8 +694,25 @@ We describe the implementation of the client framework in Section \ref{section:c
 
 \section{Client Framework} \label{section:client_framework}
 
-Grouper's client framework is written in Objective-C, and it supports developing applications on iOS, macOS, watchOS and tvOS.
-It makes use of the following frameworks.   
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{frameworks}
+	\caption{Member invitation.}
+	\label{fig:frameworks}
+\end{figure}
+
+This section describes how we implement the client framework.
+Grouper's client framework is written in Objective-C, and its core layer supports developing applications on iOS, macOS, watchOS and tvOS.
+Grouper supports the iOS GUI for group management, so that developers need not to implement it on the iOS platform.
+
+In this section, we introduce the dependences of client framework in Subsection \ref{subsection:dependencies_client}.
+We use singleton pattern to implement the manager classes in the client framework, to avoid multiple instances of a manager class.
+These manager classes are listed from Subsection 
+
+\subsection{Dependencies of Client Framework} \label{subsection:dependencies_client}
+
+It makes use of the following frameworks in Figure \ref{fig:frameworks}.
+The main functions of this frameworks are shown as following.
 
 \begin{itemize}[leftmargin=7mm]
 	\setlength{\itemsep}{1pt}
@@ -651,19 +721,62 @@ It makes use of the following frameworks.
 	\item 
 	\textbf{Multipeer Connectivity}\cite{mc}, an official Peer-to-Peer communication framework provided by Apple. 
 	Grouper uses it to transfer data between two devices in a face-to-face manner using a wireless LAN or Bluetooth network.
+	With Multipeer Connectivity, a private connection can be established between two devices without Internet.
 	\item 
 	\textbf{Core Data}\cite{coredata}, an official Object-Relational Mapping (ORM) framework provided by Apple.
 	Core Data provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to manage model layer objects. 
 	\item 
-	\textbf{Sync}\cite{sync}, a synchronization framework for Core Data using JSON.
+	\textbf{Sync}\cite{sync}, a lightweight Swift framework for data synchronization using Core Data.
+	Sync uses the JSON string to synchronize managed objects of Core Data among devices.
+	Sync provides a instance method $export()$ for the managed object to convert the it into a JSON string and an asynchronous method $sync(json, objectName, callback)$ for data stack to synchronize the JSON string into Core Data.
 	Grouper currently uses it in the synchronization plugin.
 	\item 
-	\textbf{c-SSS}\cite{c-sss}, an implementation of the secret sharing scheme.
+	\textbf{c-SSS}\cite{c-sss}, an implementation in the original C code of the secret sharing scheme. 
+	It provide two main functions for generate shares and reconstructing them. The function $generate\_share\_strings(char * secret, int\ n, int\ k)$ can generate $n$ shares from the string secret with the threshold $k$. The function $extract_secret_from_share_strings(const char * shares)$ can recover the string after accessing to more than $k$ shares.
 	\item 
 	\textbf{AFNetworking}\cite{afnetworking}, a networking library in the Objective-C language. 
 	Grouper uses it to invoke the RESTful API provided by our several Web services running on multiple untrusted servers. 
 \end{itemize}
+
+\subsection{Sender Manager} \label{subsection:sender_manager}
+
+The class $SenderManager$ provides the methods to create and send the Grouper message as shown in Figure \ref{fig:sender_manager}.
+
+\begin{figure}
+\begin{lstlisting}[frame=none language=Objective-C] 
+// Send an update message for a sync entity.
+- (void)update:(NSManagedObject *)entity;
+
+// Delete a sync entity and send a delete message.
+- (void)delete:(NSManagedObject *)entity;
+
+// Send update messages for multiple sync entities.
+- (void)updateAll:(NSArray *)entities;
+
+// Send update messages for multiple sync entities with callback function.
+- (void)updateAll:(NSArray *)entities withCompletion:(SendCompletion)completion;
+
+// Delete multiple sync entities and send delete messages.
+- (void)deleteAll:(NSArray *)entities;
+
+// Send confirm message;
+- (void)confirm;
+
+// Send resend message with a range to receiver.
+- (void)resendWith:(int)min and:(int)max to:(NSString *)receiver;
+
+// Send unsent messages.
+- (void)unsent;
+
+// Send existed messages.
+- (void)sendExistedMessages:(NSArray *)messages;	
+\end{lstlisting}
+\caption{Instance methods of $SenderManager$.}
+\label{fig:sender_manager}
+\end{figure}
+
+\subsection{Release and Installation}
 
 \section{Web Service} \label{section:web_service}
 
