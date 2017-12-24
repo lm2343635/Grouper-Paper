@@ -305,7 +305,7 @@ Second, it is easy for a group owner to invite other members using a safe commun
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.8]{architecture}
+	\includegraphics[scale=0.6]{architecture}
 	\caption{Architecture of Grouper.}
 	\label{fig:architecture}
 \end{figure}
@@ -690,14 +690,54 @@ After receiving them, the new member can access the untrusted servers with the k
 \chapter{Implementation} \label{chapter:implementation}
 
 Grouper consists of a client framework for developing mobile applications and a Web service running on multiple untrusted servers.
-We describe the implementation of the client framework in Section \ref{section:client_framework}, the implementation of the Web service in Section \ref{section:web_service}, and the demo applications in Section \ref{section:application}.
+We describe the implementation of the implementation of the Web service in Section \ref{section:web_service}, the client framework in Section \ref{section:client_framework}, and the demo applications in Section \ref{section:application}.
+
+\section{Web Service} \label{section:web_service}
+
+We have chosen to implement our own Web service rather than using commercial general cloud storage services like Amazon Simple Storage Service (S3), Google Cloud Storage, or Microsoft Azure Storage for the following reasons:
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item The Web service must support on the Grouper Message protocol.
+	\item The Web service must delete shares after a prescribed time.
+\end{itemize}
+
+\subsection{Dependencies of Web Service} \label{subsection:dependencies_client}
+
+Our Web service provides a RESTful API to clients.
+It runs on a Tomcat server\cite{tomcat} that is an open-source implementation of the Java Servlet, JavaServer Pages, Java Expression Language, and Java WebSocket technologies. 
+We use the following frameworks in Java Enterprise Edition (Java EE) to implement our Web Service.
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item 
+	\textbf{Spring MVC}\cite{spring}, a Web model-view-controller framework.
+	Grouper uses it to create our RESTful API.
+	\item 
+	\textbf{Hibernate}\cite{hibernate}, an open-source Java ORM framework.
+	Core Data provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
+	Grouper uses it to save and operate objects in the Web service. 
+
+\end{itemize}
+
+\subsection{Entity Design}
+Our Web service includes three kinds of entities: the \emph{Group}, \emph{User}, and \emph{Share} entities. 
+The \emph{Group} entity saves the group ID, group name, and its owner. 
+The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
+The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
+
+\subsection{RESTful API}
 
 \section{Client Framework} \label{section:client_framework}
 
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.6]{frameworks}
-	\caption{Member invitation.}
+	\caption{Frameworks in client framework of Grouper.}
 	\label{fig:frameworks}
 \end{figure}
 
@@ -743,6 +783,9 @@ The main functions of this frameworks are shown as following.
 
 The class $SenderManager$ provides the methods to create and send the Grouper message as shown in Figure \ref{fig:sender_manager}.
 
+In our persistent store, Core Data\cite{coredata}, the entities created by the application developers should synchronized to other devices.
+We call an entity in Core Data which is needed to synchronize to other devices \emph{sync entity}.
+
 \begin{figure}
 \begin{lstlisting}[frame=none language=Objective-C] 
 // Send an update message for a sync entity.
@@ -750,15 +793,6 @@ The class $SenderManager$ provides the methods to create and send the Grouper me
 
 // Delete a sync entity and send a delete message.
 - (void)delete:(NSManagedObject *)entity;
-
-// Send update messages for multiple sync entities.
-- (void)updateAll:(NSArray *)entities;
-
-// Send update messages for multiple sync entities with callback function.
-- (void)updateAll:(NSArray *)entities withCompletion:(SendCompletion)completion;
-
-// Delete multiple sync entities and send delete messages.
-- (void)deleteAll:(NSArray *)entities;
 
 // Send confirm message;
 - (void)confirm;
@@ -776,28 +810,44 @@ The class $SenderManager$ provides the methods to create and send the Grouper me
 \label{fig:sender_manager}
 \end{figure}
 
+The method $- (void)update:$ creates an update messages with a JSON string generates from a sync entity. Then, invokes an instance method $- (void)sendMessages:$ to generate several shares from the normal messages and send the shares to multiple untrusted servers.
+
+The method $- (void)delete:$ deletes a sync entity, creates a delete message with a JSON string which contains the object ID of this entity, and invokes the method $- (void)sendMessages:$, as same as the method $- (void)update:$ .
+
+The method $- (void)confirm$ finds the maximum sequence number of normal messages in the local persistent store, creates a confirm message with a JSON string which contains the maximum sequence number, and invokes the method $- (void)sendMessages:$.
+
+The method $- (void)resendWith:and:to:$ is used for sending a resend messages after receiving a confirm message.
+It creates a resend message with a JSON string which contains the range of sequence number ( the minimum and maximum sequence number), and invokes the method $- (void)sendMessages:$.
+
+Due to some network reasons, a device may send messages to untrusted servers using the method $- (void)sendMessages:$ unsuccessfully.
+In these situations, the Grouper framework invokes the method $- (void)unsent$ to send the messages which are sent unsuccessfully.
+The method $- (void)unsent$ finds those messages and sends them to untrusted servers again by invoking the method $- (void)sendMessages:$.
+
+The method $- (void)sendExistedMessages:$ is used for resending normal messages after receiving a resend message.
+It puts the normal message to a mutable array at first.
+Before sending the normal messages, it confirms with the multiple untrusted servers at first.
+If some of them have not been deleted in servers, those messages will be deleted from the mutable array.
+At last, it sends the messages in the mutable array to servers by invoking the method $- (void)sendMessages:$.
+
+The methods introduced above use a same important method $- (void)sendMessages:$, to generate shares and send to servers.
+This method transfers the Grouper messages to a JSON strings at first.
+Then, it invokes the function $generate\_share\_strings(char * secret, int\ n, int\ k)$ in c-SSS\cite{c-sss} to generate shares for each JSON string.
+The shares are grouped by the address of the multiple untrusted server.
+Next, it tries to upload these shares to the servers.
+If the number of servers which are accessed successfully is more than $s$ in the extended secret sharing scheme $f(k, n, s)$, the Grouper framework regard this uploading successful.
+Otherwise, the object IDs of these Grouper messages will be put into a queue called $unsentMessageIds$.
+Grouper tries to send the Grouper messages recorded in $unsentMessageIds$, in the setup method, so that these messages can be sent with application launching.
+At last, if the share uploading is successful, this method send a remote notification the messages' receiver.
+
+Note that there may be too many messages to be sent at the same.
+To improve the stability of the share uploading, the method $- (void)sendMessages:$ divide the messages to several parts.
+For example, if there are 550 messages to be sent at the same, this method tries to send 100 messages everytime.
+
+\subsection{Receiver Manager}
+
+The class $ReceiverManager$ provides a instance method $- (void)receiveWithCompletion:$ to receive shares, recover messages and synchronize the content in the messages into the local persistent store.
+
 \subsection{Release and Installation}
-
-\section{Web Service} \label{section:web_service}
-
-We have chosen to implement our own Web service rather than using commercial general cloud storage services like Amazon Simple Storage Service (S3), Google Cloud Storage, or Microsoft Azure Storage for the following reasons:
-
-\begin{itemize}[leftmargin=7mm]
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item The Web service must support on the Grouper Message protocol.
-	\item The Web service must delete shares after a prescribed time.
-\end{itemize}
-
-Our Web service provides a RESTful API to clients.
-It runs on a Tomcat server\cite{tomcat} that is an open-source implementation of the Java Servlet, JavaServer Pages, Java Expression Language, and Java WebSocket technologies. 
-We use the Spring MVC\cite{spring}, a Web model-view-controller framework, to create our RESTful API, and Hibernate\cite{hibernate}, an open-source Java ORM framework, to save and operate objects in the Web service. 
-
-Our Web service includes three kinds of entities: the \emph{Group}, \emph{User}, and \emph{Share} entities. 
-The \emph{Group} entity saves the group ID, group name, and its owner. 
-The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
-The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
 
 \section{Application} \label{section:application}
 
