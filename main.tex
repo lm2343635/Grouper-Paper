@@ -10,7 +10,8 @@
 
 %% [IMPORTANT] package for title generation (english version)
 \usepackage{sie-en}
-\usepackage{booktabs} % For formal tables
+\usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{algorithm}  
 \usepackage{algorithmicx}  
@@ -348,8 +349,9 @@ The following sections describe the details of these layers from the top layer t
 	\centering
 	\caption{Client API of Grouper.}
 	\begin{tabular}{ll}
-		\hline
-		\textbf{Method} & \textbf{Description} \\ \hline
+		\toprule
+		\textbf{Method} & \textbf{Description} \\ 
+		\midrule
 		\begin{tabular}{@{}l@{}}
 			$\textbf{setup}(appId, entities, dataStack)$
 		\end{tabular} 
@@ -372,7 +374,8 @@ The following sections describe the details of these layers from the top layer t
 		$sender.\textbf{confirm}()$ & 
 		\begin{tabular}{@{}l@{}}
 			An application needs to invoke this method\\ periodically or occasionally to send a confirm\\ message to other devices.
-		\end{tabular} \\ \hline
+		\end{tabular} \\ 
+		\bottomrule
 	\end{tabular}
 	\label{table:grouper_api}
 \end{table}
@@ -392,14 +395,16 @@ We will describe reliable messaging in Section 3.4.
 	\centering
 	\caption{API of the synchronization plugin.}
 	\begin{tabular}{ll}
-		\hline
-		\textbf{Method} & \textbf{Description} \\ \hline
+		\toprule
+		\textbf{Method} & \textbf{Description} \\ 
+		\midrule
 		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\ \hline
 		$updateRemote(b)$ & 
 		\begin{tabular}{@{}l@{}}
 			Unmarshalls the byte array $b$ to the object and puts the object into\\ the persistent store.
 		\end{tabular} \\ \hline
-		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ \hline
+		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ 
+		\bottomrule
 	\end{tabular}
 	\label{table:sync_plugin}
 \end{table}
@@ -611,8 +616,9 @@ An address is either a list of device IDs or "*", which signifies multicasting t
 	\centering
 	\caption{Attributes of the Grouper message.}
 	\begin{tabular}{lll}
-		\hline
-		\textbf{Attribute} & \textbf{Explanation} \\ \hline
+		\toprule
+		\textbf{Attribute} & \textbf{Explanation} \\ 
+		\midrule
 		type & Type of this message. \\
 		content & A marshalled object or sequence numbers. \\
 		sequence & Sequence number of the message. \\
@@ -623,7 +629,7 @@ An address is either a list of device IDs or "*", which signifies multicasting t
 		email & Email address of the sender. \\
 		name & Name of the sender. \\
 		sentTime & Time the message is sent. \\
-		\hline
+		\bottomrule
 	\end{tabular}
 	\label{table:grouper_message_attributes}
 \end{table}
@@ -715,17 +721,65 @@ We use the following frameworks in Java Enterprise Edition (Java EE) to implemen
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item 
-	\textbf{Spring MVC}\cite{spring}, a Web model-view-controller framework.
+	\textbf{Spring}\cite{spring} provides a comprehensive programming and configuration model for modern Java-based enterprise applications.
+	Grouper uses it for dependency injection and manage the containers in the Web project.
+	\item 
+	\textbf{Spring MVC}\cite{spring}, an original web framework built on the Servlet API and included in the Spring Framework.
+	Spring MVC framework relies on the Spring framework.
 	Grouper uses it to create our RESTful API.
 	\item 
 	\textbf{Hibernate}\cite{hibernate}, an open-source Java ORM framework.
-	Core Data provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
+	Hibernate provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to save and operate objects in the Web service. 
 
 \end{itemize}
 
 \subsection{Entity Design}
-Our Web service includes three kinds of entities: the \emph{Group}, \emph{User}, and \emph{Share} entities. 
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{server_entities}
+	\caption{Entities' relationship in the Web service of Grouper.}
+	\label{fig:server_entities}
+\end{figure}
+
+\begin{table}[t]
+	\centering
+	\caption{Attributes of entities in the Web service of Grouper}
+	\label{table:entity_attributes}
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\textbf{Entity} & \textbf{Attribute} & \textbf{Description} \\ \midrule
+		\multirow{6}{*}{Share} & id & Physical ID of the Share entity. \\
+		& share & Share content uploaded from devices. \\ 
+		& saveAt & Time to save this share. \\
+		& messageId & Message ID of the message to generate this share.\\
+		& sender & User entity of the sender for this share. \\
+		& receiver & User entity of the receiver for this share.  \\
+		\hline
+		\multirow{5}{*}{User} & id & Physical ID of the User entity. \\
+		& node & The device's unique node identifier of this user. \\
+		& accessKey & Access key to upload and download share of this user. \\
+		& deviceToken & Device token for sending a remote notification. \\
+		& group & Group of this user.  \\
+		\hline
+		\multirow{11}{*}{Group} & id & Physical ID of Group entity. \\
+		& groupId & Unique group identifier created by the group owner. \\
+		& name & Group name created by the group owner. \\
+		& members & Number of group members. \\
+		& masterKey & Master key for the group owner to edit attributes of the group entity. \\
+		& createAt & Time to create this group entity. \\
+		& servers & Number of untrusted servers, the parameter $n$ in the $f(k, n, s)$ scheme. \\
+		& threshold & Threshold, the parameter $k$ in the $f(k, n, s)$ scheme. \\
+		& safe & The parameter $s$ in the $f(k, n, s)$ scheme.  \\
+		& TTL & Time to Live for the shares of this group.  \\
+		& owner & User entity of the group owner. \\ 
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Our Web service includes three kinds of entities: the \emph{Group}, \emph{User}, and \emph{Share} entities.
+Figure \ref{fig:server_entities} showd the relationship among these entities.
 The \emph{Group} entity saves the group ID, group name, and its owner. 
 The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
 The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
@@ -1039,13 +1093,15 @@ This chapter discusses the development efforts of applications using Grouper for
 	\caption{Application lines of code.}
 	\label{my-label}
 	\begin{tabular}{cccccc}
-		\hline
-		\textbf{Application} & \textbf{Account Book} & \textbf{Test} \\ \hline
+		\toprule
+		\textbf{Application} & \textbf{Account Book} & \textbf{Test} \\ 
+		\midrule
 		Platform & iOS & iOS \\ 
 		Lanaguage & Objective-C & Swift \\ 
 		Number of Entities & \multicolumn{1}{r}{5} & \multicolumn{1}{r}{1} \\ 
 		Standalone Application LoC & \multicolumn{1}{r}{8076} & \multicolumn{1}{r}{621} \\ 
-		Increased LoC &  \multicolumn{1}{r}{190} &  \multicolumn{1}{r}{18} \\ \hline
+		Increased LoC &  \multicolumn{1}{r}{190} &  \multicolumn{1}{r}{18} \\ 
+		\bottomrule
 	\end{tabular}
 	\label{table:loc}
 \end{table}
@@ -1103,13 +1159,15 @@ When the object was updated in a node, the Grouper API generated a normal messag
 	\centering  
 	\caption{Devices in the performance experiment.}
 	\begin{tabular}{llll}
-		\hline
-		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ \hline
+		\toprule
+		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ 
+		\midrule
 		iPod touch 5th & A5 & 512MB & iOS 9.3.5 \\
 		iPhone 4s & A5 & 512MB & iOS 9.3.5 \\
 		Server 1 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\
 		Server 2 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\
-		Server 3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\ \hline
+		Server 3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\ 
+		\bottomrule
 	\end{tabular}
 	\label{table:experiment_devices}
 \end{table}
@@ -1148,8 +1206,9 @@ We use the parameters in Table \ref{table:discussion_parameters}.
 	\centering
 	\caption{Parameters for discussing the number of messages.}
 	\begin{tabular}{ll}
-		\hline
-		\textbf{Parameter} & \textbf{Explanation} \\ \hline
+		\toprule
+		\textbf{Parameter} & \textbf{Explanation} \\ 
+		\midrule
 		$D$ & Number of devices. \\
 		$T$ & Time to live (TTL). \\
 		$F$ & Average number of offline devices during the TTL. \\
@@ -1167,7 +1226,8 @@ We use the parameters in Table \ref{table:discussion_parameters}.
 		$NUi$ & Number of uploads for device $i$ during the TTL. \\
 		$NU$ & Total number of uploads during the TTL. \\
 		$NDi$ & Number of downloads for device $i$ during the TTL. \\
-		$ND$ & Total number of downloads during the TTL. \\ \hline
+		$ND$ & Total number of downloads during the TTL. \\ 
+		\bottomrule
 	\end{tabular}
 	\label{table:discussion_parameters}
 \end{table*}
