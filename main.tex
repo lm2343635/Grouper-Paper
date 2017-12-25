@@ -21,6 +21,7 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{listings}
+\usepackage{amsfonts}
 
 \lstset{language=[Objective]C, breakindent=40pt, breaklines, basicstyle=\scriptsize\ttfamily, numbers=left}
 
@@ -41,9 +42,9 @@
 \setlength{\parskip}{0em}
 \setlength{\topsep}{0em}
 
-%\newcommand{\fig}[1]{{\bf Fig.\ref{#1}}}
-
-
+\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,2]{label=$\diamond$}
+\setlist[itemize,3]{label=$\times$}
 
 %% title of thesis
 %% DON'T PUT \\ AT THE END OF THE TITLE. IT CAUSES ERROR!!
@@ -162,17 +163,29 @@ Most of them use data encryption that requires private key generation and distri
 
 \section{Self-destruction Systems}
 
+We introduce the following self-destruction systems which keep data on servers temporarily in this section.
+
 \subsection{Vanish}
+
 Vanish\cite{geambasu2009vanish} is a self-destruction system that uses Distributed Hash Tables(DHTs) as the back-end storage.
 Vanish encrypts a message with a new random key, threads the key to shares using a secret sharing scheme, stores these shares in a public DHT, and eliminates the key from the local storage.
 The key in Vanish is removed after a certain period of time, and the encrypted message becomes permanently unreadable.
 Vanish is implemented with OpenDHT\cite{rhea2005opendht} or VuzeDHT\cite{vuzedht} which is controlled by a single maintainer. 
-Thus, it is not very secure against some Sybil attacks\cite{wolchok2010defeating}. 
-In addition, the surviving time of the key in Vanish cannot be controlled by the applications. 
+Thus, it is not very secure against some Sybil attacks\cite{cholez2009evaluation, wolchok2010defeating}. 
+In addition, the surviving time of the key in Vanish cannot be controlled by the applications for the user.
 
 \subsection{SafeVanish and SeDas}
+
 To address these issues in Vanish system, Zeng et al. proposed SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
-SafeVanish prevents hopping attacks by extending the length range of key shares while SeDas exploits active storage networks instead of P2P nodes to maintain a divided secret key. 
+
+SafeVanish prevents "hopping attacks"\cite{wolchok2010defeating}, which is one kind of the Sybil attacks\cite{cholez2009evaluation, wolchok2010defeating} by extending the length range of key shares to increase the attack cost substantially, and do some improvement on the Shamir's secret sharing algorithm implemented in the Vanish system.
+The proposal of SafeVainish can only increase the cost of hoping attack, but cannot stop it.
+
+Based on active storage framework like oasis\cite{xie2011design}, SeDas proposes a distributed object-based storage system with self-destructing data function.
+Concretely, it exploits active storage networks instead of P2P nodes to maintain a divided secret key. 
+In SeDas, user can specify the key survival time of distribution key and use the settings of expanded interface to export the life cycle of a key, allowing the user to control the subjective life-cycle of private data.
+The measurement and experimental security of SeDas nalysis sheds insight into the practicability of its approach.
+
 
 \subsection{CloudSky}
 By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
@@ -187,12 +200,7 @@ A trusted authority is necessary in CloudSky to manage user profiles, whereas Gr
 
 \section{Data Encryption Systems}
 
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.6]{depsky}
-	\caption{Architecture of DepSky.}
-	\label{fig:depsky}
-\end{figure}
+
 
 \subsection{Mylar}
 Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
@@ -209,6 +217,13 @@ Direct synchronization can only be done when two devices are online at the same 
 On the other hand, in Grouper, users can synchronize data from multiple untrusted servers, anytime.
 
 \subsection{DepSky}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{depsky}
+	\caption{Architecture of DepSky.}
+	\label{fig:depsky}
+\end{figure}
 
 DepSky\cite{bessani2013depsky} implements the concept of \emph{Cloud-of-Clouds}.  
 DepSky keeps encrypted data in commercial storage services and performs application logic in other individual servers.
@@ -347,7 +362,6 @@ The following sections describe the details of these layers from the top layer t
 
 \begin{table}[t]
 	\centering
-	\caption{Client API of Grouper.}
 	\begin{tabular}{ll}
 		\toprule
 		\textbf{Method} & \textbf{Description} \\ 
@@ -377,6 +391,7 @@ The following sections describe the details of these layers from the top layer t
 		\end{tabular} \\ 
 		\bottomrule
 	\end{tabular}
+	\caption{Client API of Grouper.}
 	\label{table:grouper_api}
 \end{table}
 
@@ -393,19 +408,19 @@ We will describe reliable messaging in Section 3.4.
 
 \begin{table}[t]
 	\centering
-	\caption{API of the synchronization plugin.}
 	\begin{tabular}{ll}
 		\toprule
 		\textbf{Method} & \textbf{Description} \\ 
 		\midrule
-		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\ \hline
+		$marshall(o)$ & Marshalls the object o and returns the marshalled byte array. \\
 		$updateRemote(b)$ & 
 		\begin{tabular}{@{}l@{}}
 			Unmarshalls the byte array $b$ to the object and puts the object into\\ the persistent store.
-		\end{tabular} \\ \hline
+		\end{tabular} \\
 		$deleteRemote(b)$ & Deletes the object of the object ID in the byte array $b$.\\ 
 		\bottomrule
 	\end{tabular}
+	\caption{API of the synchronization plugin.}
 	\label{table:sync_plugin}
 \end{table}
 
@@ -614,7 +629,6 @@ An address is either a list of device IDs or "*", which signifies multicasting t
 
 \begin{table}[t]
 	\centering
-	\caption{Attributes of the Grouper message.}
 	\begin{tabular}{lll}
 		\toprule
 		\textbf{Attribute} & \textbf{Explanation} \\ 
@@ -631,6 +645,7 @@ An address is either a list of device IDs or "*", which signifies multicasting t
 		sentTime & Time the message is sent. \\
 		\bottomrule
 	\end{tabular}
+	\caption{Attributes of the Grouper message.}
 	\label{table:grouper_message_attributes}
 \end{table}
 
@@ -713,7 +728,8 @@ We have chosen to implement our own Web service rather than using commercial gen
 \subsection{Dependencies of Web Service} \label{subsection:dependencies_client}
 
 Our Web service provides a RESTful API to clients.
-It runs on a Tomcat server\cite{tomcat} that is an open-source implementation of the Java Servlet, JavaServer Pages, Java Expression Language, and Java WebSocket technologies. 
+It runs on a Tomcat server\cite{tomcat} that is an open-source implementation of the Java Servlet, JavaServer Pages, Java Expression Language, and Java WebSocket technologies.
+Our Web service use the MySQL\cite{mysql} database as the backend storage.
 We use the following frameworks in Java Enterprise Edition (Java EE) to implement our Web Service.
 
 \begin{itemize}[leftmargin=7mm]
@@ -730,23 +746,44 @@ We use the following frameworks in Java Enterprise Edition (Java EE) to implemen
 	\item 
 	\textbf{Hibernate}\cite{hibernate}, an open-source Java ORM framework.
 	Hibernate provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
-	Grouper uses it to save and operate objects in the Web service. 
+	Grouper uses it to save and operate objects in the Web service.
+\end{itemize}
 
+By using these frameworks, we divide our Web service into the following four layers from the bottom to the top.
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item 
+	\textbf{Domain Layer.}
+	This layer is a collection of all entity objects.
+	The major scope of this layer is to create a standardized and federated set of objects, that could be potentially reused within different projects.
+	\item 
+	\textbf{Data Access Object (DAO) layer.}
+	This layer is a collection of objects that provide abstract interface and implementation to access the MySQL database. 
+	Each entity object corresponds to a DAO object.
+	\item 
+	\textbf{Service Layer.}
+	This layer is a collection of objects that provide abstract interface and implementation of business logic.
+	This layer invokes the methods provided in the DAO layer.
+	\item 
+	\textbf{Controller Layer.}
+	The objects in this layer build the RESTful API for client framework.
+	This layer is responsible for user authentication by the access key and invokes the methods provide in the service layer.
 \end{itemize}
 
 \subsection{Entity Design}
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.8]{server_entities}
+	\includegraphics[scale=0.75]{server_entities}
 	\caption{Entities' relationship in the Web service of Grouper.}
 	\label{fig:server_entities}
 \end{figure}
 
 \begin{table}[t]
 	\centering
-	\caption{Attributes of entities in the Web service of Grouper}
-	\label{table:entity_attributes}
 	\begin{tabular}{@{}lll@{}}
 		\toprule
 		\textbf{Entity} & \textbf{Attribute} & \textbf{Description} \\ \midrule
@@ -767,24 +804,107 @@ We use the following frameworks in Java Enterprise Edition (Java EE) to implemen
 		& groupId & Unique group identifier created by the group owner. \\
 		& name & Group name created by the group owner. \\
 		& members & Number of group members. \\
-		& masterKey & Master key for the group owner to edit attributes of the group entity. \\
+		& masterKey & Master key for the group owner. \\
 		& createAt & Time to create this group entity. \\
-		& servers & Number of untrusted servers, the parameter $n$ in the $f(k, n, s)$ scheme. \\
+		& servers & Number of servers, the parameter $n$ in the $f(k, n, s)$ scheme. \\
 		& threshold & Threshold, the parameter $k$ in the $f(k, n, s)$ scheme. \\
 		& safe & The parameter $s$ in the $f(k, n, s)$ scheme.  \\
 		& TTL & Time to Live for the shares of this group.  \\
 		& owner & User entity of the group owner. \\ 
 		\bottomrule
 	\end{tabular}
+	\caption{Attributes of entities in the Web service of Grouper}
+	\label{table:entity_attributes}
 \end{table}
 
 Our Web service includes three kinds of entities: the \emph{Group}, \emph{User}, and \emph{Share} entities.
-Figure \ref{fig:server_entities} showd the relationship among these entities.
-The \emph{Group} entity saves the group ID, group name, and its owner. 
-The \emph{User} entity saves the node identifier of a user, the access key for this user, and the group entity of this user. 
-The \emph{Share} entity saves a share generated with the secret sharing scheme, at time when a client uploads the share. 
+Figure \ref{fig:server_entities} shows the relationship among these entities.
+Table \ref{table:entity_attributes} shows the attributes of these entities.
+
+The Share entity saves the share content generate by a secret sharing scheme uploaded from the devices of group members.
+To recover a message from multiple shares saved in multiple untrusted servers, the we should save the message ID in the Share entity.
+When a device downloads several shares from servers, Grouper tries to group these shares by the message ID and recover a message using the shares with the same message ID.
+The sender attributes references an User entity, and indicates the uploading device.
+The receiver attributes references an User entity, and indicates those devices with the privilege to download the share.
+If the sender hopes all devices in the group can receive the share, Grouper sets the receiver to $null$.
+
+The User entity saves the information of an user's device.
+The unique node identifier generated in the device by the UUID scheme can distinguish the users' devices.
+Out untrusted server generates an access key for the user when the group owner register him / her in this server.
+To send a remote notification to the user, he / she should provide a device token from the notification pushing server.
+The group attribute references a Group entity, and indicates which group the user belongs to.
+
+The Group entity save the information of a group.
+The group owner creates a unique group identifier which is not existed in the server, and a group name to create a group.
+The number of group members is one when the owner creates the group.
+When the grouper invites a new member to the group, the number of group members plus one.
+When the group is created, the server generates a master key and returns to the group owner.
+The group owner can edit the attributes of the Group entity using this master key.
+In addition, all parameters in the extended secret sharing scheme and the TTL should be submitted by the group owner.
+The owner attribute references an User entity, and indicates the group owner.
 
 \subsection{RESTful API}
+
+The Web service of Grouper provides the following RESTful API for the client framework.
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item 
+	\textbf{group/register} (POST)
+	\begin{itemize}
+		\item Register a new group in an untrusted server.
+		\item Parameters: group ID and group name.
+		\item Return: master key for the group owner. 
+	\end{itemize}
+	\item 
+	\textbf{group/info} (GET)
+	\begin{itemize}
+		\item Get information of a group.
+		\item Header: master key of this group or access key of the group member.
+		\item Return: all attributes of a Group entity. 
+	\end{itemize}
+	\item 
+	\textbf{group/init} (POST)
+	\begin{itemize}
+		\item Initialize a group by submitting the parameters in the extended secret sharing scheme $f(k, n, s)$ and the TTL.
+		\item Header: master key of this group.
+		\item Parameters: $k$, $n$, $s$ and TTL.
+		\item Return: success flag.
+	\end{itemize}
+	\item 
+	\textbf{user/add} (POST)
+	\begin{itemize}
+		\item Add a new user in the untrusted server by the group owner.
+		\item Header: master key of this group.
+		\item Parameters: node identifier and the flag to indicate that this user is the owner or the common member.
+		\item Return: access key for this new user.
+	\end{itemize}
+	\item 
+	\textbf{user/state} (GET)
+	\begin{itemize}
+		\item Check server state.
+		\item Header: access key of the group member.
+		\item Return: server state.
+	\end{itemize}
+	\item 
+	\textbf{user/deviceToken} (POST)
+	\begin{itemize}
+		\item Update the device token of the device by a group member.
+		\item Header: access key of the group member.
+		\item Parameters: access token from the remote notification pushing server.
+		\item Return: success flag.
+	\end{itemize}
+	\item 
+	\textbf{user/notify} (POST)
+	\begin{itemize}
+		\item Send a remote notification to a group member.
+		\item Header: access key of the sender.
+		\item Parameters: content of the remote notification, the node identifier of the notification receiver and the notification category.
+		\item Return: success flag.
+	\end{itemize}
+\end{itemize}
 
 \section{Client Framework} \label{section:client_framework}
 
@@ -1088,11 +1208,9 @@ This chapter discusses the development efforts of applications using Grouper for
 
 \section{Development Efforts} \label{section:development_efforts}
 
-\begin{table}[t]
+\begin{table}
 	\centering
-	\caption{Application lines of code.}
-	\label{my-label}
-	\begin{tabular}{cccccc}
+	\begin{tabular}{lll}
 		\toprule
 		\textbf{Application} & \textbf{Account Book} & \textbf{Test} \\ 
 		\midrule
@@ -1103,6 +1221,7 @@ This chapter discusses the development efforts of applications using Grouper for
 		Increased LoC &  \multicolumn{1}{r}{190} &  \multicolumn{1}{r}{18} \\ 
 		\bottomrule
 	\end{tabular}
+	\caption{Application lines of code.}
 	\label{table:loc}
 \end{table}
 
@@ -1157,7 +1276,6 @@ When the object was updated in a node, the Grouper API generated a normal messag
 
 \begin{table}[t]
 	\centering  
-	\caption{Devices in the performance experiment.}
 	\begin{tabular}{llll}
 		\toprule
 		\textbf{Device} & \textbf{CPU} & \textbf{RAM} & \textbf{OS} \\ 
@@ -1169,6 +1287,7 @@ When the object was updated in a node, the Grouper API generated a normal messag
 		Server 3 & Core i7-5820K & 32GB & Ubuntu 14.04.5 \\ 
 		\bottomrule
 	\end{tabular}
+	\caption{Devices in the performance experiment.}
 	\label{table:experiment_devices}
 \end{table}
 
@@ -1202,9 +1321,8 @@ As $k$ increased, the processing time of uploading increased linearly and that o
 In this section, we discuss and the number of messages. 
 We use the parameters in Table \ref{table:discussion_parameters}.
 
-\begin{table*}[t]
+\begin{table}[t]
 	\centering
-	\caption{Parameters for discussing the number of messages.}
 	\begin{tabular}{ll}
 		\toprule
 		\textbf{Parameter} & \textbf{Explanation} \\ 
@@ -1229,8 +1347,9 @@ We use the parameters in Table \ref{table:discussion_parameters}.
 		$ND$ & Total number of downloads during the TTL. \\ 
 		\bottomrule
 	\end{tabular}
+	\caption{Parameters for discussing the number of messages.}
 	\label{table:discussion_parameters}
-\end{table*}
+\end{table}
 
 First, we consider the situation in which all devices are online ($F=0$).
 In this situation, the number of uploads for the device $i$ are:
