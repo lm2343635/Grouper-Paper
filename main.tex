@@ -830,7 +830,7 @@ If the sender hopes all devices in the group can receive the share, Grouper sets
 
 The User entity saves the information of an user's device.
 The unique node identifier generated in the device by the UUID scheme can distinguish the users' devices.
-Out untrusted server generates an access key for the user when the group owner register him / her in this server.
+Our untrusted server generates an access key for the user when the group owner register him / her in this server.
 To send a remote notification to the user, he / she should provide a device token from the notification pushing server.
 The group attribute references a Group entity, and indicates which group the user belongs to.
 
@@ -1040,7 +1040,7 @@ The methods introduced above use a same important method $- (void)sendMessages:$
 This method transfers the Grouper messages to a JSON strings at first.
 Then, it invokes the function $generate\_share\_strings(char * secret, int\ n, int\ k)$ in c-SSS\cite{c-sss} to generate shares for each JSON string.
 The shares are grouped by the address of the multiple untrusted server.
-Next, it tries to upload these shares to the servers.
+Next, it tries to upload these shares to the servers using the RESTful API \textbf{transfer/put}.
 If the number of servers which are accessed successfully is more than $s$ in the extended secret sharing scheme $f(k, n, s)$, the Grouper framework regard this uploading successful.
 Otherwise, the object IDs of these Grouper messages will be put into a queue called $unsentMessageIds$.
 Grouper tries to send the Grouper messages recorded in $unsentMessageIds$, in the setup method, so that these messages can be sent with application launching.
@@ -1054,7 +1054,23 @@ For example, if there are 550 messages to be sent at the same, this method tries
 
 The class $ReceiverManager$ provides a instance method $- (void)receiveWithCompletion:$ to receive shares, recover messages and synchronize the content in the messages into the local persistent store.
 
+This method does not download all shares from the multiple untrusted servers directly.
+When the application invokes this method, it gets the array of share IDs from the servers using the RESTful API \textbf{transfer/list} at first.
+Because Grouper saved the old share IDs in the local persistent store before, this method compares the new  share IDs from the servers with the old share IDs.
+Then, this method removes those share IDs existed, and get the content of shares by submitting the share IDs which are not existed using the RESTful API \textbf{transfer/get}.
+If the content of shares are received successfully, the share IDs will be saved into the local persistent store.
+Next, this method tries to group the shares by message ID and recover the shares with a same message ID to a Grouper message.
+At last, this method uses the Algorithm \ref{algorithm:receive_message} to handle the Grouper messages.
+A callback block should be invoked after handling all messages successfully.
+
+\subsection{UI for Group Management}
+
+We provide UI for group management including group creation and member invitation for the iOS platform in Grouper.
+
 \subsection{Release and Installation}
+
+We use CocoaPods\cite{cocoapods}, a dependency manager for Swift and Objective-C Cocoa projects, to release the client framework of Grouper.
+With CocoaPods, the developer can add the dependency of Grouper to his / her applications easily.
 
 \section{Application} \label{section:application}
 
