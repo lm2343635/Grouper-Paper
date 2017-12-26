@@ -904,7 +904,40 @@ The Web service of Grouper provides the following RESTful API for the client fra
 		\item Parameters: content of the remote notification, the node identifier of the notification receiver and the notification category.
 		\item Return: success flag.
 	\end{itemize}
+	\item 
+	\textbf{transfer/put} (POST)
+	\begin{itemize}
+		\item Upload a share to an untrusted server.
+		\item Header: access key of the group member.
+		\item Parameters: JSON array of which contains the shares, receivers and the message IDs.
+		\item Return: the number of shares which are saved in the server successfully.
+	\end{itemize}
+	\item 
+	\textbf{transfer/list} (GET)
+	\begin{itemize}
+		\item Get the list of share IDs for a group member.
+		\item Header: access key of the group member.
+		\item Return: share IDs that this group member has privilege to download.
+	\end{itemize}
+	\item 
+	\textbf{transfer/get} (GET)
+	\begin{itemize}
+		\item Get the content of shares by the list of share IDs.
+		\item Header: access key of the group member..
+		\item Parameters: array of share IDs.
+		\item Return: content of shares.
+	\end{itemize}
+	\item 
+	\textbf{transfer/confirm} (POST)
+	\begin{itemize}
+		\item Confirm whether the shares are existed in an untrusted server. 
+		\item Header: access key of the notification sender.
+		\item Parameters: array of message IDs.
+		\item Return: array of message IDs which are not existed in this untrusted server.
+	\end{itemize}
 \end{itemize}
+
+All of these RESTful APIs authenticate the common group member or the group owner by submitting an access key or a master key in the request header.
 
 \section{Client Framework} \label{section:client_framework}
 
