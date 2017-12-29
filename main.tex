@@ -186,11 +186,12 @@ Concretely, it exploits active storage networks instead of P2P nodes to maintain
 In SeDas, user can specify the key survival time of distribution key and use the settings of expanded interface to export the life cycle of a key, allowing the user to control the subjective life-cycle of private data.
 The measurement and experimental security of SeDas nalysis sheds insight into the practicability of its approach.
 
-
 \subsection{CloudSky}
+
+Although, SeDas allows user to control the survival time of the key, it still cannot handle the cases that require the access control over the encrypted data including user grant and revocation.
 By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
-In CloudSky, a user can control the surviving time of a message.
-CloudSky uses Attribute Bases Encryption (ABE) and allows users to define access control policies.
+CloudSky uses Attribute Bases Encryption (ABE) to implement the access control over the encrypted data, and allows the data owner to have user grant and revocation capabilities.
+CouldSky deals with the untrusted cloud storage network in two ways including the data self-destruction and the use of Hash-based Message Authentication Code (HMAC) \cite{bellare1997hmac}, which ensures the data integrity.
 
 However, these systems are not suitable for developing information sharing applications. 
 They are suitable for exchanging immutable messages, whereas our target applications need to modify objects repeatedly after other devices receive the object. 
@@ -200,23 +201,47 @@ A trusted authority is necessary in CloudSky to manage user profiles, whereas Gr
 
 \section{Data Encryption Systems}
 
-
+We introduce the following data encryption systems in this section.
+Both them encrypted user data and save the encrypted data in servers or clients.
 
 \subsection{Mylar}
 Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
 Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
-
 Mylar uses its browser extension to decrypt data on the client-side. 
-Compared to Mylar, which uses a single untrusted server, Grouper takes advantages of the data redundancy provided by the secret sharing scheme by using multiple untrusted servers.
+For the contributions, Mylar supports keyword searching in Web applications by computing over encrypted data and JavaScript code verification from untrusted servers.
+
+Mylar is suitable for platforms that enable client-side computation on data received from server.
+In addition, Mylar still requires a trusted identity provider (IDP).
+Compared to Mylar, which uses a single untrusted server, Grouper takes advantages of the data redundancy provided by the secret sharing scheme by using multiple untrusted servers and does not require any trusted IDP.
 
 \subsection{Sweets}
-Sweets\cite{sweets} is a decentralized social networking service (SNS) application that uses data synchronization with P2P connections among mobile devices. 
+Sweets\cite{sweets} is a decentralized social networking service (SNS) application on Android devices that uses data synchronization with P2P connections among mobile devices. 
 Sweets performs data synchronization not only between two online nodes directly but also via common friend nodes indirectly for offline nodes.
 This indirect synchronization uses ABE to provide access control.
-Direct synchronization can only be done when two devices are online at the same time. 
+Consequently, Sweets provides data confidentiality and availability without permanently available centralized storage servers.
+Sweets applys OpenID Connect to provide decentralized user authentication and implements a self-issued OpenID provider that runs on users’ devices.
+Sweets implements indirect replication via a hybrid cryptographic mechanism that combines ABE and AES encryption schemes. 
+Taking the advantage of ABE, protected data can be hosted and relayed by users who have no permission to access it. 
+In addition, by combining ABE and AES, Sweets can void expensive and repetitive ABE operations.
+
+Both Grouper and Sweets provide a way to develop mobile application without central servers.
+However, direct synchronization in Sweets can only be done when two devices are online at the same time. 
 On the other hand, in Grouper, users can synchronize data from multiple untrusted servers, anytime.
 
 \subsection{DepSky}
+
+DepSky\cite{bessani2013depsky} is a system that keeps encrypted data in commercial storage services and performs application logic in other individual servers.
+It implements the concept of \emph{Cloud-of-Clouds}.  
+\emph{Cloud-of-Clouds} is the core concept in DepSky.
+It represents that DepSky is a virtual storage, and its users invoke operations in several individual severs. 
+Figure \ref{fig:depsky} shows the architecture of DepSky.
+When a client want to share data with an other client, it generates several shares and uploads these shares to the application logic servers (the yellow servers on the left side).
+Application logic servers saves shares into commercial storage services (the blue cloud on the right side) via the APIs provided by the storage provider.
+By using commercial storage services, DepSky improves the availability and confidentiality of the untrusted cloud systems.
+
+However, commercial storage services may not supports temporary data storage like the self-destruction systems.
+In Grouper, untrusted servers undertake the responsibility of temporary data storage and message delivery.
+Mobile devices perform application logic.
 
 \begin{figure}
 	\centering
@@ -225,15 +250,12 @@ On the other hand, in Grouper, users can synchronize data from multiple untruste
 	\label{fig:depsky}
 \end{figure}
 
-DepSky\cite{bessani2013depsky} implements the concept of \emph{Cloud-of-Clouds}.  
-DepSky keeps encrypted data in commercial storage services and performs application logic in other individual servers.
-In Grouper, untrusted servers undertake the responsibility of temporary data storage and message delivery.
-Mobile devices perform application logic.
-
 \subsection{SPORC}
 
 SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
+In SPORC, a server observers only encrypted data and cannot deviate from correct execution without being detect.
 To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
+
 In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
 \chapter{Threat Model} \label{chapter:threat_model}
