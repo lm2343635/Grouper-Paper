@@ -1063,9 +1063,56 @@ Next, this method tries to group the shares by message ID and recover the shares
 At last, this method uses the Algorithm \ref{algorithm:receive_message} to handle the Grouper messages.
 A callback block should be invoked after handling all messages successfully.
 
+\subsection{GroupManager}
+
+The class $GroupManager$ provides methods to create a new group, invite members to an existing group and send device token for remote notification to the untrusted servers.
+Figure \ref{fig:group_manager} shows the main instance methods.
+
+\begin{figure}
+\begin{lstlisting}[frame=none language=Objective-C] 
+// Save global user email and name.
+- (void)saveCurrentUserWithEmail:(NSString *)email name:(NSString *)name;
+
+// Add a new untrusted server.
+- (void)addNewServer:(NSString *)address
+       withGroupName:(NSString *)groupName
+          andGroupId:(NSString *)groupId
+          completion:(SucessMessageCompletion)completion;
+
+// Initialize group.
+- (void)initializeGroup:(int)threshold
+safeServersCount:(int)safeCount
+interval:(int)interval
+withCompletion:(SucessMessageCompletion)completion;
+
+// Setup mutipeer connectivity so that the device can be discoverd by others.
+- (void)setupMutipeerConnectivity;
+
+// Open device browser.
+- (void)openDeviceBroswerIn:(UIViewController *)controller;
+
+// Send invite message to a peer.
+- (void)sendInviteMessageTo:(MCPeerID *)peer;
+
+// Send device token to untrusted servers
+- (void)sendDeviceToken:(NSString *)token;	
+\end{lstlisting}
+\caption{Instance methods of $GroupManager$.}
+\label{fig:group_manager}
+\end{figure}
+
+An application invokes the method $- (void)saveCurrentUserWithEmail:name:$ when an user uses the application without creating or joining a group at first.
+It saves the name and email of a user into the local persistent store of a his / her device.
+
+An application invokes the method $- (void)addNewServer:withGroupName:andGroupId:completion$ when an user adds untrusted servers before creating a new group. 
+It submits the group name and group ID to an new untrusted server.
+Then, this server generates a master key and returns to the device.
+At last, this method saves the group name, group ID, server address and master key in the local persistent store.
+
+
 \subsection{UI for Group Management}
 
-We provide UI for group management including group creation and member invitation for the iOS platform in Grouper.
+We provide UI for group management including group creation and member invitation for the iOS platform in Grouper. 
 
 \subsection{Release and Installation}
 
