@@ -1123,14 +1123,31 @@ withCompletion:(SucessMessageCompletion)completion;
 \label{fig:group_manager}
 \end{figure}
 
-An application invokes the method $- (void)saveCurrentUserWithEmail:name:$ when an user uses the application without creating or joining a group at first.
+An application invokes the method $- (void)saveCurrentUserWithEmail:name:$ when the user uses the application without creating or joining a group at first.
 It saves the name and email of a user into the local persistent store of a his / her device.
 
-An application invokes the method $- (void)addNewServer:withGroupName:andGroupId:completion$ when an user adds untrusted servers before creating a new group. 
-It submits the group name and group ID to an new untrusted server.
+An application invokes the method $- (void)addNewServer:withGroupName:andGroupId:completion$ when the user adds untrusted servers before creating a new group. 
+It submits the group name and group ID to an new untrusted server using the RESTful API \textbf{group/register}.
 Then, this server generates a master key and returns to the device.
 At last, this method saves the group name, group ID, server address and master key in the local persistent store.
 
+An application invokes the method $- (void)initializeGroup:safeServersCount:interval:withCompletion:$  when the user initialize a new group after adding multiple untrusted servers.
+It submit the parameters in the extended secret sharing scheme $f(k, n, s)$ and the TTL to the multiple untrusted servers using the RESTful API \textbf{group/init}.
+
+An application invokes the method $- (void)setupMutipeerConnectivity$ to initialize the Multipeer Connectivity framework so that the device can be discovered by others.
+An application invokes the method $- (void)openDeviceBroswerIn:$ to open the device browser of the Multipeer Connectivity framework.
+In this browser, a user select an other device to connect.
+In the device of the group owner, the application invokes the method $- (void)sendInviteMessageTo:$ to send a inviting message to the connected device.
+If the user of connected device agrees the inviting message, he / she will join the group of the owner.
+
+An application invokes the method $- (void)sendDeviceToken:$ to upload the device token to the multiple untrusted servers using the RESTful API \textbf{user/deviceToken}.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.58]{group_manager_screenshot}
+	\caption{Add an untrusted server and create a new group.}
+	\label{fig:group_manager_screenshot}
+\end{figure}
 
 \subsection{UI for Group Management}
 
