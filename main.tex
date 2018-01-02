@@ -206,7 +206,7 @@ Both them encrypted user data and save the encrypted data in servers or clients.
 
 \subsection{Mylar}
 Mylar\cite{popa2014building} stores encrypted data on an untrusted server and decrypts this data only in the browsers of users. 
-Application developers of Mylar use its API to encrypt regular (non-encrypted) Web applications. 
+Application developers of Mylar use its application program interface (API) to encrypt regular (non-encrypted) Web applications. 
 Mylar uses its browser extension to decrypt data on the client-side. 
 For the contributions, Mylar supports keyword searching in Web applications by computing over encrypted data and JavaScript code verification from untrusted servers.
 
@@ -254,7 +254,9 @@ Mobile devices perform application logic.
 
 SPORC\cite{feldman2010sporc} is designed for developing group collaboration applications using untrusted cloud resources.
 In SPORC, a server observers only encrypted data and cannot deviate from correct execution without being detect.
-To maintain synchronization among clients, SPORC uses operational transformation (OT), which allows each client to apply local updates optimistically.
+From a conceptual distributed systems perspective, SPORC demonstrates the benefit if combing \emph{operational transformation} (OT)\cite{ellis1989concurrency} and \emph{fork* consistency}  protocols\cite{li2007beyond}.
+To maintain synchronization among clients, SPORC uses OT, which allows each client to apply local updates optimistically.
+To solve the problem that the server causes the views of two client to diverge, SPROC uses fork* consistency protocols, which is a consistency model for interacting with an untrusted server.
 
 In SPORC, synchronization should be done among online nodes, while Grouper allows synchronization among offline nodes.
 
@@ -418,6 +420,9 @@ The following sections describe the details of these layers from the top layer t
 \end{table}
 
 The Grouper framework provides object synchronization among mobile devices through a simple client API.
+
+\subsection{Methods of Grouper API}
+
 Table \ref{table:grouper_api} shows the client API of Grouper that is used to develop mobile applications.
 An application initializes the framework by invoking the method $setup()$.
 When the application needs to update an object in all devices, it invokes the method $sender.update()$.
@@ -446,6 +451,11 @@ We will describe reliable messaging in Section 3.4.
 	\label{table:sync_plugin}
 \end{table}
 
+These methods should be used after initializing the Grouper framework in your project.
+We will introduce how to use Grouper in Section \ref{section:application}.
+
+\subsection{Synchronization Plugin}
+
 The Grouper API layer relies on the synchronization plugin.
 As described in Table \ref{table:sync_plugin}, the synchronization plugin should provide the functions $marshall(o)$, $updateRemote(b)$ and $deleteRemote(b)$.
 Grouper invokes these functions to obtain marshalled data from the persistent store, save unmarshalled data in the persistent store, and delete objects in the persistent store.
@@ -454,7 +464,6 @@ We have not implemented the synchronization plugin on our own, but we provide it
 This is because there are many such synchronization modules that provide various features.
 Additionally, application requirements may also vary.
 Each application developer should choose a suitable module based on a consistency model and other requirements.
-
 
 Because we implement our client framework in Objective-C, we currently user the Sync framework\cite{sync} to implement the data synchronization plugin.
 The Sync framework marshalls objects into JavaScript Object Notation (JSON) strings and provides a consistency model where the newest version wins.
@@ -526,12 +535,9 @@ A checkgroups message is distributed periodically or after some time after the b
 
 \section{Data Protection}  \label{section:data_protection}
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[scale=0.65]{transportation}
-	\caption{Message transportation using the extended secret sharing scheme $f(2, 4, 3)$.}
-	\label{fig:transportation}
-\end{figure}
+We design our own extend secret sharing scheme and data transportation flow to protect user data.
+
+\subsection{Extended Secret Sharing Scheme}
 
 The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as introduced in Section \ref{section:overview}.
 In Grouper, we extend this scheme and design a new scheme $ f(k, n, s)$.
@@ -542,11 +548,22 @@ When a sender has $n$ shares, Grouper tries to upload these $n$ shares to all $n
 If the shares are uploaded to $s$ or more untrusted servers, we consider that this upload to be successful.
 Otherwise, Grouper continues trying to upload these shares.
 
+Compared to the traditional secret sharing scheme, the extended secret sharing scheme improves the stability for data sharing among devices.
+
+\subsection{Data Transportation}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.65]{transportation}
+	\caption{Message transportation using the extended secret sharing scheme $f(2, 4, 3)$.}
+	\label{fig:transportation}
+\end{figure}
+
 Figure \ref{fig:transportation} shows the message transportation from a device to another device using the extended secret sharing scheme $f(2, 4, 3)$.
 In this figure, the message layer in a sender device is sending a message to the message layer in a receiver device.
 At first, this layer calls the data protection layer and creates four shares, according to the secret sharing scheme.
 Next, this layer uploads those shares to four untrusted servers.
-In Figure \ref{fig:transportation}, although only the three untrusted servers on the left receives shares successfully, we regard this upload as successful.
+In Figure \ref{fig:transportation}, although only the three untrusted servers on the left receives shares successfully, we regard this upload as successful, because we set $s = 3$ in the $f(k, n, s)$ scheme.
 Finally, the message layer in the receiver device downloads two shares from the four untrusted servers and recovers the message by calling the data protection layer.
 
 We can choose the parameter $s$ based on the following policies.
@@ -567,11 +584,119 @@ We can choose the parameter $s$ based on the following policies.
 
 Compared with data encryption methods, the secret sharing scheme has the following advantages.
 First, using a secret sharing scheme does not require key management, including generation and distribution.
+Key generation and distribution usually need a central identity provider, which is against with the fully untrusted concept in Grouper.
 Second, the secret sharing scheme ensures the data availability when a number of untrusted servers are not accessible.
 For the $f(k, n, s)$ scheme in Grouper, a sender can complete uploading when at least $s$ untrusted servers are available, and a receiver can recover the object when at least $k$ untrusted servers are available.
 Third, the secret sharing scheme reduces the risk of an attack because an attacker who can only access only $k-1$ or less untrusted servers cannot obtain any information.
 
 \section{Grouper Message Protocol} \label{section:grouper_message_protocol}
+
+The Grouper API layer sends and receives messages using our own protocol, the Grouper Message Protocol.
+In this protocol, a message is a JSON string that contains a marshalled object and its attributes.
+
+\subsection{Attributes of Grouper Message}
+
+\begin{table}[t]
+	\centering
+	\begin{tabular}{lll}
+		\toprule
+		\textbf{Attribute} & \textbf{Explanation} \\ 
+		\midrule
+		type & Type of this message. \\
+		content & A marshalled object or sequence numbers. \\
+		sequence & Sequence number of the message. \\
+		class & Class name of an object. \\
+		objectId & ID of an object. \\
+		receiverId & Node identifier of the receiver. \\
+		senderId & Node identifier of the sender. \\
+		email & Email address of the sender. \\
+		name & Name of the sender. \\
+		sentTime & Time the message is sent. \\
+		\bottomrule
+	\end{tabular}
+	\caption{Attributes of the Grouper message.}
+	\label{table:grouper_message_attributes}
+\end{table}
+
+Table \ref{table:grouper_message_attributes} shows the attributes in a Grouper message.
+Figure \ref{fig:grouper_message} shows a demo update message.
+There are three important attributes:
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Type.}
+	This attribute refers to the message types.
+	There are four types of messages: update messages, delete messages, confirm messages, and resend messages.
+	An update message contains the marshalled objects of an application.
+	A delete message contains the identifier of a deleted object.
+	A confirm message contains the sequence numbers of all update and delete messages created in a device.
+	A resend message contains the sequence numbers of missing messages.
+	We call update messages and delete messages \emph{normal messages}. 
+	Both confirm messages and resend messages contain control information about a reliable multicast. 
+	We call these messages \emph{control messages}.
+	\item \textbf{Content.} 
+	If the message is an update message, the content value contains the JSON string of a marshalled object.
+	If the message is a delete message, the content value contains the objectId of an object.
+	If the message is a confirm message, the content value contains the maximum sequence number of messages created in the device of the sender.
+	If the message is a resend message, the content value contains the range of missing message sequence numbers.
+	\item \textbf{Sequence.}
+	This attribute refers to the sequence number of a message.
+	When a sender sends a new normal message, the sender increments the sequence number and includes it in the new message.
+	The sequence number of any control message is 0.
+\end{itemize}
+
+The receiverId attribute contains the addresses of destination devices.
+An address is either a list of device IDs or "*", which signifies multicasting to all devices.
+
+\begin{figure}
+\begin{lstlisting}[frame=none language=JSON] 
+{
+    "object" : "Test",
+    "content" : "{\n\"content\" : \"2017-09-28 05:04:23 +0000\",\n  \"updator\" : \"07DF1068-815C-4C70-B833-A6012B8BE846\",\n  \"creator\" : \"07DF1068-815C-4C70-B833-A6012B8BE846\",\n  \"id\" : \"A4ABC905-B6CE-4BA1-9224-F5AE7D0F0300\",\n  \"update_at\" : \"2017-09-28T14:04:23+09:00\",\n  \"create_at\" : \"2017-09-28T14:04:23+09:00\"\n}",
+    "sender_id" : "07DF1068-815C-4C70-B833-A6012B8BE846",
+    "receiver_id" : "*",
+    "message_id" : "CEA7050B-CD14-4863-A127-A2C3FF74FBEC",
+    "sequence" : 3,
+    "email" : "test@test",
+    "object_id" : "A4ABC905-B6CE-4BA1-9224-F5AE7D0F0300",
+    "type" : "update",
+    "name" : "test",
+    "send_time" : 1506575063
+}		
+\end{lstlisting}
+\caption{An update message.}
+\label{fig:grouper_message}
+\end{figure}
+
+Applications send update, delete and confirm messages through the Grouper API, and send resend messages after receiving confirm messages automatically.
+When an application invokes the method $grouper.sender.update()$, the Grouper API layer sends an update message that contains the marshalled object to all devices.
+When an application invokes the method $grouper.sender.delete()$, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
+When an application invokes the method $grouper.confirm()$, the Grouper API layer sends a confirm message to all devices. 
+The confirm message includes the sequence numbers of objects that were recently created in the device.
+
+The method, $grouper.confirm()$, is invoked in the following situations:
+
+\begin{itemize}[leftmargin=7mm]
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Periodically.}
+	For example, an application sends a confirm message once during the TTL.
+	\item \textbf{When the device becomes online.} 
+	Sometimes, a device is offline and cannot send a confirm message within the TTL.
+	Grouper therefore sends a confirm message when the device becomes online.
+\end{itemize}
+
+\subsection{Algorithm to Handle Grouper Message}
+
+Developers should send and receive Grouper messages in their applications by invoking the client API of Grouper.
+Algorithm \ref{algorithm:receive_message} describes the handle process when the Grouper API layer receives a message.
+For an update or delete message, Grouper invokes the method $sync.updateRemote()$ or $sync.deleteRemote()$ of the synchronization plugin to update the persistent store.
+For a confirm message, the Grouper API layer copies the sequence numbers from the message content and removes the sequence numbers that exist in the device.
+Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of the confirm message.
+For resend messages, the Grouper API layer retrieves the sequence numbers from the resend message, finds the corresponding normal messages, and sends them to the sender of the resend message.
 
 \begin{algorithm}[t]
 	\caption{Message handling algorithm}\label{alg:euclid}
@@ -615,87 +740,6 @@ Third, the secret sharing scheme reduces the risk of an attack because an attack
 	\end{algorithmic}
 	\label{algorithm:receive_message}
 \end{algorithm}
-
-The Grouper API layer sends and receives messages using our own protocol, the Grouper Message Protocol.
-In this protocol, a message is a JSON string that contains a marshalled object and its attributes.
-Table \ref{table:grouper_message_attributes} shows the attributes in a Grouper message.
-There are three important attributes:
-
-\begin{itemize}[leftmargin=7mm]
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Type.}
-	This attribute refers to the message types.
-	There are four types of messages: update messages, delete messages, confirm messages, and resend messages.
-	An update message contains the marshalled objects of an application.
-	A delete message contains the identifier of a deleted object.
-	A confirm message contains the sequence numbers of all update and delete messages created in a device.
-	A resend message contains the sequence numbers of missing messages.
-	We call update messages and delete messages \emph{normal messages}. 
-	Both confirm messages and resend messages contain control information about a reliable multicast. 
-	We call these messages \emph{control messages}.
-	\item \textbf{Content.} 
-	If the message is an update message, the content value contains the JSON string of a marshalled object.
-	If the message is a delete message, the content value contains the objectId of an object.
-	If the message is a confirm message, the content value contains the maximum sequence number of messages created in the device of the sender.
-	If the message is a resend message, the content value contains the range of missing message sequence numbers.
-	\item \textbf{Sequence.}
-	This attribute refers to the sequence number of a message.
-	When a sender sends a new normal message, the sender increments the sequence number and includes it in the new message.
-	The sequence number of any control message is 0.
-\end{itemize}
-
-The receiverId attribute contains the addresses of destination devices.
-An address is either a list of device IDs or "*", which signifies multicasting to all devices.
-
-\begin{table}[t]
-	\centering
-	\begin{tabular}{lll}
-		\toprule
-		\textbf{Attribute} & \textbf{Explanation} \\ 
-		\midrule
-		type & Type of this message. \\
-		content & A marshalled object or sequence numbers. \\
-		sequence & Sequence number of the message. \\
-		class & Class name of an object. \\
-		objectId & ID of an object. \\
-		receiverId & Node identifier of the receiver. \\
-		senderId & Node identifier of the sender. \\
-		email & Email address of the sender. \\
-		name & Name of the sender. \\
-		sentTime & Time the message is sent. \\
-		\bottomrule
-	\end{tabular}
-	\caption{Attributes of the Grouper message.}
-	\label{table:grouper_message_attributes}
-\end{table}
-
-Applications send update, delete and confirm messages through the Grouper API, and send resend messages after receiving confirm messages automatically.
-When an application invokes the method $grouper.sender.update()$, the Grouper API layer sends an update message that contains the marshalled object to all devices.
-When an application invokes the method $grouper.sender.delete()$, the Grouper API layer sends a delete message that contains the ID of the deleted object to all devices. 
-When an application invokes the method $grouper.confirm()$, the Grouper API layer sends a confirm message to all devices. 
-The confirm message includes the sequence numbers of objects that were recently created in the device.
-
-The method, $grouper.confirm()$, is invoked in the following situations:
-
-\begin{itemize}[leftmargin=7mm]
-	\setlength{\itemsep}{1pt}
-	\setlength{\parskip}{0pt}
-	\setlength{\parsep}{0pt}
-	\item \textbf{Periodically.}
-	For example, an application sends a confirm message once during the TTL.
-	\item \textbf{When the device becomes online.} 
-	Sometimes, a device is offline and cannot send a confirm message within the TTL.
-	Grouper therefore sends a confirm message when the device becomes online.
-\end{itemize}
-
-Developers should send and receive Grouper messages in their applications by invoking the client API of Grouper.
-Algorithm \ref{algorithm:receive_message} describes the handle process when the Grouper API layer receives a message.
-For an update or delete message, Grouper invokes the method $sync.updateRemote()$ or $sync.deleteRemote()$ of the synchronization plugin to update the persistent store.
-For a confirm message, the Grouper API layer copies the sequence numbers from the message content and removes the sequence numbers that exist in the device.
-Next, the Grouper API layer creates a resend message that contains the missing sequence numbers and sends it to the sender of the confirm message.
-For resend messages, the Grouper API layer retrieves the sequence numbers from the resend message, finds the corresponding normal messages, and sends them to the sender of the resend message.
 
 \section{Group Management}  \label{section:group_management}
 
@@ -972,7 +1016,7 @@ All of these RESTful APIs authenticate the common group member or the group owne
 
 This section describes how we implement the client framework.
 Grouper's client framework is written in Objective-C, and its core layer supports developing applications on iOS, macOS, watchOS and tvOS.
-Grouper supports the iOS GUI for group management, so that developers need not to implement it on the iOS platform.
+Grouper supports the iOS graphical user interface (GUI) for group management, so that developers need not to implement it on the iOS platform.
 
 In this section, we introduce the dependences of client framework in Subsection \ref{subsection:dependencies_client}.
 We use singleton pattern to implement the manager classes in the client framework, to avoid multiple instances of a manager class.
@@ -1126,7 +1170,7 @@ withCompletion:(SucessMessageCompletion)completion;
 An application invokes the method $- (void)saveCurrentUserWithEmail:name:$ when the user uses the application without creating or joining a group at first.
 It saves the name and email of a user into the local persistent store of a his / her device.
 
-An application invokes the method $- (void)addNewServer:withGroupName:andGroupId:completion$ when the user adds untrusted servers before creating a new group. 
+An application invokes the method $- (void)addNewServer:withGroupName:andGroupId:completion:$ when the user adds untrusted servers before creating a new group. 
 It submits the group name and group ID to an new untrusted server using the RESTful API \textbf{group/register}.
 Then, this server generates a master key and returns to the device.
 At last, this method saves the group name, group ID, server address and master key in the local persistent store.
@@ -1149,14 +1193,39 @@ An application invokes the method $- (void)sendDeviceToken:$ to upload the devic
 	\label{fig:group_manager_screenshot}
 \end{figure}
 
-\subsection{UI for Group Management}
-
-We provide UI for group management including group creation and member invitation for the iOS platform in Grouper. 
+To simplify the application development using Grouper on the iOS platform, we provided the software development kit (SDK) on Grouper's client framework for the iOS platform.
+Concretely, we encapsulate the methods about group creation and member invitation introduced above and create the GUI as shown in Figure \ref{fig:group_manager_screenshot}.
+Figure \ref{fig:group_manager_screenshot} (a) shows the screenshot of saving user information using the  $- (void)saveCurrentUserWithEmail:name:$ method.
+Figure \ref{fig:group_manager_screenshot} (b) shows the screenshot of adding a new untrusted server using the  $- (void)addNewServer:withGroupName:andGroupId:completion:$ method.
+Figure \ref{fig:group_manager_screenshot} (c) shows the screenshot of initializing a new group using the  $- (void)initializeGroup:safeServersCount:interval:withCompletion:$ method.
+With the iOS SDK of Grouper, a developer does not need to implement the group management by themselves using the methods in GroupManager. 
 
 \subsection{Release and Installation}
 
 We use CocoaPods\cite{cocoapods}, a dependency manager for Swift and Objective-C Cocoa projects, to release the client framework of Grouper.
 With CocoaPods, the developer can add the dependency of Grouper to his / her applications easily.
+To install the Grouper framework, a developer needs to add a file name Podfile including the following content.
+
+\begin{lstlisting}[frame=none language=Ruby] 
+use_frameworks!
+
+target 'YourProjectName' do
+    pod 'Grouper', '~> 2.1'
+end
+\end{lstlisting}
+
+The developer should set his / her project name as the target and the version of Grouper.
+Then, he / she runs the following script in the terminal to install the Grouper framework.
+CocoaPods dependency manager should be install before installing the Grouper framework.
+
+\begin{lstlisting}[frame=none language=shell] 
+# Run this script if CocoaPods is not been installed.
+sudo gem install cocoapods
+
+# Install Grouper with CocoaPods
+cd [YourProject]
+pod install
+\end{lstlisting}
 
 \section{Application} \label{section:application}
 
