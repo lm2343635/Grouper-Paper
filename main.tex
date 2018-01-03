@@ -1654,11 +1654,11 @@ From section \ref{section:development_efforts} to \ref{section:discussion}, we c
 This thesis concentrates on developing mobile application on top of a self-destruction system with data recovery.
 For this goal, we developed Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to implement light-weight information sharing in mobile applications.
 
-Chapter 1 points out the problems of the mobile applications using the central servers to store user data.
+Chapter \ref{chapter:introduction} points out the problems of the mobile applications using the central servers to store user data.
 Although some data self-destruction systems tries to solve this problem by encrypting user data and keeping it in the servers temporarily, they do not support data recovery after deleting data.
 Therefore, we developed the Grouper framework based on the theory of self-destruction system and supported data recovery in Grouper.
 
-Chapter 2 introduces related work.
+Chapter \ref{chapter:related_work} introduces related work.
 First, we introduce Data self-destruction systems including Vanish, SafeVanish, SeDas and CloudSky.
 They are suitable for developing news systems without data recovery.
 Compared to conventional self-destruction systems, Grouper provides the reliable synchronization and allows mobile devices to synchronize data with other devices after untrusted severs remove the data.
@@ -1666,20 +1666,29 @@ Second, we introduces data encryption systems including Mylar, Sweets, DepSky an
 These systems usually need key generation and distribution.
 Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and an extended secret sharing scheme $f(k, n, s)$.
 
-Chapter 3 proposes the threat model of Grouper.
+Chapter \ref{chapter:threat_model} proposes the threat model of Grouper.
 In an target application using Grouper, users can create a group and share objects safely via multiple untrusted servers.
 Grouper provides two main functions: reliable data synchronization and group management.
 To develop the target applications, we proposes four assumptions for Grouper including servers without actively attacking, safe data transportation, trusted group members, independent server providers.
 
-Chapter 4 presents the design of Grouper.
+Chapter \ref{chapter:design} presents the design of Grouper.
 Grouper includes a client framework and a Web service.
 Concretely, Grouper consists of the Grouper API layer, synchronization plugin, messaging layer, data protection layer, and untrusted servers.
+The Grouper API layer provides methods for sharing data among devices of a group.
+The synchronization plugin helps Grouper to synchronize data into the persistent store.
+Based on the basic reliable multicast technique, the messaging layers ensures reliable messages delivery using a special type of message that includes active sequence numbers.
+The data protection layer uses the extended secret sharing scheme $f(k ,n, s)$ to protect the user data.
+To manage a group, Grouper provides two functions including group creation and member invitation.
 
-Chapter 5 involves the implementation details of Grouper using the Objective-C language and the Java language.
-We have implemented Grouper's client framework in the Objective-C language and the Web service in the Java language. 
+Chapter \ref{chapter:implementation} involves the implementation details of Grouper using the Java language and the Objective-C language.
+We have implemented the Web service in the Java language and Grouper's client framework in the Objective-C language.
+The Web service running on the Tomcat server provides RESTful API for the client framework. 
+The managers including SenderManager, ReceiverManager and GrouperManager in the client framework invokes the RESTful API to send / receive messages and manage a group.
+Grouper's client framework can be installed with the CocoaPods dependency manager easily.
 In addition, we have developed applications, \emph{Account Book} and \emph{Test}, using Grouper.
+We introduces how to develop Account Book using Grouper including framework initialization, object creation / updating / deletion, and synchronization.
 
-Chapter 7 gives a evaluation of Grouper and discusses its scalability.
+Chapter \ref{chapter:evaluation} gives a evaluation of Grouper and discusses its scalability.
 The development of these applications demonstrate that Grouper requires little development effort to convert an standalone application into a data sharing application.
 We also evaluated the performance of Grouper using our benchmark application.
 The results shows that using Grouper in an application does not influence user experience.
