@@ -236,7 +236,7 @@ Mobile devices perform application logic.
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.6]{depsky}
+	\includegraphics[scale=0.5]{depsky}
 	\caption{Architecture of DepSky.}
 	\label{fig:depsky}
 \end{figure}
@@ -454,8 +454,8 @@ We will describe reliable messaging in Section \ref{section:reliable_message_del
 	\end{tabular}
 \end{table}
 
-These methods should be used after initializing the Grouper framework in your project.
-We will introduce how to use Grouper in Section \ref{section:application}.
+These methods should be used after initializing the Grouper framework in the application's project.
+We shoe the usage of these method in Section \ref{section:application}.
 
 \subsection{Synchronization Plugin}
 
@@ -486,7 +486,7 @@ Then we describe our own reliable message delivery protocol based on basic relia
 	\label{fig:reliable_multicasting}
 \end{figure}
 
-Figure \ref{fig:reliable_multicasting} shows basic reliable multicasting technique introduced in Distributed Systems\cite{tanenbaum2007distributed}.
+Figure \ref{fig:reliable_multicasting} shows basic reliable multicasting technique in a text book\cite{tanenbaum2007distributed}.
 In this reliable multicasting technique, each message has a sequence number for each sender a shown in Figure \ref{fig:reliable_multicasting}.
 Each member keeps the newest sequence numbers for senders and detects missing messages.
 If a member notices a missing message from a sender, the member asks the sender to resend the message.
@@ -713,7 +713,7 @@ For resend messages, the Grouper API layer retrieves the sequence numbers from t
 		\If{$ msg.seq \neq  0 \ \&\& \ lastMsg.seq + 1 \neq  msg.seq$}
 		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ $ \\\hspace{2.7cm} $1,\ msg.seq)$
 		
-		\Comment Create a resend message with the minimum and \\\hspace{1.7cm} maximum sequence number.
+		\Comment Create a resend message with the minimum and maximum sequence number.
 		\State $sendMsg(resendMsg,\ sender)$
 		\EndIf
 		
@@ -776,7 +776,7 @@ After receiving them, the new member holds all data in the devie of group member
 \chapter{Implementation} \label{chapter:implementation}
 
 Grouper consists of a client framework for developing mobile applications and a Web service running on multiple untrusted servers.
-We describe the implementation of the implementation of the Web service in Section \ref{section:web_service}, the client framework in Section \ref{section:client_framework}, and the demo applications in Section \ref{section:application}.
+We describe the implementation of the implementation of the Web service in Section \ref{section:web_service}, the client framework in Section \ref{section:client_framework}, and demo applications in Section \ref{section:application}.
 
 \section{Web Service} \label{section:web_service}
 
@@ -790,11 +790,12 @@ We have chosen to implement our own Web service rather than using commercial gen
 	\item The Web service must delete shares after a prescribed time.
 \end{itemize}
 
-\subsection{Dependencies of Web Service} \label{subsection:dependencies_client}
+\subsection{Application Servers, Databases and External Libraries and Frameworks} \label{subsection:dependencies_client}
 
 Our Web service provides a RESTful API to clients.
 It runs on a Tomcat server\cite{tomcat} that is an open-source implementation of the Java Servlet, JavaServer Pages, Java Expression Language, and Java WebSocket technologies.
 Our Web service use the MySQL\cite{mysql} database as the backend storage.
+
 We use the following frameworks in Java Enterprise Edition (Java EE) to implement our Web Service.
 
 \begin{itemize}[leftmargin=7mm]
@@ -802,19 +803,19 @@ We use the following frameworks in Java Enterprise Edition (Java EE) to implemen
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
 	\item 
-	\textbf{Spring}\cite{spring} provides a comprehensive programming and configuration model for modern Java-based enterprise applications.
-	Grouper uses it for dependency injection and manage the containers in the Web project.
+	\textbf{Spring}\cite{spring}, a framework that provides a comprehensive programming and configuration model for modern Java-based enterprise applications.
+	Grouper uses it for dependency injection, a technique whereby one object supplies the dependencies of another object, and managing containers in the Web project.
 	\item 
 	\textbf{Spring MVC}\cite{spring}, an original web framework built on the Servlet API and included in the Spring Framework.
 	Spring MVC framework relies on the Spring framework.
 	Grouper uses it to create our RESTful API.
 	\item 
-	\textbf{Hibernate}\cite{hibernate}, an open-source Java ORM framework.
+	\textbf{Hibernate}\cite{hibernate}, an open-source Java Object-Relational Mapping (ORM) framework.
 	Hibernate provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to save and operate objects in the Web service.
 \end{itemize}
 
-By using these frameworks, we divide our Web service into the following four layers from the bottom to the top.
+Our Web service has the following four layers.
 
 \begin{itemize}[leftmargin=7mm]
 	\setlength{\itemsep}{1pt}
@@ -823,7 +824,7 @@ By using these frameworks, we divide our Web service into the following four lay
 	\item 
 	\textbf{Domain Layer.}
 	This layer is a collection of all entity objects.
-	The major scope of this layer is to create a standardized and federated set of objects, that could be potentially reused within different projects.
+	This layer creates a standardized and federated set of objects that are reused within different layers.
 	\item 
 	\textbf{Data Access Object (DAO) layer.}
 	This layer is a collection of objects that provide abstract interface and implementation to access the MySQL database. 
@@ -831,11 +832,11 @@ By using these frameworks, we divide our Web service into the following four lay
 	\item 
 	\textbf{Service Layer.}
 	This layer is a collection of objects that provide abstract interface and implementation of business logic.
-	This layer invokes the methods provided in the DAO layer.
+	This layer invokes the methods of the DAO layer.
 	\item 
 	\textbf{Controller Layer.}
-	The objects in this layer build the RESTful API for client framework.
-	This layer is responsible for user authentication by the access key and invokes the methods provide in the service layer.
+	The objects in this layer build the RESTful API for the client framework.
+	This layer is responsible for user authentication with the access keys and invokes the methods of the service layer.
 \end{itemize}
 
 \subsection{Entity Design}
@@ -843,7 +844,7 @@ By using these frameworks, we divide our Web service into the following four lay
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.75]{server_entities}
-	\caption{Entities' relationship in the Web service of Grouper.}
+	\caption{Entity relationship in the Web service of Grouper.}
 	\label{fig:server_entities}
 \end{figure}
 
@@ -854,25 +855,25 @@ By using these frameworks, we divide our Web service into the following four lay
 	\begin{tabular}{@{}lll@{}}
 		\toprule
 		\textbf{Entity} & \textbf{Attribute} & \textbf{Description} \\ \midrule
-		\multirow{6}{*}{Share} & id & Physical ID of the Share entity. \\
+		\multirow{6}{*}{Share} & id & ID of the Share entity. \\
 		& share & Share content uploaded from devices. \\ 
-		& saveAt & Time to save this share. \\
-		& messageId & Message ID of the message to generate this share.\\
-		& sender & User entity of the sender for this share. \\
-		& receiver & User entity of the receiver for this share.  \\
+		& saveAt & Time the entity was saved. \\
+		& messageId & Message ID of the share.\\
+		& sender & User entity of the sender of the share. \\
+		& receiver & User entity of the receiver of the share.  \\
 		\hline
-		\multirow{5}{*}{User} & id & Physical ID of the User entity. \\
-		& node & The device's unique node identifier of this user. \\
-		& accessKey & Access key to upload and download share of this user. \\
+		\multirow{5}{*}{User} & id & ID of the User entity. \\
+		& node & Device's unique node identifier of the user. \\
+		& accessKey & Access key to upload and download shares of the user. \\
 		& deviceToken & Device token for sending a remote notification. \\
-		& group & Group of this user.  \\
+		& group & Group of the user.  \\
 		\hline
-		\multirow{11}{*}{Group} & id & Physical ID of Group entity. \\
+		\multirow{11}{*}{Group} & id & ID of the Group entity. \\
 		& groupId & Unique group identifier created by the group owner. \\
 		& name & Group name created by the group owner. \\
 		& members & Number of group members. \\
 		& masterKey & Master key for the group owner. \\
-		& createAt & Time to create this group entity. \\
+		& createAt & Time the entity was created. \\
 		& servers & Number of servers, the parameter $n$ in the $f(k, n, s)$ scheme. \\
 		& threshold & Threshold, the parameter $k$ in the $f(k, n, s)$ scheme. \\
 		& safe & The parameter $s$ in the $f(k, n, s)$ scheme.  \\
@@ -886,27 +887,27 @@ Our Web service includes three kinds of entities: the \emph{Group}, \emph{User},
 Figure \ref{fig:server_entities} shows the relationship among these entities.
 Table \ref{table:entity_attributes} shows the attributes of these entities.
 
-The Share entity saves the share content generate by a secret sharing scheme uploaded from the devices of group members.
-To recover a message from multiple shares saved in multiple untrusted servers, the we should save the message ID in the Share entity.
-When a device downloads several shares from servers, Grouper tries to group these shares by the message ID and recover a message using the shares with the same message ID.
-The sender attributes references an User entity, and indicates the uploading device.
-The receiver attributes references an User entity, and indicates those devices with the privilege to download the share.
-If the sender hopes all devices in the group can receive the share, Grouper sets the receiver to $null$.
+Share entity saves the share content generate by a secret sharing scheme uploaded from the devices of group members.
+To recover a message from multiple shares, we bind the message ID to the Share entity.
+When a device downloads several shares from servers, Grouper tries to collect these shares by using the message ID and recover a message from the shares with the same message ID.
+The sender attributes refers to an User entity, and indicates the uploading device.
+The receiver attributes refers to an User entity, and indicates the devices that can download the share.
+If the sender allows all devices in the group to receive the share, the receiver attribute of the entity is a $null$ value.
 
-The User entity saves the information of an user's device.
-The unique node identifier generated in the device by the UUID scheme can distinguish the users' devices.
-Our untrusted server generates an access key for the user when the group owner register him / her in this server.
-To send a remote notification to the user, he / she should provide a device token from the notification pushing server.
-The group attribute references a Group entity, and indicates which group the user belongs to.
+User entity saves the information of an user's device.
+Each device has an unique node identifier of the UUID scheme.
+Our untrusted server generates an access key for the user when the group owner register him/her in this server.
+To receive a remote notification to the user, he/she should provide a device token to the notification pushing server.
+The group attribute refers to a Group entity, and indicates which group the user belongs to.
 
-The Group entity save the information of a group.
-The group owner creates a unique group identifier which is not existed in the server, and a group name to create a group.
+Group entity saves the information of a group.
+The group owner generates a unique group identifier, and gives a group name, to create a new group.
 The number of group members is one when the owner creates the group.
-When the grouper invites a new member to the group, the number of group members plus one.
-When the group is created, the server generates a master key and returns to the group owner.
-The group owner can edit the attributes of the Group entity using this master key.
-In addition, all parameters in the extended secret sharing scheme and the TTL should be submitted by the group owner.
-The owner attribute references an User entity, and indicates the group owner.
+When the group owner invites a new member to the group, the number of group members is incremented.
+When the group is created, the server generates a master key and returns it to the group owner.
+The group owner can update the attributes of the Group entity using this master key.
+In addition, the group owner submits all parameters in the extended secret sharing scheme and the TTL.
+The owner attribute refers to an User entity, and indicates the group owner.
 
 \subsection{RESTful API}
 
@@ -1035,7 +1036,7 @@ The main functions of this frameworks are shown as following.
 	Grouper uses it to transfer data between two devices in a face-to-face manner using a wireless LAN or Bluetooth network.
 	With Multipeer Connectivity, a private connection can be established between two devices without Internet.
 	\item 
-	\textbf{Core Data}\cite{coredata}, an official Object-Relational Mapping (ORM) framework provided by Apple.
+	\textbf{Core Data}\cite{coredata}, an official ORM framework provided by Apple.
 	Core Data provides generalized and automated solutions to common tasks associated with object life cycles and object graph management, including persistence. 
 	Grouper uses it to manage model layer objects. 
 	\item 
