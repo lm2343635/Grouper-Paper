@@ -1233,7 +1233,7 @@ cd [YourProject]
 pod install
 \end{lstlisting}
 
-\section{Applications} \label{section:application}
+\section{Application Development} \label{section:application}
 
 Using the Grouper framework, we have developed the following applications. 
 
@@ -1252,32 +1252,35 @@ The standalone application of Account Book can record the income and expenditure
 Without data sharing, records cannot be shared with other persons.
 To extend the stand alone application, we need the following five steps from Subsection \ref{subsection:grouper_initilaization} to Subsection \ref{subsection:sending_confirm_messages}.
 
-\subsection{Initialization of Grouper} \label{subsection:grouper_initilaization}
-
-At first, we invoke the $grouper.setup()$ method introduced in Table \ref{table:grouper_api} to initialize Grouper in the method $- (BOOL)application: didFinishLaunchingWithOptions:$ of the AppDelegate at first.
+\begin{itemize}
+\setlength{\itemsep}{1pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+\item \textbf{Initialization of Grouper} \\
+At first, we invoke the $grouper.setup()$ method in Table \ref{table:grouper_api} to initialize Grouper in the class $AppDelegate$.
 Figure \ref{fig:initialize_grouper} shows how we initialize our Grouper framework in the Account Book application.
-We invoke the class method $Grouper.sharedInstance$ to get the singleton of the Grouper framework in line 1.
-Because our framework supports the GUI if iOS, we can provide the storyboard instance to Grouper to use the GUI for creating a new group or joining an existing group provided by Grouper.
-For this reason, we get the storyboard instance in line 2.
-In line 3, we invoke the initialization method to initialize Grouper.
+We invoke the class method $Grouper.sharedInstance$ to get the singleton of the Grouper framework at Line 1.
+Because our framework supports the GUI in iOS, we can provide the storyboard instance to Grouper to use the GUI for creating a new group or joining an existing group.
+For this reason, we get the storyboard instance at Line 2.
+At Line 3, we invoke the initialization method to initialize Grouper.
 
 \begin{figure}
-\begin{lstlisting}[frame=none language=Objective-C] 
-grouper = [Grouper sharedInstance];
-UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-[grouper setupWithAppId:@"accountbook"
-entities:[NSArray arrayWithObjects:@"Classification", @"Account", @"Shop", @"Photo", @"Template", @"Record", nil]
-dataStack:[self dataStack]
-mainStoryboard:storyboard];
-\end{lstlisting}
-\caption{Initialize Grouper in the Account Book application.}
-\label{fig:initialize_grouper}
+	\begin{lstlisting}[frame=none language=Objective-C] 
+	grouper = [Grouper sharedInstance];
+	UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+	[grouper setupWithAppId:@"accountbook"
+	entities:[NSArray arrayWithObjects:@"Classification", @"Account", @"Shop", @"Photo", @"Template", @"Record", nil]
+	dataStack:[self dataStack]
+	mainStoryboard:storyboard];
+	\end{lstlisting}
+	\caption{Initialize Grouper in the Account Book application.}
+	\label{fig:initialize_grouper}
 \end{figure}
 
-We have emphasized the order of the parameter entities in Table \ref{table:grouper_api}.
-The reference relationships among entities Classification, Account, Shop, Photo, Template and Record are as following.
+We must emphasize the order of the parameter entities in the method $setup()$ of Table \ref{table:grouper_api}..
+The reference relationships among entities $Classification$, $Account$, $Shop$, $Photo$, $Template$ and $Record$ are as follows.
 
-\begin{itemize}[leftmargin=7mm]
+\begin{itemize}
 	\setlength{\itemsep}{1pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
@@ -1287,73 +1290,71 @@ The reference relationships among entities Classification, Account, Shop, Photo,
 	$Classification \gets Template, Account \gets Template, Shop \gets Template$
 \end{itemize}
 
-We can see the array in the code above following the principle introduced in Table \ref{table:grouper_api}.
-For each entity, if it is referenced by an other entity, it is in front of the entity.
+The array in the code of Figure \ref{fig:initialize_grouper} has the principle introduced in the method $setup()$ of Table \ref{table:grouper_api}.
+If an entity refers to another entity, the first entity should appear before the second entity.
 After initializing the Grouper framework in the Account Book application, we can invoke other methods in Table \ref{table:grouper_api}.
 
-\subsection{Object Creation and Updating}
-
+\item \textbf{Object Creation and Updating} \\	
 \begin{figure}[t]
 	\centering
 	\includegraphics[scale=0.8]{account_book}
-	\caption{Add and delete a record in the Account Book demo application.}
+	\caption{Adding and deleting a record in the Account Book demo application.}
 	\label{fig:add_delete_record}
 \end{figure}
 
 Figure \ref{fig:add_delete_record}(a) shows the screenshot of adding a record in Account Book. 
 A user uses Account Book to add income and expenditure records that include the classifications, accounts, shops, times and remarks. 
 When the user click the save button, Account Book saves the record into the local persistent store at first.
-The stand alone application contains the line 2 to line 8.
-To share this record with other group members, we invokes the $grouper.sender.update()$ method of Grouper to share this record with other group members after saving in the local persistent store in line 11.
+The stand alone application has the code from Line 2 to Line 8 in Figure \ref{fig:create_record}.
+To share this record with other group members, we invoke the $grouper.sender.update()$ method of Grouper after saving in the local persistent store at Line 11.
 
 \begin{figure}
-\begin{lstlisting}[frame=none language=Objective-C] 
-// Save record to app local persistent store.
-Record *record = [dao.recordDao saveWithMoney:money
-                       remark:_remarkTextView.text
-                       time:_selectedTime
-                       classification:_selectedClassification
-                       account:_selectedAccount
-                       shop:_selectedShop
-                       photo:photo];
-
-// Invoke update method in sender to send an update message.
-[grouper.sender update:record];
-\end{lstlisting}
-\caption{Create a new record and send an update message.}
-\label{fig:create_record}
+	\begin{lstlisting}[frame=none language=Objective-C] 
+	// Save record to app local persistent store.
+	Record *record = [dao.recordDao saveWithMoney:money
+	remark:_remarkTextView.text
+	time:_selectedTime
+	classification:_selectedClassification
+	account:_selectedAccount
+	shop:_selectedShop
+	photo:photo];
+	
+	// Invoke update method in sender to send an update message.
+	[grouper.sender update:record];
+	\end{lstlisting}
+	\caption{Create a new record and send an update message.}
+	\label{fig:create_record}
 \end{figure}
 
-After invoking the method $grouper.sender.updated()$, this record will be divided to several shares and uploaded to multiple untrusted servers.
-This method is also suitable for record updating.
-Note that after invoking this method, data of the object has only been uploaded to multiple untrusted servers.
-Grouper does not ensure that other grouper members can synchronize this object successfully.
+The method $grouper.sender.updated()$ divides a record into several shares and uploads them to multiple untrusted servers.
+This method is also suitable for updating a record.
+We can not ensure that other grouper members can synchronize this object successfully, because it has only been uploaded to multiple untrusted server
 
-\subsection{Object Deletion} \label{subsection:object_deletion}
+\item \textbf{Object Deletion} \\
 
-Figure \ref{fig:add_delete_record}(b) shows the screenshoot of deleting a record in Account Book. 
-A user swipes a cell from right to left to delete a record from the record list.
+Figure \ref{fig:add_delete_record}(b) shows the screenshoot of deleting a record in the Account Book application. 
+A user swipes a cell from right to left to delete a record from the record list as shown in Figure \ref{fig:add_delete_record} (b).
 In the stand alone application, we only delete this record in the local persistent store when the user click the delete button.
 To delete this record on the devices of other group members, we invoke the $grouper.sender.delete(object)$ method of Grouper in line 4.
 
 \begin{figure}
-\begin{lstlisting}[frame=none language=Objective-C] 
-Record *record = [records objectAtIndex:indexPath.row];
-if (editingStyle == UITableViewCellEditingStyleDelete) {
-    // Delete the record in the local persistent store and other devies.
-    [grouper.sender delete:record];
-    // Update user interface.
-    [records removeObjectAtIndex:indexPath.row];
-    [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:YES];
-}
-\end{lstlisting}
-\caption{Delete a record and send a delete message.}
-\label{fig:delete_record}
+	\begin{lstlisting}[frame=none language=Objective-C] 
+	Record *record = [records objectAtIndex:indexPath.row];
+	if (editingStyle == UITableViewCellEditingStyleDelete) {
+	// Delete the record in the local persistent store and other devies.
+	[grouper.sender delete:record];
+	// Update user interface.
+	[records removeObjectAtIndex:indexPath.row];
+	[tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:YES];
+	}
+	\end{lstlisting}
+	\caption{Delete a record and send a delete message.}
+	\label{fig:delete_record}
 \end{figure}
 
-By invoking the method $sender.delete()$, the record in the local persistent store will be deleted at first, so we need not to delete it on the local device before invoking this method like the method $sender.update()$.
+Developers need not to delete the record in the local persistent store using the API of Core Data before invoking the method $grouper.sender.delete()$,  like the method $sender.update()$ does, because Grouper deletes the record in the local persistent store before creating a delete message.
 
-\subsection{Receiving messages from Untrusted Servers} \label{subsection:receiving_message}
+\item \textbf{Receiving messages from Untrusted Servers}
 
 Grouper provide the method $grouper.receiver.receive()$ to synchronize messages from untrusted servers.
 Developers can decide when and how to synchronize messages that contains the updated or deleted objects by themselves.
@@ -1374,18 +1375,18 @@ The parameter success in the block indicates the state of synchronization.
 If the number of servers that a device can access is less than the threshold $k$ in the extend secret sharing scheme $f(k, n, s)$, the synchronization will be failed and parameter success will be false.
 
 \begin{figure}
-\begin{lstlisting}[frame=none language=Objective-C] 
-[grouper.receiver receiveWithCompletion:^(int success, Processing *processing) {
-    long now = (long)[[NSDate date] timeIntervalSince1970];
-    if (now - grouper.group.defaults.controlMessageSendTime > grouper.group.defaults.interval * 60) {
-        [grouper.sender confirm];
-        // Update the last time to send a confirm message.
-        grouper.group.defaults.controlMessageSendTime = now;
-    }
-}];
-\end{lstlisting}
-\caption{Receive messages from untrusted server and send a confirm message.}
-\label{fig:receive_with_completion}
+	\begin{lstlisting}[frame=none language=Objective-C] 
+	[grouper.receiver receiveWithCompletion:^(int success, Processing *processing) {
+	long now = (long)[[NSDate date] timeIntervalSince1970];
+	if (now - grouper.group.defaults.controlMessageSendTime > grouper.group.defaults.interval * 60) {
+	[grouper.sender confirm];
+	// Update the last time to send a confirm message.
+	grouper.group.defaults.controlMessageSendTime = now;
+	}
+	}];
+	\end{lstlisting}
+	\caption{Receive messages from untrusted server and send a confirm message.}
+	\label{fig:receive_with_completion}
 \end{figure}
 
 \begin{figure}[t]
@@ -1395,7 +1396,7 @@ If the number of servers that a device can access is less than the threshold $k$
 	\label{fig:receive_messages_send_confirm}
 \end{figure}
 
-\subsection{Sending Confirm Messages} \label{subsection:sending_confirm_messages}
+\item \textbf{Sending Confirm Messages}
 
 We have introduced that method $grouper.confirm()$ is invoked periodically or when the device becomes online in Section \ref{section:grouper_message_protocol}.
 In the Account Book application, we provide the following two ways to send a confirm message.
@@ -1409,6 +1410,7 @@ In the Account Book application, we provide the following two ways to send a con
 	\item \textbf{After receiving messages.}
 	As described from line 2 to line 7 in Figure \ref{fig:receive_msg_send_confirm}, if Account Book receives messages from untrusted servers successfully, Account Book will check the last time to send the confirm message.
 	If the time difference between now and the last time is longer than the TTL defined by user, Account Book will send a confirm message.
+\end{itemize}
 
 \end{itemize}
 
