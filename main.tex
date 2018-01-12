@@ -545,6 +545,7 @@ The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as shown
 In Grouper, we extend this scheme and design a new scheme $ f(k, n, s)$.
 In our scheme, the parameters $k$ and $n$ are same as those in the scheme $f(k, n)$. 
 The parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
+We call the parameter $s$ safe servers count.
 Although a receiver is able to recover the original message from at least $k$ shares, we should also consider the scenario in which the server crashes. 
 When a sender has $n$ shares, Grouper tries to upload these $n$ shares to all $n$ untrusted servers, at first. 
 If the shares are uploaded to $s$ or more untrusted servers, we consider that this upload to be successful.
@@ -1367,6 +1368,7 @@ if (editingStyle == UITableViewCellEditingStyleDelete) {
 \end{figure}
 
 Developers need not to delete the record in the local persistent store using the API of Core Data before invoking the method $grouper.sender.delete()$,  like the method $grouper.sender.update()$ does, because Grouper deletes the record in the local persistent store before creating a delete message.
+\\
 
 \item \textbf{Receiving messages from Untrusted Servers}
 
@@ -1524,7 +1526,7 @@ Then, we obtained the average value of the measured processing times.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.15]{multiple_messages}
+	\includegraphics[scale=0.17]{multiple_messages}
 	\caption{Processing time of uploading and downloading multiple messages.}
 	\label{fig:processing_time_multiple_message}
 \end{figure}
@@ -1541,24 +1543,55 @@ When the Grouper framework is performing object synchronization, the user interf
 Therefore, a user is not aware of the activity of data synchronization.
 
 We performed an experiment to measure the processing time of object synchronization according to the parameters of the secret sharing scheme.
-Specifically, we changed the parameter ${k}$ and ${n}$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
+Specifically, we changed the parameter $k$, $n$ and $s$ of the secret sharing scheme and measured the processing time of uploading and downloading a single message.
 
-\begin{figure}[t]
+Figure \ref{fig:constant_parameter}(a) shows the relationship between processing time and the number of servers $n$, where ${k=3}$,  ${n = 6, 9, ... , 30}$ and $s = n$.
+As $n$ increased, the processing time of uploading and downloading increased linearly. 
+Figure \ref{fig:constant_parameter}(b) shows the relationship between processing time and the threshold $k$, where ${n = s =30}$ and ${k = 3, 6, 9, ... , 27}$.
+As $k$ increased, the processing time of uploading increased linearly and that of downloading did not change.
+
+\begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.15]{constant_k_n}
-	\caption{Processing time of uploading and downloading a single message with a constant ${k}$ or ${n}$.}
-	\label{fig:processing_time_constant_k_n}
+	\includegraphics[scale=0.17]{constant_parameter}
+	\caption{Processing time of uploading and downloading a single message.}
+	\label{fig:constant_parameter}
 \end{figure}
 
-Figure \ref{fig:processing_time_constant_k_n}(a) shows the relationship between processing time and the number of servers ${n}$, where ${k=3}$,  ${n = 6, 9, ... , 30}$ and $s = n$.
-As $n$ increased, the processing time of uploading and downloading increased linearly. 
-Figure \ref{fig:processing_time_constant_k_n}(b) shows the relationship between processing time and the threshold ${k}$, where ${n = s =30}$ and ${k = 3, 6, 9, ... , 27}$.
-As $k$ increased, the processing time of uploading increased linearly and that of downloading did not change.
+To measure the relationship between processing time and the safe servers count $s$, the sender and receiver should not to access all the untrusted servers.
+In this experiment, we set $k = 20$ and $n = 30$.
+The untrusted servers are from No.1 to No.30.
+We set a part of untrusted servers that the sender and the receiver cannot access, we call them problem servers.
+For this purpose, we shutdown five untrusted servers (No.1, No.7, No.13, No.19 and No.25) averagely.
+In a real network, the problem servers may be different.
+In this experiment, to test the processing time of downloading, we need set same problem servers for the sender and receiver, because the number of servers that the receiver can access may be less than the threshold if the problem servers for him is different with the sender.
+
+Figure \ref{fig:constant_parameter}(b) shows the relationship between processing time and the safe servers count $s$, where $k = 20$, $n = 30$ and $s = 20, 21, 22, ... , 30$.
+Grouper regards the uploading successful where $20 \leq s \leq 25$.
+Although Grouper regard the uploading unsuccessful where $26 \leq s \leq 30$, shares has been uploaded to 25 servers successfully.
+For this reason, the processing time of uploading and downloading where $26 \leq s \leq 30$ can be measured.
+As $s$ increased, the processing time of uploading and downloading did not change.
+The reasons of this result are as follows.
+
+\begin{itemize}
+	\setlength{\itemsep}{1pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item \textbf{Small scale:}
+	There are only 30 untrusted server and 5 problem servers in our experiment.
+	In fact, we think there will not be too many untrusted servers for a small group.
+	\item \textbf{Network: } 
+	We shutdown the a part of servers directly to simulate the problem servers, so that the network part of the processing time is small and stable.
+	In a real usage scenario, the problem servers may be caused by network delay.
+	In this situation, the network part of the processing time is huge and unstable.
+\end{itemize}
 
 \section{Discussion on the Number of Messages} \label{section:discussion}
 
 In this section, we discuss the number of messages. 
 We use the parameters in Table \ref{table:discussion_parameters}.
+
+First, we consider the situation in which all devices are online ($F=0$).
+In this situation, the number of uploads for the device $i$ are:
 
 \begin{table}[t]
 	\centering
@@ -1589,9 +1622,6 @@ We use the parameters in Table \ref{table:discussion_parameters}.
 		\bottomrule
 	\end{tabular}
 \end{table}
-
-First, we consider the situation in which all devices are online ($F=0$).
-In this situation, the number of uploads for the device $i$ are:
 
 \begin{equation}
 NUi = Ui + C
@@ -1763,6 +1793,5 @@ The author would like to thank Yifan Li for giving some suggestions about Englis
 % describe bib entries in the file
 \bibliographystyle{unsrt}
 \bibliography{ref} 
-
 
 \end{document}
