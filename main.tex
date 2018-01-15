@@ -49,7 +49,7 @@
 %% title of thesis
 %% DON'T PUT \\ AT THE END OF THE TITLE. IT CAUSES ERROR!!
 \title{Developing Mobile Applications on Top of a Self-destruction System with Data Recovery}
-%% name of author
+%データリカバリ付き自己破壊システム上でのモバイルアプリケーションの開発
 \author{Meng Li}
 %% name of advisor
 \advisor{Yasushi Shinjo}
@@ -83,19 +83,14 @@ This thesis presents Grouper, a framework for developing mobile applications wit
 With Grouper, it is easy to develop mobile applications on top of a self-destruction system with data recovery.
 Grouper provides object synchronization among mobile devices.
 It also uses a secret sharing scheme to create several shares from a marshalled object and uploads these shares to multiple untrusted servers. 
-These untrusted servers construct a self-destruction system.
-Uploaded shares will be deleted after a certain period of time.
-Mobile devices exchange messages via untrusted servers based on the Grouper Message Protocol.
-Grouper consists of a client framework and a Web service.
-We have implemented client framework for iOS, macOS, tvOS and watchOS in Objective-C.
-The Web service is implemented in Java and runs on multiple untrusted servers.
-We have implemented two applications using Grouper: an iOS application named Account Book, and a benchmark application named Test.
-We have evaluated the development efforts of applications using Grouper as well as the performance. 
+These untrusted servers construct a self-destruction system. 
+Uploaded shares will be deleted after a certain period of time. 
+Mobile devices exchange messages via untrusted servers based on the Grouper Message Protocol. 
+Grouper consists of a client framework in Objective-C and a Web service in Java.
+We have implemented two applications using Grouper and evaluated the development efforts of them as well as the performance. 
 Developing these applications demonstrates that Grouper requires little development effort to convert a standalone application to a data sharing application.
 Experimental results prove that the performance of Grouper is satisfactory for mobile applications that are used among a small group of people.
-
-
-%%%%%
+%伝統的なモバイルアプリケーションはクライアント-サーバモデルに基いて開発する。こんなモデルは中央サーバでデータを保存し、敏感な情報を処理する。不審者が中央サーバをアクセルすると、クリアテキストで保存した個人的な情報を漏らす可能性がある。本研究は信頼できる中央サーバを利用しないで、モバイルアプリケーションの開発のフレームワークGrouperを実装した。Grouperはデータリカバリ付き自己破壊システム上でのモバイルアプリケーションの開発を支援できる。具体的に言えば、このフレームワークはGrouperメッセージプロトコルを基づいて複数の信頼できないサーバを経由し、複数のモバイルデバイス間オブジェクト同期機能を提供する。GrouperはObjective-C言語で開発したクライアントフレームワークとJava言語で開発したWebサービスを含む。性能評価のために、Grouperで二つのアプリケーションを開発した。アプリケーションの開発は、スタンドアロンアプリケーションからデータ共有アプリケーションを簡単に拡張できることを証明する。性能評価の実験は、Grouperが小規模なグールプのためのアプリケーションの性能を影響しないことを証明する。
 \par
 \vspace{0pt plus 1fil}
 \newpage
@@ -189,7 +184,7 @@ The proposal of SafeVainish can only increase the cost of hoping attack, but can
 Based on active storage framework like Oasis\cite{xie2011design}, SeDas proposes a distributed object-based storage system with self-destructing data function.
 Concretely, it exploits active storage networks instead of P2P nodes to maintain a divided secret key. 
 In SeDas, user can specify the key survival time of distribution key and use the settings of expanded interface to export the life cycle of a key, allowing the user to control the subjective life-cycle of private data.
-The measurement and experimental security of SeDas analysis sheds insight into the practicability of its approach.
+The measurement and experimental security analysis of SeDas show the practicability of its approach.
 
 Like Vanishe, SafeVanish and SeDas do not support the developent of information sharing applications.
 
@@ -400,7 +395,7 @@ The following sections describe the details of these layers from the top layer t
 		\end{tabular} 
 		 & 
 		\begin{tabular}{@{}l@{}}
-			An application invokes this method to initialize\\ Grouper with \emph{appId}, \emph{entities} and \emph{dataStack}. The\\ parameter \emph{appId} is the unique ID of an application.\\ The parameter \emph{entities} is an array which contains\\ the names of all entities used in this application.\\ The developer should pay attention to the order\\ of entities in the array. If the entity A is referred to\\ by  entity B, A should be in front of B. The parameter\\ datastack is used by the synchronization plugin.
+			An application invokes this method to initialize\\ Grouper with \emph{appId}, \emph{entities} and \emph{dataStack}. The\\ parameter \emph{appId} is the unique ID of an application.\\ The parameter \emph{entities} is an array which contains\\ the names of all entities in this application. The\\ developer should pay attention to the order of entities\\ in the array. If the entity A is referred to by the\\ entity B, A should be in front of B. The parameter\\ datastack is used by the synchronization plugin.
 		\end{tabular}  \\ \hline
 		$sender.\textbf{update}(object)$ & 
 		\begin{tabular}{@{}l@{}}
@@ -545,7 +540,6 @@ The data protection layer uses Shamir's secret sharing scheme $f(k, n)$ as shown
 In Grouper, we extend this scheme and design a new scheme $ f(k, n, s)$.
 In our scheme, the parameters $k$ and $n$ are same as those in the scheme $f(k, n)$. 
 The parameter $s$ represents the minimum number of untrusted servers when a sender uploads shares, where $k \leq s \leq n$.
-We call the parameter $s$ safe servers count.
 Although a receiver is able to recover the original message from at least $k$ shares, we should also consider the scenario in which the server crashes. 
 When a sender has $n$ shares, Grouper tries to upload these $n$ shares to all $n$ untrusted servers, at first. 
 If the shares are uploaded to $s$ or more untrusted servers, we consider that this upload to be successful.
@@ -891,7 +885,7 @@ Our Web service has the following four layers.
 		& createAt & Time the entity was created. \\
 		& servers & Number of servers, the parameter $n$ in the $f(k, n, s)$ scheme. \\
 		& threshold & Threshold, the parameter $k$ in the $f(k, n, s)$ scheme. \\
-		& safeServersCount & The parameter $s$ in the $f(k, n, s)$ scheme.  \\
+		& s & The parameter $s$ in the $f(k, n, s)$ scheme.  \\
 		& TTL & Time to Live for the shares of this group.  \\
 		& owner & User entity of the group owner. \\ 
 		\bottomrule
@@ -902,7 +896,7 @@ Our Web service includes three kinds of entities: the \emph{Group}, \emph{User},
 Figure \ref{fig:server_entities} shows the relationship among these entities.
 Table \ref{table:entity_attributes} shows the attributes of these entities.
 
-A Share entity saves the share content generated by a secret sharing scheme uploaded from a device of a group member.
+A Share entity saves the share content generated by a secret sharing scheme and uploaded from a device of a group member.
 To recover a message from multiple shares, we bind the message ID to the Share entity.
 When a device downloads several shares from servers, Grouper tries to collect these shares by using the message ID and recover a message from the shares with the same message ID.
 The sender attributes refers to an User entity, and indicates the uploading device.
@@ -911,7 +905,7 @@ If the sender allows all devices in the group to receive the share, the receiver
 
 A User entity saves the information of a user's device.
 Each device has a unique node identifier of the UUID scheme.
-A untrusted server generates an access key for the user when the group owner registers him/her in this server.
+An untrusted server generates an access key for the user when the group owner registers him/her in this server.
 To receive a remote notification from the server, he/she should provide a device token to the notification pushing server.
 The group attribute refers to a Group entity, and indicates the group the user belongs to.
 
@@ -1024,8 +1018,8 @@ All of these RESTful APIs authenticate a regular group member or a group owner w
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.6]{frameworks}
-	\caption{External frameworks in client framework of Grouper.}
+	\includegraphics[scale=0.53]{frameworks}
+	\caption{External frameworks in the client framework of Grouper.}
 	\label{fig:frameworks}
 \end{figure}
 
@@ -1068,7 +1062,7 @@ The Grouper client framework makes use of the following frameworks in Figure \re
 
 \subsection{Sender Manager} \label{subsection:sender_manager}
 
-In our persistent store, Core Data entities created of applications are synchronized to other devices.
+In our persistent store, Core Data entities of applications are synchronized to other devices.
 We call an entity in Core Data which is needed to synchronize to other devices a \emph{sync entity}.
 The class $SenderManager$ provides the following methods to create and send the Grouper messages as shown in Figure \ref{fig:sender_manager}.
 
@@ -1168,9 +1162,9 @@ Figure \ref{fig:group_manager} shows main instance methods in this class.
 
 // Initialize group.
 - (void)initializeGroup:(int)threshold
-safeServersCount:(int)safeCount
-interval:(int)interval
-withCompletion:(SucessMessageCompletion)completion;
+       safeServersCount:(int)safeCount
+               interval:(int)interval
+         withCompletion:(SucessMessageCompletion)completion;
 
 // Setup mutipeer connectivity so that the device can be discoverd by others.
 - (void)setupMutipeerConnectivity;
@@ -1202,12 +1196,12 @@ It submits the parameters of the extended secret sharing scheme $f(k, n, s)$ and
 An application invokes the method $setupMutipeerConnectivity$ to initialize the Multipeer Connectivity framework so that the device can be discovered by others.
 An application invokes the method $openDeviceBroswerIn$ to open the device browser of the Multipeer Connectivity framework.
 In this browser, a user selects another device to connect.
-In the device of the group owner, the application invokes the method $sendInviteMessageTo$ to send an inviting message to a connected device.
+In the device of the group owner, the application invokes the method $sendInviteMessageTo$ to send an invitation message to a connected device.
 If the user of the connected device accepts the invitation, he/she will join the group of the owner.
 
 An application invokes the method $sendDeviceToken$ to upload the device tokens to the multiple untrusted servers using the RESTful API \emph{user/deviceToken}.
 
-To simplify the group management on the iOS platform, we provide the library on Grouper's client framework .
+To simplify the group management on the iOS platform, we provide the library on Grouper's client framework.
 Concretely, we encapsulate the $GroupManager$ class and provide the GUI as shown in Figure \ref{fig:group_manager_screenshot}.
 Figure \ref{fig:group_manager_screenshot} (a) shows the screenshot of saving user information using the  $saveCurrentUserWithEmail$ method.
 Figure \ref{fig:group_manager_screenshot} (b) shows the screenshot of adding a new untrusted server using the  $addNewServer$ method.
@@ -1245,7 +1239,7 @@ Then, he/she runs the script as shown in Figure \ref{fig:install_grouper} in the
 
 \begin{figure}
 \begin{lstlisting}[frame=none language=shell] 
-# Run this script if CocoaPods is not been installed.
+# Run this script if CocoaPods has not been installed.
 sudo gem install cocoapods
 
 # Install Grouper with CocoaPods
@@ -1338,7 +1332,7 @@ To share this record with other group members, we invoke the $grouper.sender.upd
 
 \begin{figure}
 \begin{lstlisting}[frame=none language=Objective-C] 
-// Save record to app local persistent store.
+// Save a record object to the application local persistent store.
 Record *record = [dao.recordDao saveWithMoney:money
                                        remark:_remarkTextView.text
                                          time:_selectedTime
@@ -1347,7 +1341,7 @@ Record *record = [dao.recordDao saveWithMoney:money
                                          shop:_selectedShop
                                         photo:photo];
 
-// Invoke update method in sender to send an update message.
+// Invoke grouper.sender.update() method to send an update message.
 [grouper.sender update:record];
 \end{lstlisting}
 \caption{Create a new record and send an update message.}
@@ -1551,7 +1545,6 @@ As the number of messages increased, the data synchronization and secret sharing
 The networking time increased slowly and sometimes decreased.
 On the whole, the total processing time increased linearly.
 Compared with uploading messages, downloading messages required more processing time.
-
 Note that object synchronization is done as a background task, asynchronously.
 When the Grouper framework is performing object synchronization, the user interface of a mobile application does not freezes.
 Therefore, a user is not aware of the activity of data synchronization.
@@ -1571,16 +1564,16 @@ As $k$ increased, the processing time of uploading increased linearly and that o
 	\label{fig:constant_parameter}
 \end{figure}
 
-To measure the confirm the effectiveness of the parameter $s$, we stopped some untrusted servers and measured processing times..
+To measure the confirm the effectiveness of the parameter $s$, we stopped some untrusted servers and measured processing times.
 In this experiment, we set $k = 20$ and $n = 30$.
 We shutdown five untrusted servers (No.1, No.7, No.13, No.19 and No.25).
 
 Figure \ref{fig:constant_parameter}(c) shows the relationship between processing time and the parameter $s$, where $k = 20$, $n = 30$ and $s = 20, 21, 22, ... , 30$.
 Grouper regarded the uploading successful where $20 \leq s \leq 25$ and the uploading unsuccessful where $26 \leq s \leq 30$.
-The processing times of downloading where $26 \leq s \leq 30$ were not measured.
+The processing times of uploading where $26 \leq s \leq 30$ were not measured.
 Although the parameter $s$  was changed, the processing times of uploading and downloading did not change.
 This is because we used virtual severs and the processing times do not include the timeout period.
-The timeout period can make the processing times longer. 
+In a real usage scenario, the timeout period can make the processing times longer. 
 Note that these processing times do not influence the user experience of applications.
 
 \section{Discussion on the Number of Messages} \label{section:discussion}
@@ -1714,7 +1707,7 @@ Section \ref{section:performance} and Section \ref{section:discussion} show that
 
 \chapter{Conclusion} \label{chapter:conclusion}
 
-This thesis concentrates on developing mobile application on top of a self-destruction system with data recovery.
+This thesis concentrates on developing mobile applications on top of a self-destruction system with data recovery.
 For this goal, we have developed Grouper, a framework using a secret sharing scheme and multiple untrusted servers, to implement light-weight information sharing in mobile applications.
 
 Chapter \ref{chapter:introduction} points out the problems of the mobile applications using the central servers to store user data.
@@ -1728,21 +1721,22 @@ Compared to conventional self-destruction systems, Grouper provides the reliable
 Second, we show data encryption systems including Mylar, DepSky and SPORC.
 These systems usually need key generation and distribution.
 Compared to pure data encryption approaches, Grouper improves dependability by using multiple untrusted servers and an extended secret sharing scheme $f(k, n, s)$.
-Third, we show an application Sweets that use P2P connections to synchronize user data.
+Third, we show an application Sweets that uses P2P connections to synchronize user data.
 Compare to Sweets, Grouper does not require that two devices are online at the same time to synchronize data.
 
 Chapter \ref{chapter:threat_model} describes the threat model of Grouper.
 Grouper exchanges messages via multiple untrusted servers.
-We assume that servers do not attack Grouper actively, two devices can use safe data transportation at the user imitation time, all group members are trusted, and server providers are independent.  
+We assume that servers do not attack Grouper actively, two devices can use safe data transportation at the user invitation time, all group members are trusted, and server providers are independent.  
 
 Chapter \ref{chapter:design} presents the design of Grouper.
 Grouper has a client framework and a Web service.
 The Grouper client framework consists of the Grouper API layer, synchronization plugin, messaging layer and data protection layer.
 The Grouper API layer provides methods for sharing data among devices of a group.
 Based on the basic reliable multicast technique, the the Grouper API layer ensures reliable messages delivery using control messages that include active sequence numbers.
-The synchronization plugin helps Grouper to synchronize data into the persistent store.
+The synchronization plugin helps Grouper to synchronize among devices.
 The messaging layer provides a message transport service with multicasting capability among devices.
 The data protection layer uses the extended secret sharing scheme $f(k ,n, s)$ to protect the user data.
+The messaging layer uses the Web service running on untrusted servers to exchange shares among devices. 
 To manage a group, Grouper provides two functions, including group creation and member invitation.
 
 Chapter \ref{chapter:implementation} shows the implementation details of Grouper.
@@ -1762,7 +1756,7 @@ In addition, using Grouper in an application does not influence user experience.
 
 Based on the self-destruction system with data recovery, the Grouper framework is able to extend a standalone application to a data sharing application for a small group.
 To develop Grouper, we take advantage of the secret sharing scheme and propose a new extended secret sharing scheme $f(k, n, s)$.
-Compared to the existing systems, there are two contributions in Grouper: data recovery in a self-destruction system and easy APIs for mobile application development.
+Compared to the existing systems, Grouper has two contributions: data recovery in a self-destruction system and easy client APIs for mobile application development.
 
 In the future, we would like to support additional platforms, including Android.
 We also have a plan to use file-oriented APIs for exchanging messages among devices.
