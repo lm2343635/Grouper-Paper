@@ -48,7 +48,7 @@
 
 %% title of thesis
 %% DON'T PUT \\ AT THE END OF THE TITLE. IT CAUSES ERROR!!
-\title{Developing Mobile Applications on Top of a Self-destruction System with Data Recovery}
+\title{Developing mobile applications on top of a self-destruction system with data recovery}
 %データリカバリ付き自己破壊システム上でのモバイルアプリケーションの開発
 \author{Meng Li}
 %% name of advisor
@@ -57,7 +57,7 @@
 %% major and degree and date (chooose one)
 %% [NOTICE] Month varies with majors.
 
-\majorfield{Department of Computer Science} \degree{   } \yearandmonth{March 2018}
+\majorfield{Computer Science} \degree{Engineering} \yearandmonth{March 2018}
 
 
 \begin{document}
@@ -547,7 +547,7 @@ Otherwise, Grouper continues trying to upload these shares.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.65]{transportation}
+	\includegraphics[scale=0.6]{transportation}
 	\caption{Message transportation using the extended secret sharing scheme $f(2, 4, 3)$.}
 	\label{fig:transportation}
 \end{figure}
@@ -646,8 +646,6 @@ The receiverId attribute contains the addresses of destination devices.
 An address is either a list of device IDs or "*", which signifies multicasting to all devices.
 
 \begin{figure}
-\caption{An update message.}
-\label{fig:grouper_message}
 \begin{lstlisting}[frame=none language=JSON] 
 {
     "object" : "Test",
@@ -663,6 +661,8 @@ An address is either a list of device IDs or "*", which signifies multicasting t
     "send_time" : 1506575063
 }		
 \end{lstlisting}
+\caption{An update message.}
+\label{fig:grouper_message}
 \end{figure}
 
 Applications send update, delete and confirm messages through the Grouper API, and send resend messages after receiving confirm messages automatically.
@@ -1029,7 +1029,7 @@ Grouper supports the iOS graphical user interface (GUI) for group management, so
 
 In this section, we show external framework in Subsection \ref{subsection:dependencies_client}.
 We use singleton pattern to implement manager classes in the client framework.
-The following subsections describe these manager classes
+The following subsections describe these manager classes.
 
 \subsection{External Frameworks in Clients} \label{subsection:dependencies_client}
 
@@ -1322,7 +1322,7 @@ When the user click the save button, Account Book saves the record into the loca
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[scale=0.7]{account_book}
+	\includegraphics[scale=0.62]{account_book}
 	\caption{Screenshots of adding and deleting a record in the Account Book demo application.}
 	\label{fig:add_delete_record}
 \end{figure}
@@ -1415,7 +1415,7 @@ If the number of servers that a device can access is less than the threshold $k$
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.7]{receive_confirm}
+	\includegraphics[scale=0.62]{receive_confirm}
 	\caption{Screenshots of receiving messages and sending a confirm message in the Account Book application.}
 	\label{fig:receive_messages_send_confirm}
 \end{figure}
@@ -1444,9 +1444,9 @@ We have developed an application, Test, in the Swift language.
 In the Test application, we can change all the parameters in the extended secret sharing scheme as shown in Figure \ref{fig:test} (a).
 To measure the performance, the Test application creates and sends multiple messages at the same time, and shows processing time as shown in Figure \ref{fig:test} (b).
 
-\begin{figure}[t]
+\begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.7]{test}
+	\includegraphics[scale=0.62]{test}
 	\caption{Screenshots of the Test application.}
 	\label{fig:test}
 \end{figure}
