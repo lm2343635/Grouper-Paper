@@ -178,7 +178,7 @@ Vanish is suitable for exchanging immutable messages, whereas our target applica
 
 To address these issues in Vanish system, Zeng et al. proposed SafeVanish\cite{zeng2010safevanish} and SeDas\cite{zeng2012sedas}. 
 
-SafeVanish prevents "hopping attacks"\cite{wolchok2010defeating}, which is one kind of the Sybil attacks\cite{cholez2009evaluation, wolchok2010defeating} by extending the length range of key shares to increase the attack cost substantially, and do some improvement on the Shamir's secret sharing algorithm implemented in the Vanish system.
+SafeVanish prevents "hopping attacks"\cite{wolchok2010defeating}, which is one kind of the Sybil attacks\cite{cholez2009evaluation, wolchok2010defeating} by extending the length range of key shares to increase the attack cost substantially, and do some improvement on the Shamir's secret sharing scheme\cite{shamir1979share} implemented in the Vanish system.
 The proposal of SafeVainish can only increase the cost of hoping attack, but cannot stop it.
 
 Based on active storage framework like Oasis\cite{xie2011design}, SeDas proposes a distributed object-based storage system with self-destructing data function.
@@ -330,7 +330,7 @@ Grouper uses untrusted servers to exchange messages among mobile devices.
 Untrusted servers construct a self-destruction system, and delete messages after a certain period of time.
 We refer to this as the Time to Live (TTL).
 
-Grouper uses Shamir's secret sharing scheme to protect messages from the providers of untrusted servers.
+Grouper uses Shamir's secret sharing scheme\cite{shamir1979share} to protect messages from the providers of untrusted servers.
 In this scheme, a member securely shares a secret with other members by generating $n$ shares using a cryptographic function\cite{smith2013layered}. 
 At least $k$ or more shares can reconstruct the secret, but $k-1$ or fewer shares output nothing about the secret\cite{pang2005new}. 
 We describe this scheme as a function ${f(k, n)}$, where $n$ is the number of shares, and $k$ is the threshold to combine shares. 
@@ -700,10 +700,8 @@ The method $grouper.confirm()$ is invoked in the following situations:
 		
 		\LeftComment Basic reliable multicast.
 		\If{$ msg.seq \neq  0 \ \&\& \ lastMsg.seq + 1 \neq  msg.seq$}
-		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ $ \\\hspace{2.7cm} $1,\ msg.seq)$
-		
-		\Comment Create a resend message with maximum sequence number.
-		\State $sendMsg(resendMsg,\ sender)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ 1,\ msg.seq)$
+		\State $sendMsg(resendMsg,\ sender)$ \Comment Create a resend message with maximum sequence number.
 		\EndIf
 		
 		\LeftComment Handle the message by its type.
@@ -713,7 +711,7 @@ The method $grouper.confirm()$ is invoked in the following situations:
 		\State $sync.deleteRemote(msg)$
 		\ElsIf{$msg.type = "confirm"$}
 		\State $maxSeq = getMaxSeqFrom(msg.content)$
-		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ $ \\\hspace{2.7cm}  $1,\ maxSeq)$
+		\State $resendMsg \gets createResendMsg(lastMsg.seq\ +\ 1,\ maxSeq)$
 		\If{$resendMsg \neq null $}
 		\State $sendMsg(resendMsg,\ sender)$
 		\EndIf
