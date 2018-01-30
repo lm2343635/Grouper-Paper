@@ -111,7 +111,7 @@ In fact, they are often unaware of their existence and simply rely on the functi
 If the central servers are accessed by an attacker, a curious administrator or a government, private information will be revealed because data is often stored on the central servers in the form of cleartext.
 In addition, users may lose their data when service providers shut their servers down.
 
-To address the problem of using central servers, the proposals including Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CouldSky\cite{zeng2015cloudsky} constructed a data self-destruction system as their storage.
+To address the problem of using central servers, the proposals including Vanish\cite{geambasu2009vanish}, SafeVanish\cite{zeng2010safevanish}, SeDas\cite{zeng2012sedas} and CloudSky\cite{zeng2015cloudsky} constructed a data self-destruction system as their storage.
 In these approaches, servers store encrypted data temporarily and delete it after a certain period of time.
 
 These existing approaches have several problems.
@@ -193,7 +193,7 @@ Like Vanishe, SafeVanish and SeDas do not support the developent of information 
 Although, SeDas allows user to control the survival time of the key, it still cannot handle the cases that require the access control over the encrypted data including user grant and revocation.
 By extending SeDas, Zeng's group proposed CloudSky\cite{zeng2015cloudsky}, a controllable data self-destruction system for untrusted cloud storage. 
 CloudSky uses Attribute Bases Encryption (ABE) to implement the access control over the encrypted data, and allows the data owner to have user grant and revocation capabilities.
-CouldSky deals with the untrusted cloud storage network in two ways including the data self-destruction and the use of Hash-based Message Authentication Code (HMAC) \cite{bellare1997hmac}, which ensures the data integrity.
+CloudSky deals with the untrusted cloud storage network in two ways including the data self-destruction and the use of Hash-based Message Authentication Code (HMAC) \cite{bellare1997hmac}, which ensures the data integrity.
 
 CloudSky solves the problems regarding user controllability that exist in Vanish, but offline devices also cannot download messages after they have been removed from untrusted servers.
 In Grouper, offline devices can download such messages by using confirm and resend messages.
